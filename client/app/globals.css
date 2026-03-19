@@ -1,0 +1,161 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Kerala 2026 Primary Theme Colors */
+  --saffron: #FF6B35;
+  --saffron-dim: rgba(255, 107, 53, 0.1);
+  --green: #138808;
+  --green-dim: rgba(19, 136, 8, 0.1);
+  --blue: #000080;
+  --blue-dim: rgba(0, 0, 128, 0.08);
+  --gold: #F4A500;
+  --gold-dim: rgba(244, 165, 0, 0.1);
+  --red: #E31E24;
+  --red-dim: rgba(227, 30, 36, 0.1);
+  --purple: #7B2FBE;
+  --teal: #00897B;
+
+  /* Neutrals & Surfaces */
+  --bg: #FAFAF8;
+  --bg2: #F4F3EF;
+  --bg3: #ECEAE3;
+  --surface: #FFFFFF;
+  --border-light: rgba(0, 0, 0, 0.08);
+  --border-dark: rgba(0, 0, 0, 0.14);
+
+  /* Typography Colors */
+  --text-main: #1A1A1A;
+  --text-muted: #4A4A4A;
+  --text-light: #8A8A8A;
+
+  /* Shadcn UI standard mappings targeting the Kerala Theme */
+  --background: var(--bg);
+  --foreground: var(--text-main);
+  --card: var(--surface);
+  --card-foreground: var(--text-main);
+  --popover: var(--surface);
+  --popover-foreground: var(--text-main);
+  --primary: var(--saffron);
+  --primary-foreground: #FFFFFF;
+  --secondary: var(--bg2);
+  --secondary-foreground: var(--text-main);
+  --muted: var(--bg3);
+  --muted-foreground: var(--text-light);
+  --accent: var(--saffron-dim);
+  --accent-foreground: var(--saffron);
+  --destructive: var(--red);
+  --destructive-foreground: #FFFFFF;
+  --border: var(--border-light);
+  --input: var(--border-dark);
+  --ring: var(--saffron);
+  
+  --radius: 8px;
+}
+
+@theme inline {
+  --color-saffron: var(--saffron);
+  --color-saffron-dim: var(--saffron-dim);
+  --color-green: var(--green);
+  --color-green-dim: var(--green-dim);
+  --color-blue: var(--blue);
+  --color-blue-dim: var(--blue-dim);
+  --color-gold: var(--gold);
+  --color-gold-dim: var(--gold-dim);
+  
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Fonts mapped to tailwind config */
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-playfair), ui-serif, Georgia, serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+  
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+  }
+}
+
+@layer components {
+  /* LAYOUT */
+  .shell { display: flex; min-height: 100vh; }
+  .sidebar { width: 270px; min-width: 270px; background: var(--surface); border-right: 1px solid var(--border-dark); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; z-index: 50; display: flex; flex-direction: column; }
+  .main { margin-left: 270px; flex: 1; }
+  
+  /* SIDEBAR */
+  .sb-brand { padding: 22px 20px 16px; border-bottom: 2px solid var(--border-dark); }
+  .sb-name { font-family: var(--font-display); font-size: 17px; font-weight: 900; color: var(--text-main); }
+  .sb-sub { font-size: 10px; color: var(--text-light); font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 4px; }
+  .sb-nav { padding: 12px 10px; flex: 1; }
+  .sb-group { font-size: 9px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.1em; padding: 0 10px; margin: 14px 0 5px; }
+  .sb-link { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 4px; cursor: pointer; color: var(--text-muted); font-size: 13px; font-weight: 500; transition: all 0.15s; text-decoration: none; border-left: 3px solid transparent; }
+  .sb-link:hover { background: var(--bg2); color: var(--text-main); border-left-color: var(--saffron); }
+  .sb-link.active { background: var(--saffron-dim); color: var(--saffron); border-left-color: var(--saffron); font-weight: 600; }
+  
+  /* TOPBAR */
+  .topbar { background: rgba(250,250,248,0.93); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-light); height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: sticky; top: 0; z-index: 20; }
+  .tb-crumb { font-size: 12px; color: var(--text-light); font-family: var(--font-mono); display: flex; align-items: center; gap: 6px; }
+  
+  /* CONTENT */
+  .content { padding: 40px 48px 80px; max-width: 1000px; margin: 0 auto; }
+  .eyebrow { font-family: var(--font-mono); font-size: 10px; color: var(--saffron); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .eyebrow::before { content: ''; display: inline-block; width: 24px; height: 2px; background: var(--saffron); }
+  h1 { font-family: var(--font-display); font-size: 38px; font-weight: 900; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 14px; }
+  h1 em { font-style: normal; color: var(--saffron); }
+  .lead { font-size: 15px; color: var(--text-muted); line-height: 1.75; max-width: 700px; margin-bottom: 32px; }
+  h2 { font-family: var(--font-display); font-size: 22px; font-weight: 800; letter-spacing: -0.01em; margin: 36px 0 16px; display: flex; align-items: center; gap: 10px; }
+  h2::after { content: ''; flex: 1; height: 1px; background: var(--border-dark); margin-left: 8px; }
+  
+  /* STAT GRID */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 32px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border-dark); border-radius: 14px; padding: 20px; position: relative; overflow: hidden; transition: border-color 0.2s, transform 0.2s; }
+  .stat-card:hover { border-color: var(--saffron); transform: translateY(-2px); }
+  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--saffron), var(--gold)); }
+  .stat-label { font-size: 10px; font-family: var(--font-mono); color: var(--text-light); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; font-weight: 600; }
+  .stat-val { font-family: var(--font-display); font-size: 28px; font-weight: 900; color: var(--text-main); margin-bottom: 4px; }
+  .stat-sub { font-size: 11px; color: var(--text-light); }
+  
+  /* BOXES */
+  .info-box, .warn-box, .success-box, .note-box { border-radius: 8px; padding: 14px 18px; font-size: 13px; line-height: 1.65; margin: 14px 0 20px; border-left: 4px solid; }
+  .info-box { background: var(--blue-dim); border-color: var(--blue); color: #000060; }
+  .success-box { background: var(--green-dim); border-color: var(--green); color: #0A5A04; }
+  .note-box { background: var(--saffron-dim); border-color: var(--saffron); color: #8B3A1A; }
+  
+  /* PUBLIC CARDS */
+  .mi-card { background: var(--surface); border: 1px solid var(--border-dark); border-radius: 14px; padding: 18px; transition: all 0.2s; cursor: pointer; display: flex; flex-direction: column; }
+  .mi-card:hover { border-color: var(--saffron); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.04); }
+  .mi-card-layer { font-size: 9px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 6px; font-weight: 700; color: var(--saffron); }
+  .mi-card-title { font-size: 16px; font-weight: 800; margin-bottom: 6px; font-family: var(--font-display); color: var(--text-main); }
+  .mi-card-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px; }
+}
