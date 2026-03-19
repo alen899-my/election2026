@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kerala 2026 — Module Tracker & Developer Checklist</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --saffron: #FF6B35;
+  --saffron-dim: rgba(255,107,53,0.10);
+  --saffron-dim2: rgba(255,107,53,0.06);
+  --green: #138808;
+  --green-dim: rgba(19,136,8,0.10);
+  --blue: #000080;
+  --blue-dim: rgba(0,0,128,0.08);
+  --gold: #F4A500;
+  --gold-dim: rgba(244,165,0,0.10);
+  --red: #E31E24;
+  --red-dim: rgba(227,30,36,0.10);
+  --purple: #7B2FBE;
+  --purple-dim: rgba(123,47,190,0.10);
+  --teal: #00897B;
+  --teal-dim: rgba(0,137,123,0.10);
+  --bg: #FAFAF8;
+  --bg2: #F4F3EF;
+  --bg3: #ECEAE3;
+  --surface: #FFFFFF;
+  --border: rgba(0,0,0,0.07);
+  --border2: rgba(0,0,0,0.13);
+  --text: #1A1A1A;
+  --text2: #4A4A4A;
+  --text3: #8A8A8A;
+  --fd: 'Playfair Display', serif;
+  --fb: 'DM Sans', sans-serif;
+  --fm: 'JetBrains Mono', monospace;
+  --r: 4px; --rl: 8px; --rxl: 14px;
+}
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: var(--fb); background: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden; }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--saffron); border-radius: 3px; }
+
+/* LAYOUT */
+.shell { display: flex; min-height: 100vh; }
+.sidebar { width: 270px; min-width: 270px; background: var(--surface); border-right: 1px solid var(--border2); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; z-index: 50; display: flex; flex-direction: column; }
+.main { margin-left: 270px; flex: 1; }
+
+/* SIDEBAR */
+.sb-brand { padding: 22px 20px 16px; border-bottom: 2px solid var(--border2); }
+.sb-name { font-family: var(--fd); font-size: 17px; font-weight: 900; color: var(--text); }
+.sb-sub { font-size: 10px; color: var(--text3); font-family: var(--fm); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 4px; }
+.sb-nav { padding: 12px 10px; flex: 1; }
+.sb-group { font-size: 9px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; padding: 0 10px; margin: 14px 0 5px; }
+.sb-link { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: var(--r); cursor: pointer; color: var(--text2); font-size: 12.5px; font-weight: 500; transition: all 0.15s; text-decoration: none; border-left: 3px solid transparent; }
+.sb-link:hover { background: var(--bg2); color: var(--text); border-left-color: var(--saffron); }
+.sb-link.active { background: var(--saffron-dim); color: var(--saffron); border-left-color: var(--saffron); font-weight: 600; }
+.sb-link svg { width: 14px; height: 14px; flex-shrink: 0; }
+.sb-count { margin-left: auto; font-family: var(--fm); font-size: 9px; padding: 1px 6px; border-radius: 20px; background: var(--bg3); color: var(--text3); }
+.sb-footer { padding: 14px 20px; border-top: 1px solid var(--border); font-size: 10px; color: var(--text3); font-family: var(--fm); }
+
+/* DOC PART LINKS */
+.sb-doc-link { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: var(--r); cursor: pointer; color: var(--text3); font-size: 12px; font-weight: 500; transition: all 0.15s; text-decoration: none; border-left: 3px solid transparent; font-family: var(--fm); }
+.sb-doc-link:hover { background: var(--bg2); color: var(--text); border-left-color: var(--saffron); }
+
+/* TOPBAR */
+.topbar { background: rgba(250,250,248,0.93); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: sticky; top: 0; z-index: 20; }
+.tb-crumb { font-size: 12px; color: var(--text3); font-family: var(--fm); display: flex; align-items: center; gap: 6px; }
+.tb-sep { opacity: 0.3; }
+.tb-cur { color: var(--text2); }
+.tb-right { display: flex; gap: 8px; align-items: center; }
+.chip { font-size: 10px; font-family: var(--fm); padding: 3px 9px; border-radius: 20px; border: 1px solid; }
+.chip-s { background: var(--saffron-dim); border-color: rgba(255,107,53,0.3); color: var(--saffron); }
+.chip-g { background: var(--green-dim); border-color: rgba(19,136,8,0.3); color: var(--green); }
+.chip-b { background: var(--blue-dim); border-color: rgba(0,0,128,0.3); color: var(--blue); }
+
+/* CONTENT */
+.content { padding: 40px 48px 80px; max-width: 980px; }
+.page { display: none; animation: fadeUp 0.2s ease; }
+.page.active { display: block; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* TYPOGRAPHY */
+.eyebrow { font-family: var(--fm); font-size: 10px; color: var(--saffron); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.eyebrow::before { content: ''; display: inline-block; width: 24px; height: 2px; background: var(--saffron); }
+h1 { font-family: var(--fd); font-size: 38px; font-weight: 900; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 14px; }
+h1 em { font-style: normal; color: var(--saffron); }
+.lead { font-size: 15px; color: var(--text2); line-height: 1.75; max-width: 700px; margin-bottom: 32px; }
+h2 { font-family: var(--fd); font-size: 22px; font-weight: 800; letter-spacing: -0.01em; margin: 36px 0 16px; display: flex; align-items: center; gap: 10px; }
+h2::after { content: ''; flex: 1; height: 1px; background: var(--border2); margin-left: 8px; }
+h3 { font-size: 14px; font-weight: 700; margin: 20px 0 10px; color: var(--text); }
+p { font-size: 13.5px; color: var(--text2); line-height: 1.75; margin-bottom: 12px; }
+code { font-family: var(--fm); font-size: 0.87em; background: var(--bg3); color: var(--saffron); padding: 1px 6px; border-radius: 3px; border: 1px solid var(--border); }
+
+/* INFO BOXES */
+.info-box, .warn-box, .success-box, .note-box { border-radius: var(--rl); padding: 14px 18px; font-size: 13px; line-height: 1.65; margin: 14px 0 20px; border-left: 4px solid; }
+.info-box { background: var(--blue-dim); border-color: var(--blue); color: #000060; }
+.warn-box { background: var(--gold-dim); border-color: var(--gold); color: #7A5200; }
+.success-box { background: var(--green-dim); border-color: var(--green); color: #0A5A04; }
+.note-box { background: var(--saffron-dim); border-color: var(--saffron); color: #8B3A1A; }
+
+/* STAT GRID */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-bottom: 32px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--rxl); padding: 20px; position: relative; overflow: hidden; transition: border-color 0.2s, transform 0.2s; }
+.stat-card:hover { border-color: var(--saffron); transform: translateY(-2px); }
+.stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--saffron), var(--gold)); }
+.stat-label { font-size: 10px; font-family: var(--fm); color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }
+.stat-val { font-family: var(--fd); font-size: 26px; font-weight: 900; color: var(--text); margin-bottom: 4px; }
+.stat-sub { font-size: 11px; color: var(--text3); }
+
+/* MODULE CARDS — THE MAIN THING */
+.module-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 32px; }
+
+.module-card { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--rxl); overflow: hidden; transition: all 0.2s; }
+.module-card:hover { border-color: var(--saffron); box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+
+.mc-header { display: flex; align-items: flex-start; gap: 16px; padding: 20px 20px 16px; cursor: pointer; user-select: none; }
+.mc-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.mc-icon svg { width: 20px; height: 20px; }
+.mc-meta { flex: 1; }
+.mc-layer { font-size: 9px; font-family: var(--fm); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; font-weight: 600; }
+.mc-title { font-family: var(--fd); font-size: 17px; font-weight: 800; margin-bottom: 4px; color: var(--text); }
+.mc-sub { font-size: 12.5px; color: var(--text2); line-height: 1.5; }
+.mc-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.mc-badge { font-size: 10px; font-family: var(--fm); padding: 3px 10px; border-radius: 20px; border: 1px solid; white-space: nowrap; }
+.mc-toggle { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border2); background: var(--bg2); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; flex-shrink: 0; }
+.mc-toggle:hover { background: var(--saffron-dim); border-color: var(--saffron); }
+.mc-toggle svg { width: 14px; height: 14px; color: var(--text3); transition: transform 0.2s; }
+.module-card.open .mc-toggle svg { transform: rotate(180deg); }
+
+.mc-body { border-top: 1px solid var(--border); padding: 20px; display: none; }
+.module-card.open .mc-body { display: block; }
+
+/* TASK LIST */
+.task-section { margin-bottom: 24px; }
+.task-section-title { font-size: 11px; font-family: var(--fm); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-bottom: 10px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.task-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.task-list { display: flex; flex-direction: column; gap: 6px; }
+.task-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: var(--rl); background: var(--bg2); border: 1px solid var(--border); transition: all 0.15s; cursor: pointer; }
+.task-item:hover { background: var(--bg3); border-color: var(--border2); }
+.task-item.done { background: var(--green-dim); border-color: rgba(19,136,8,0.2); }
+.task-item.done .task-text { text-decoration: line-through; color: var(--text3); }
+
+.task-cb { width: 16px; height: 16px; border-radius: 4px; border: 2px solid var(--border2); background: white; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.task-item.done .task-cb { background: var(--green); border-color: var(--green); }
+.task-item.done .task-cb::after { content: '✓'; color: white; font-size: 10px; font-weight: 700; }
+
+.task-content { flex: 1; }
+.task-text { font-size: 13px; color: var(--text); line-height: 1.5; font-weight: 500; }
+.task-detail { font-size: 11.5px; color: var(--text2); margin-top: 3px; line-height: 1.55; }
+.task-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.ttag { font-size: 10px; font-family: var(--fm); padding: 2px 7px; border-radius: 20px; border: 1px solid; }
+
+/* PRIORITY BADGES */
+.p0 { background: var(--red-dim); border-color: rgba(227,30,36,0.3); color: var(--red); }
+.p1 { background: var(--gold-dim); border-color: rgba(244,165,0,0.3); color: #7A5200; }
+.p2 { background: var(--blue-dim); border-color: rgba(0,0,128,0.25); color: var(--blue); }
+.ph2 { background: var(--purple-dim); border-color: rgba(123,47,190,0.3); color: var(--purple); }
+
+/* PROGRESS BAR */
+.progress-wrap { margin: 12px 0 18px; }
+.progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text3); font-family: var(--fm); margin-bottom: 5px; }
+.progress-track { height: 5px; background: var(--bg3); border-radius: 10px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--saffron), var(--gold)); transition: width 0.4s ease; }
+
+/* FILE TREE MINI */
+.file-tree { background: #1A1A2E; border-radius: var(--rxl); padding: 14px 18px; font-family: var(--fm); font-size: 12px; line-height: 1.7; color: #B8C5D6; margin: 14px 0; border: 1px solid rgba(255,255,255,0.06); overflow-x: auto; white-space: pre; }
+.tr-d { color: #8BE9FD; }
+.tr-f { color: #F1FA8C; }
+.tr-c { color: #6272A4; }
+
+/* DEPENDENCY TABLE */
+.dep-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-bottom: 18px; }
+.dep-table th { padding: 8px 12px; text-align: left; font-family: var(--fm); font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; background: var(--bg2); border-bottom: 1px solid var(--border2); }
+.dep-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: var(--text2); }
+.dep-table tr:last-child td { border-bottom: none; }
+.dep-table tr:hover td { background: var(--bg2); }
+
+/* OVERVIEW PAGE SPECIAL */
+.module-index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-bottom: 28px; }
+.mi-card { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--rxl); padding: 16px; transition: all 0.2s; cursor: pointer; }
+.mi-card:hover { border-color: var(--saffron); transform: translateY(-2px); }
+.mi-card-layer { font-size: 9px; font-family: var(--fm); text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 5px; font-weight: 600; }
+.mi-card-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; font-family: var(--fd); }
+.mi-card-count { font-size: 11px; color: var(--text3); }
+
+/* TABLES */
+.tbl-wrap { overflow-x: auto; border-radius: var(--rxl); border: 1px solid var(--border2); margin-bottom: 28px; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.tbl th { padding: 10px 14px; text-align: left; font-family: var(--fm); font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; background: var(--bg2); border-bottom: 1px solid var(--border2); }
+.tbl td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--text2); }
+.tbl tr:last-child td { border-bottom: none; }
+.tbl tr:hover td { background: var(--bg2); }
+
+/* MOBILE */
+.mob-btn { display: none; position: fixed; bottom: 20px; right: 20px; width: 44px; height: 44px; background: var(--saffron); border: none; border-radius: 50%; cursor: pointer; z-index: 200; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(255,107,53,0.4); }
+.mob-btn svg { width: 20px; height: 20px; color: #fff; }
+.sb-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 49; }
+@media(max-width: 900px) {
+  .sidebar { transform: translateX(-100%); transition: transform 0.2s ease; }
+  .sidebar.open { transform: translateX(0); }
+  .sb-overlay.visible { display: block; }
+  .main { margin-left: 0; }
+  .content { padding: 24px 18px 60px; }
+  h1 { font-size: 28px; }
+  .mob-btn { display: flex; }
+}
+</style>
+</head>
+<body>
+
+<div class="sb-overlay" id="overlay" onclick="closeSB()"></div>
+<button class="mob-btn" onclick="toggleSB()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
+
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-name">Kerala2026-2031</div>
+    <div class="sb-sub">Module Tracker · Part 4</div>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-group">Documentation Parts</div>
+    <a href="main.html" class="sb-doc-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;flex-shrink:0"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Part 1: Overview & Architecture
+    </a>
+    <a href="second.html" class="sb-doc-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;flex-shrink:0"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Part 2: Frontend & API
+    </a>
+    <a href="third.html" class="sb-doc-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;flex-shrink:0"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      Part 3: Backend & Deploy
+    </a>
+    <a href="fourth.html" class="sb-doc-link" style="color:var(--saffron);font-weight:600">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;flex-shrink:0"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Part 4: Module Tracker ← You are here
+    </a>
+
+    <div class="sb-group">Tracker Views</div>
+    <div class="sb-link active" onclick="go('overview', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      All Modules Overview
+      <span class="sb-count">24</span>
+    </div>
+    <div class="sb-link" onclick="go('howto', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      How to Use This File
+    </div>
+
+    <div class="sb-group">Layer 1 — Shared Packages</div>
+    <div class="sb-link" onclick="go('mod-db-schema', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></ellipse></svg>
+      DB Schema (packages/db)
+    </div>
+    <div class="sb-link" onclick="go('mod-types', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      Shared Types
+    </div>
+    <div class="sb-link" onclick="go('mod-utils', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      Shared Utilities
+    </div>
+    <div class="sb-link" onclick="go('mod-data', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      Static Data (GeoJSON)
+    </div>
+
+    <div class="sb-group">Layer 2 — Backend API</div>
+    <div class="sb-link" onclick="go('mod-api-server', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      API Server Core
+    </div>
+    <div class="sb-link" onclick="go('mod-api-const', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      Constituencies Module
+    </div>
+    <div class="sb-link" onclick="go('mod-api-cand', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Candidates Module
+    </div>
+    <div class="sb-link" onclick="go('mod-api-party', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Parties Module
+    </div>
+    <div class="sb-link" onclick="go('mod-api-search', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Search Module
+    </div>
+    <div class="sb-link" onclick="go('mod-api-upload', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+      Upload Module (R2)
+    </div>
+    <div class="sb-link" onclick="go('mod-api-auth', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Auth Module
+    </div>
+
+    <div class="sb-group">Layer 3 — Frontend Web</div>
+    <div class="sb-link" onclick="go('mod-fe-pages', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      Pages & Routing
+    </div>
+    <div class="sb-link" onclick="go('mod-fe-candidate', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Candidate Components
+    </div>
+    <div class="sb-link" onclick="go('mod-fe-constituency', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+      Constituency Components
+    </div>
+    <div class="sb-link" onclick="go('mod-fe-charts', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Charts & Maps
+    </div>
+    <div class="sb-link" onclick="go('mod-fe-search', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Search UI
+    </div>
+    <div class="sb-link" onclick="go('mod-fe-ui', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41"/><path d="M4.93 4.93l1.41 1.41"/><path d="M4.93 19.07l1.41-1.41"/><path d="M19.07 19.07l-1.41-1.41"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg>
+      UI Component Library
+    </div>
+
+    <div class="sb-group">Layer 4 — Admin Panel</div>
+    <div class="sb-link" onclick="go('mod-admin', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Admin Dashboard
+    </div>
+    <div class="sb-link" onclick="go('mod-csv', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      CSV Import System
+    </div>
+
+    <div class="sb-group">Layer 5 — Phase 2 (Result Day)</div>
+    <div class="sb-link" onclick="go('mod-scraper', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Live Scraper
+    </div>
+    <div class="sb-link" onclick="go('mod-ws', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+      WebSocket & Live UI
+    </div>
+
+    <div class="sb-group">Layer 6 — Infrastructure</div>
+    <div class="sb-link" onclick="go('mod-deploy', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      Deployment & CI/CD
+    </div>
+    <div class="sb-link" onclick="go('mod-testing', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Testing Suite
+    </div>
+    <div class="sb-link" onclick="go('mod-security', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Security & Performance
+    </div>
+  </nav>
+
+  <div class="sb-footer">
+    Kerala 2026 · Open Source<br>
+    Part 4 of 4 · Module Tracker
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-crumb">
+      <span>Kerala2026</span>
+      <span class="tb-sep">/</span>
+      <span class="tb-cur" id="crumb">All Modules Overview</span>
+    </div>
+    <div class="tb-right">
+      <span class="chip chip-s">24 Modules</span>
+      <span class="chip chip-g">Phase 1 Focus</span>
+      <span class="chip chip-b">Dev Tracker</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+<!-- ══════════════════════════════════ OVERVIEW ══════════════════════════════════ -->
+<div class="page active" id="page-overview">
+  <div class="eyebrow">Kerala 2026 — Complete Project Breakdown</div>
+  <h1>All <em>Modules</em> Overview</h1>
+  <p class="lead">Every module this project needs — from shared database schema to live result scraping. This file is the developer's single reference for what to build, in what order, and which modules depend on which. Click any module card in the sidebar to see its full task checklist.</p>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-label">Total Modules</div><div class="stat-val">24</div><div class="stat-sub">Across 6 layers</div></div>
+    <div class="stat-card"><div class="stat-label">Phase 1</div><div class="stat-val">19</div><div class="stat-sub">Must-build before election</div></div>
+    <div class="stat-card"><div class="stat-label">Phase 2</div><div class="stat-val">3</div><div class="stat-sub">Activated on result day</div></div>
+    <div class="stat-card"><div class="stat-label">Infrastructure</div><div class="stat-val">2</div><div class="stat-sub">Deploy + Security</div></div>
+    <div class="stat-card"><div class="stat-label">Priority P0</div><div class="stat-val">~80</div><div class="stat-sub">Critical path tasks</div></div>
+    <div class="stat-card"><div class="stat-label">Total Tasks</div><div class="stat-val">~200+</div><div class="stat-sub">Across all modules</div></div>
+  </div>
+
+  <div class="success-box"><strong>How to use this file:</strong> Each sidebar link opens a module page. Every module has a full task checklist — click any task to toggle it done. Tasks are tagged with priority (P0 = must-do, P1 = important, P2 = nice-to-have, Ph2 = Phase 2 only). Start from Layer 1 and work down — no module should be built before its dependencies.</div>
+
+  <h2>Build Order — Layer by Layer</h2>
+  <div class="module-index-grid">
+    <div class="mi-card" onclick="go('mod-db-schema', document.querySelector('[onclick*=mod-db-schema]'))">
+      <div class="mi-card-layer" style="color:var(--gold)">Layer 1 — Shared Packages</div>
+      <div class="mi-card-title">DB Schema (packages/db)</div>
+      <div class="mi-card-count">Build first — everything depends on this</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-types', document.querySelector('[onclick*=mod-types]'))">
+      <div class="mi-card-layer" style="color:var(--gold)">Layer 1 — Shared Packages</div>
+      <div class="mi-card-title">Shared TypeScript Types</div>
+      <div class="mi-card-count">Defined alongside schema</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-utils', document.querySelector('[onclick*=mod-utils]'))">
+      <div class="mi-card-layer" style="color:var(--gold)">Layer 1 — Shared Packages</div>
+      <div class="mi-card-title">Shared Utilities</div>
+      <div class="mi-card-count">Formatters, slug generators, helpers</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-data', document.querySelector('[onclick*=mod-data]'))">
+      <div class="mi-card-layer" style="color:var(--gold)">Layer 1 — Shared Packages</div>
+      <div class="mi-card-title">Static Data (GeoJSON + Seed)</div>
+      <div class="mi-card-count">All 140 constituencies + 14 districts</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-api-server', document.querySelector('[onclick*=mod-api-server]'))">
+      <div class="mi-card-layer" style="color:var(--blue)">Layer 2 — Backend API</div>
+      <div class="mi-card-title">API Server Core</div>
+      <div class="mi-card-count">Express setup, middleware, env</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-api-auth', document.querySelector('[onclick*=mod-api-auth]'))">
+      <div class="mi-card-layer" style="color:var(--blue)">Layer 2 — Backend API</div>
+      <div class="mi-card-title">Auth Module</div>
+      <div class="mi-card-count">JWT login, admin middleware</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-api-const', document.querySelector('[onclick*=mod-api-const]'))">
+      <div class="mi-card-layer" style="color:var(--blue)">Layer 2 — Backend API</div>
+      <div class="mi-card-title">Constituencies API</div>
+      <div class="mi-card-count">All constituency endpoints</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-api-cand', document.querySelector('[onclick*=mod-api-cand]'))">
+      <div class="mi-card-layer" style="color:var(--blue)">Layer 2 — Backend API</div>
+      <div class="mi-card-title">Candidates API</div>
+      <div class="mi-card-count">Profiles, assets, criminal cases</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-api-party', document.querySelector('[onclick*=mod-api-party]'))">
+      <div class="mi-card-layer" style="color:var(--blue)">Layer 2 — Backend API</div>
+      <div class="mi-card-title">Parties + Results API</div>
+      <div class="mi-card-count">Party data, historical results</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-api-search', document.querySelector('[onclick*=mod-api-search]'))">
+      <div class="mi-card-layer" style="color:var(--blue)">Layer 2 — Backend API</div>
+      <div class="mi-card-title">Search Module (Meilisearch)</div>
+      <div class="mi-card-count">Index setup, sync, query endpoint</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-api-upload', document.querySelector('[onclick*=mod-api-upload]'))">
+      <div class="mi-card-layer" style="color:var(--blue)">Layer 2 — Backend API</div>
+      <div class="mi-card-title">Upload Module (R2)</div>
+      <div class="mi-card-count">Photo upload, Sharp resize, CDN</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-fe-pages', document.querySelector('[onclick*=mod-fe-pages]'))">
+      <div class="mi-card-layer" style="color:var(--saffron)">Layer 3 — Frontend</div>
+      <div class="mi-card-title">Pages & Routing</div>
+      <div class="mi-card-count">12 page routes, SSG/ISR config</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-fe-candidate', document.querySelector('[onclick*=mod-fe-candidate]'))">
+      <div class="mi-card-layer" style="color:var(--saffron)">Layer 3 — Frontend</div>
+      <div class="mi-card-title">Candidate Components</div>
+      <div class="mi-card-count">Card, Profile, Grid, History</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-fe-constituency', document.querySelector('[onclick*=mod-fe-constituency]'))">
+      <div class="mi-card-layer" style="color:var(--saffron)">Layer 3 — Frontend</div>
+      <div class="mi-card-title">Constituency Components</div>
+      <div class="mi-card-count">Hero, Card, HistoricalTable</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-fe-charts', document.querySelector('[onclick*=mod-fe-charts]'))">
+      <div class="mi-card-layer" style="color:var(--saffron)">Layer 3 — Frontend</div>
+      <div class="mi-card-title">Charts & Maps</div>
+      <div class="mi-card-count">Recharts + Mapbox GL JS</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-fe-search', document.querySelector('[onclick*=mod-fe-search]'))">
+      <div class="mi-card-layer" style="color:var(--saffron)">Layer 3 — Frontend</div>
+      <div class="mi-card-title">Search UI</div>
+      <div class="mi-card-count">SearchBar, modal, results</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-fe-ui', document.querySelector('[onclick*=mod-fe-ui]'))">
+      <div class="mi-card-layer" style="color:var(--saffron)">Layer 3 — Frontend</div>
+      <div class="mi-card-title">UI Component Library</div>
+      <div class="mi-card-count">PartyBadge, Tabs, AssetTag etc.</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-admin', document.querySelector('[onclick*=mod-admin]'))">
+      <div class="mi-card-layer" style="color:var(--teal)">Layer 4 — Admin Panel</div>
+      <div class="mi-card-title">Admin Dashboard</div>
+      <div class="mi-card-count">Internal data entry tool</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-csv', document.querySelector('[onclick*=mod-csv]'))">
+      <div class="mi-card-layer" style="color:var(--teal)">Layer 4 — Admin Panel</div>
+      <div class="mi-card-title">CSV Import System</div>
+      <div class="mi-card-count">Bulk candidate data entry</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-scraper', document.querySelector('[onclick*=mod-scraper]'))">
+      <div class="mi-card-layer" style="color:var(--purple)">Layer 5 — Phase 2</div>
+      <div class="mi-card-title">Live Results Scraper</div>
+      <div class="mi-card-count">Puppeteer + Cheerio, 60s interval</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-ws', document.querySelector('[onclick*=mod-ws]'))">
+      <div class="mi-card-layer" style="color:var(--purple)">Layer 5 — Phase 2</div>
+      <div class="mi-card-title">WebSocket & Live UI</div>
+      <div class="mi-card-count">Socket.io, LiveResultCard</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-deploy', document.querySelector('[onclick*=mod-deploy]'))">
+      <div class="mi-card-layer" style="color:var(--green)">Layer 6 — Infrastructure</div>
+      <div class="mi-card-title">Deployment & CI/CD</div>
+      <div class="mi-card-count">Vercel + Railway + GitHub Actions</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-testing', document.querySelector('[onclick*=mod-testing]'))">
+      <div class="mi-card-layer" style="color:var(--green)">Layer 6 — Infrastructure</div>
+      <div class="mi-card-title">Testing Suite</div>
+      <div class="mi-card-count">Vitest + Supertest + Playwright</div>
+    </div>
+    <div class="mi-card" onclick="go('mod-security', document.querySelector('[onclick*=mod-security]'))">
+      <div class="mi-card-layer" style="color:var(--green)">Layer 6 — Infrastructure</div>
+      <div class="mi-card-title">Security & Performance</div>
+      <div class="mi-card-count">Helmet, CSP, indexes, ISR</div>
+    </div>
+  </div>
+
+  <h2>Dependency Map</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Module</th><th>Depends On</th><th>Blocks</th></tr></thead>
+      <tbody>
+        <tr><td><strong>packages/db</strong></td><td>Nothing — build first</td><td>Everything backend</td></tr>
+        <tr><td><strong>packages/types</strong></td><td>packages/db (infers types)</td><td>All apps</td></tr>
+        <tr><td><strong>packages/utils</strong></td><td>packages/types</td><td>Frontend + backend</td></tr>
+        <tr><td><strong>packages/data</strong></td><td>packages/db (seed uses schema)</td><td>Seed script, maps</td></tr>
+        <tr><td><strong>API Server Core</strong></td><td>packages/db, packages/types</td><td>All API modules</td></tr>
+        <tr><td><strong>Auth Module</strong></td><td>API Server Core</td><td>All admin write endpoints</td></tr>
+        <tr><td><strong>Constituencies API</strong></td><td>API Server Core, Auth</td><td>Frontend constituency pages</td></tr>
+        <tr><td><strong>Candidates API</strong></td><td>API Server Core, Auth, Upload</td><td>Frontend candidate pages, Admin</td></tr>
+        <tr><td><strong>Parties API</strong></td><td>API Server Core</td><td>Frontend party pages</td></tr>
+        <tr><td><strong>Search Module</strong></td><td>Candidates API, Constituencies API</td><td>Search UI</td></tr>
+        <tr><td><strong>Upload Module</strong></td><td>API Server Core, Auth</td><td>Candidates API (photo field), Admin</td></tr>
+        <tr><td><strong>Frontend Pages</strong></td><td>All API modules</td><td>End users</td></tr>
+        <tr><td><strong>Admin Panel</strong></td><td>Auth, Candidates API, Upload</td><td>Data entry</td></tr>
+        <tr><td><strong>CSV Import</strong></td><td>Admin Panel, Candidates API</td><td>Bulk data entry</td></tr>
+        <tr><td><strong>Live Scraper (Ph2)</strong></td><td>packages/db (live_results table)</td><td>WebSocket</td></tr>
+        <tr><td><strong>WebSocket (Ph2)</strong></td><td>Live Scraper</td><td>Live Results frontend page</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ HOW TO USE ══════════════════════════════════ -->
+<div class="page" id="page-howto">
+  <div class="eyebrow">Developer Guide</div>
+  <h1>How to Use <em>This File</em></h1>
+  <p class="lead">This is the fourth documentation file for Kerala 2026. It serves as the active developer task tracker — a living checklist of everything that needs to be built, organized by module so multiple developers can divide work without conflicts.</p>
+
+  <h2>File Convention</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Tag</th><th>Meaning</th><th>When to work on it</th></tr></thead>
+      <tbody>
+        <tr><td><span class="ttag p0">P0</span></td><td>Critical — app cannot ship without this</td><td>Sprint 1 — do first</td></tr>
+        <tr><td><span class="ttag p1">P1</span></td><td>Important — degrades user experience if missing</td><td>Sprint 2 — do before launch</td></tr>
+        <tr><td><span class="ttag p2">P2</span></td><td>Nice-to-have — improves quality but not blocking</td><td>Sprint 3 or post-launch</td></tr>
+        <tr><td><span class="ttag ph2">Phase 2</span></td><td>Only needed on election result day</td><td>Build & keep disabled until result day</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Suggested Developer Assignments</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Developer Profile</th><th>Own These Modules</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Backend Dev 1</strong></td><td>packages/db, packages/types, API Server Core, Auth Module, Constituencies API</td></tr>
+        <tr><td><strong>Backend Dev 2</strong></td><td>Candidates API, Parties API, Upload Module (R2), CSV Import System</td></tr>
+        <tr><td><strong>Backend Dev 3</strong></td><td>Search Module (Meilisearch), Phase 2 Scraper, WebSocket</td></tr>
+        <tr><td><strong>Frontend Dev 1</strong></td><td>Pages & Routing, UI Component Library, Constituency Components</td></tr>
+        <tr><td><strong>Frontend Dev 2</strong></td><td>Candidate Components, Charts & Maps, Search UI</td></tr>
+        <tr><td><strong>Full-Stack Dev</strong></td><td>Admin Panel, packages/data (seed data), packages/utils</td></tr>
+        <tr><td><strong>DevOps / Anyone</strong></td><td>Deployment & CI/CD, Testing Suite, Security & Performance</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════ LAYER 1: DB SCHEMA ══════════════════ -->
+<div class="page" id="page-mod-db-schema">
+  <div class="eyebrow">Layer 1 — Shared Package</div>
+  <h1>DB <em>Schema</em> Module</h1>
+  <p class="lead"><strong>packages/db</strong> — The foundation of the entire project. Defines all Drizzle ORM table schemas, enums, relations, and exports TypeScript types. Must be built and seeded before any other module can function.</p>
+  <div class="note-box"><strong>Files:</strong> <code>packages/db/schema/</code> · <code>packages/db/migrations/</code> · <code>packages/db/seed/</code> · <code>drizzle.config.ts</code></div>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--gold-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="#F4A500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></ellipse></svg></div>
+        <div class="mc-meta">
+          <div class="mc-layer" style="color:var(--gold)">packages/db</div>
+          <div class="mc-title">Database Schema & Migrations</div>
+          <div class="mc-sub">Drizzle ORM table definitions, enums, seed data, migration files</div>
+        </div>
+        <div class="mc-right">
+          <span class="mc-badge p0">P0 — Build First</span>
+          <div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div>
+        </div>
+      </div>
+      <div class="mc-body">
+
+        <div class="task-section">
+          <div class="task-section-title">Schema Files — Create Each Table</div>
+          <div class="task-list">
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-cb"></div>
+              <div class="task-content">
+                <div class="task-text">Create <code>schema/districts.ts</code> — districts table</div>
+                <div class="task-detail">Fields: id (uuid PK), name_en, name_ml, slug (unique), headquarters, constituency_count, geojson_url, created_at, updated_at</div>
+                <div class="task-tags"><span class="ttag p0">P0</span></div>
+              </div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-cb"></div>
+              <div class="task-content">
+                <div class="task-text">Create <code>schema/constituencies.ts</code> — constituencies table with categoryEnum</div>
+                <div class="task-detail">Fields: id, district_id (FK → districts), number (unique 1-140), name_en, name_ml, slug (unique), category (general/sc/st), total_voters_2021, total_voters_2026, male_voters, female_voters, geojson (jsonb), description, created_at, updated_at, deleted_at. Export Constituency + NewConstituency types.</div>
+                <div class="task-tags"><span class="ttag p0">P0</span></div>
+              </div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-cb"></div>
+              <div class="task-content">
+                <div class="task-text">Create <code>schema/parties.ts</code> — parties table with coalitionEnum</div>
+                <div class="task-detail">Fields: id, name_en, name_ml, abbreviation, slug (unique), coalition (LDF/UDF/NDA/IND enum), color_hex, logo_url, founded_year, ideology, website_url, created_at, updated_at</div>
+                <div class="task-tags"><span class="ttag p0">P0</span></div>
+              </div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-cb"></div>
+              <div class="task-content">
+                <div class="task-text">Create <code>schema/candidates.ts</code> — candidates table with genderEnum + nominationEnum</div>
+                <div class="task-detail">Fields: id, constituency_id (FK), party_id (FK nullable), name_en, name_ml, slug (unique), photo_url, date_of_birth, gender, religion, caste, education, profession, is_incumbent (bool), terms_served (int), criminal_cases (int), total_assets_inr (bigint), total_liabilities_inr (bigint), affidavit_url, bio, social_facebook, social_twitter, social_instagram, election_year (default 2026), nomination_status, created_at, updated_at, deleted_at</div>
+                <div class="task-tags"><span class="ttag p0">P0</span></div>
+              </div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-cb"></div>
+              <div class="task-content">
+                <div class="task-text">Create <code>schema/election_results.ts</code> — historical + 2026 results</div>
+                <div class="task-detail">Fields: id, constituency_id (FK), candidate_id (FK nullable — for historical data candidate may not be in DB), party_id (FK nullable), election_year, candidate_name (varchar — for historical records), votes_received, vote_percentage (decimal 5,2), position, is_winner (bool), winning_margin, total_votes_polled, voter_turnout_pct (decimal 5,2), nota_votes, created_at</div>
+                <div class="task-tags"><span class="ttag p0">P0</span></div>
+              </div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-cb"></div>
+              <div class="task-content">
+                <div class="task-text">Create <code>schema/candidate_assets.ts</code> — detailed asset breakdown</div>
+                <div class="task-detail">Fields: id, candidate_id (FK), asset_type (movable/immovable enum), description, value_inr (bigint), source (varchar). Separate table to allow listing multiple assets per candidate.</div>
+                <div class="task-tags"><span class="ttag p1">P1</span></div>
+              </div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-cb"></div>
+              <div class="task-content">
+                <div class="task-text">Create <code>schema/criminal_cases.ts</code> — per-case criminal records</div>
+                <div class="task-detail">Fields: id, candidate_id (FK), case_number, section (text — IPC sections), court, status (varchar), is_serious (bool), year. candidates.criminal_cases is a denormalized count for quick filtering.</div>
+                <div class="task-tags"><span class="ttag p1">P1</span></div>
+              </div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-cb"></div>
+              <div class="task-content">
+                <div class="task-text">Create <code>schema/live_results.ts</code> — Phase 2 counting data</div>
+                <div class="task-detail">Fields: id, constituency_id (FK), candidate_id (FK), votes_so_far, rounds_counted, total_rounds, is_leading (bool), lead_margin, status (counting/declared/leading enum), last_updated (timestamptz). Upserted every 60s during counting.</div>
+                <div class="task-tags"><span class="ttag ph2">Phase 2</span></div>
+              </div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-cb"></div>
+              <div class="task-content">
+                <div class="task-text">Create <code>schema/index.ts</code> — barrel export of all tables</div>
+                <div class="task-detail">Export * from all schema files. Used by both the API and the seed script via <code>@kerala2026/db</code> workspace import.</div>
+                <div class="task-tags"><span class="ttag p0">P0</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-section">
+          <div class="task-section-title">Migration & Config</div>
+          <div class="task-list">
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-cb"></div>
+              <div class="task-content">
+                <div class="task-text">Create <code>drizzle.config.ts</code> — Drizzle Kit configuration</div>
+                <div class="task-detail">Set schema path to <code>./schema/index.ts</code>, output to <code>./migrations</code>, dialect to postgresql, read DATABASE_URL from env. Enable verbose + strict mode.</div>
+                <div class="task-tags"><span class="ttag p0">P0</span></div>
+              </div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-cb"></div>
+              <div class="task-content">
+                <div class="task-text">Generate initial migration with <code>pnpm db:generate</code></div>
+                <div class="task-detail">Run after all schema files are created. Commit the generated SQL migration files to git. Every future schema change must go through <code>db:generate</code> → <code>db:migrate</code>.</div>
+                <div class="task-tags"><span class="ttag p0">P0</span></div>
+              </div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-cb"></div>
+              <div class="task-content">
+                <div class="task-text">Create <code>indexes.sql</code> — performance indexes for production</div>
+                <div class="task-detail">GIN trigram indexes on candidates.name_en and name_ml for ILIKE search. Composite index on (constituency_id, election_year) for fast per-constituency candidate queries. Index on election_results(constituency_id, election_year). Index on live_results(constituency_id, last_updated DESC).</div>
+                <div class="task-tags"><span class="ttag p1">P1</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-section">
+          <div class="task-section-title">Seed Data</div>
+          <div class="task-list">
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-cb"></div>
+              <div class="task-content">
+                <div class="task-text">Create <code>seed/data/districts.ts</code> — all 14 Kerala districts</div>
+                <div class="task-detail">All 14 districts with nameEn, nameMl (Malayalam script), slug, headquarters, and exact constituency count: Thiruvananthapuram (11), Kollam (10), Pathanamthitta (5), Alappuzha (9), Kottayam (9), Idukki (5), Ernakulam (14), Thrissur (13), Palakkad (12), Malappuram (13), Kozhikode (12), Wayanad (3), Kannur (11), Kasaragod (5). Total = 140.</div>
+                <div class="task-tags"><span class="ttag p0">P0</span></div>
+              </div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-cb"></div>
+              <div class="task-content">
+                <div class="task-text">Create <code>seed/data/constituencies.ts</code> — all 140 constituencies</div>
+                <div class="task-detail">All 140 constituencies with official number (1-140), nameEn, nameMl (verified Malayalam), slug, districtSlug (for FK lookup), category (SC constituencies include Nedumangad, Aroor, Devikulam etc.). Source: Kerala Assembly official list from assembly.kerala.gov.in.</div>
+                <div class="task-tags"><span class="ttag p0">P0</span></div>
+              </div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-cb"></div>
+              <div class="task-content">
+                <div class="task-text">Create <code>seed/data/parties.ts</code> — major parties of Kerala</div>
+                <div class="task-detail">At minimum: CPM (LDF), CPI (LDF), INC (UDF), IUML (UDF), KC(M) (UDF), BJP (NDA), BDJS (NDA), NCP (varies), RSP (LDF), JD(S). Include name_en, name_ml, abbreviation, coalition, color_hex, founded_year.</div>
+                <div class="task-tags"><span class="ttag p0">P0</span></div>
+              </div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-cb"></div>
+              <div class="task-content">
+                <div class="task-text">Create <code>seed/seed.ts</code> — main seed runner</div>
+                <div class="task-detail">Insert districts first, build slug→id map, insert constituencies with correct district_id FK, insert parties. Use <code>.onConflictDoNothing()</code> so seed is idempotent (safe to run multiple times). Log counts after each step.</div>
+                <div class="task-tags"><span class="ttag p0">P0</span></div>
+              </div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-cb"></div>
+              <div class="task-content">
+                <div class="task-text">Create <code>seed/data/historical_results.ts</code> — election results 1957–2021</div>
+                <div class="task-detail">This is significant data entry work. Source from ECI historical data. At minimum: 2021 and 2016 results for all 140 constituencies (winner name, party, votes, margin, turnout). Full 1957-2021 dataset is P1 — needed for trend charts.</div>
+                <div class="task-tags"><span class="ttag p1">P1</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ SHARED TYPES ══════════════════ -->
+<div class="page" id="page-mod-types">
+  <div class="eyebrow">Layer 1 — Shared Package</div>
+  <h1>Shared <em>Types</em> Module</h1>
+  <p class="lead"><strong>packages/types</strong> — Central TypeScript type definitions shared across the web app, API, and admin panel. These are derived from Drizzle schema inferences but enriched with relational types (e.g., <code>CandidateWithParty</code>).</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--saffron-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--saffron)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+        <div class="mc-meta">
+          <div class="mc-layer" style="color:var(--saffron)">packages/types</div>
+          <div class="mc-title">Shared TypeScript Types</div>
+          <div class="mc-sub">Relational types, API response shapes, enums used across all apps</div>
+        </div>
+        <div class="mc-right">
+          <span class="mc-badge p0">P0</span>
+          <div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div>
+        </div>
+      </div>
+      <div class="mc-body">
+        <div class="task-section">
+          <div class="task-section-title">Type Definition Files</div>
+          <div class="task-list">
+            <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Define base entity types from Drizzle schema (<code>Constituency</code>, <code>Candidate</code>, <code>Party</code>, <code>ElectionResult</code>)</div><div class="task-detail">Re-export Drizzle inferred select/insert types. These are the ground-truth types — all other types extend these.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+            <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Define relational types: <code>CandidateWithParty</code>, <code>CandidateWithConstituency</code>, <code>CandidateFull</code></div><div class="task-detail">CandidateFull includes: candidate fields + party + constituency + district + assets[] + criminalCases[] + electionHistory[]. Used in candidate profile page and admin edit form.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+            <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Define <code>ConstituencyFull</code> type — constituency with candidates, historical results, district</div><div class="task-detail">Used by the constituency detail page. Includes candidates: CandidateWithParty[], historicalResults: ElectionResult[], district: District.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+            <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Define API response wrapper types: <code>ApiResponse&lt;T&gt;</code>, <code>PaginatedResponse&lt;T&gt;</code>, <code>ApiError</code></div><div class="task-detail">ApiResponse: { success: boolean; data: T; message?: string }. PaginatedResponse adds pagination: { page, limit, total, totalPages }. These ensure consistent response shapes across all endpoints.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+            <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Define search result types: <code>SearchResults</code>, <code>CandidateSearchHit</code>, <code>ConstituencySearchHit</code></div><div class="task-detail">Meilisearch results have _formatted (highlighted) fields. Types must include optional _formatted nested object for highlighting support in SearchBar UI.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+            <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Define Phase 2 live result types: <code>LiveResult</code>, <code>ResultsUpdateEvent</code></div><div class="task-detail">LiveResult: constituency slug, leading candidate name+party, votes_so_far, lead_margin, rounds_counted, status, last_updated. ResultsUpdateEvent: { type: 'RESULTS_UPDATE'; data: LiveResult[]; timestamp: Date }.</div><div class="task-tags"><span class="ttag ph2">Phase 2</span></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ UTILS ══════════════════ -->
+<div class="page" id="page-mod-utils">
+  <div class="eyebrow">Layer 1 — Shared Package</div>
+  <h1>Shared <em>Utilities</em> Module</h1>
+  <p class="lead"><strong>packages/utils</strong> — Pure functions used across both frontend and backend. Formatters, slug generators, date helpers, and Kerala-specific utilities. All functions must be pure (no side effects) and fully unit-tested.</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--blue-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+        <div class="mc-meta">
+          <div class="mc-layer" style="color:var(--blue)">packages/utils</div>
+          <div class="mc-title">Shared Utility Functions</div>
+          <div class="mc-sub">Formatters, slug generators, date helpers, INR currency</div>
+        </div>
+        <div class="mc-right"><span class="mc-badge p0">P0</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>formatCrores(n)</code> — formats INR bigint to human readable</div><div class="task-detail">Rules: ≥1 crore → "X.X Cr", ≥1 lakh → "X L", <1 lakh → "₹X,XXX", null/undefined → "Not declared". Used on every candidate card and profile.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>calculateAge(dob: string | Date | null)</code></div><div class="task-detail">Returns age in years as integer, or null if dob is null/undefined. Must handle edge case where birthday hasn't occurred yet this year.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>generateSlug(nameEn: string, constituencySlug: string)</code></div><div class="task-detail">Converts "Pinarayi Vijayan" + "dharmadom" → "pinarayi-vijayan-dharmadom". Strips special chars, lowercases, replaces spaces with hyphens. Must handle names with punctuation (K. Muraleedharan → k-muraleedharan).</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>formatVoteCount(n: number)</code> — Indian number formatting</div><div class="task-detail">Uses Indian numbering system: 1,23,456 (not 123,456). Node: use <code>toLocaleString('en-IN')</code>.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>getPartyColor(coalition: string)</code> and <code>getCoalitionLabel(coalition: string)</code></div><div class="task-detail">Maps coalition codes to hex colors (LDF→#E31E24, UDF→#00BFFF, NDA→#FF6B35, IND→#888888) and display labels. Used in charts, map fills, and party badges.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>calculateElectionCountdown(electionDate: Date)</code></div><div class="task-detail">Returns { days, hours, minutes, seconds, isOver: bool }. Used in the home page countdown timer component. Update the election date constant once announced.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>cn(...classes)</code> — Tailwind class merging helper</div><div class="task-detail">Wrapper around clsx + tailwind-merge. Prevents conflicting Tailwind classes when conditionally applying styles. Used extensively in every component.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>truncate(str: string, max: number)</code> — text truncation with ellipsis</div><div class="task-detail">Truncates at word boundary, not mid-word. Used for candidate bios in card views.</div><div class="task-tags"><span class="ttag p2">P2</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ STATIC DATA ══════════════════ -->
+<div class="page" id="page-mod-data">
+  <div class="eyebrow">Layer 1 — Shared Package</div>
+  <h1>Static <em>Data</em> Module</h1>
+  <p class="lead"><strong>packages/data</strong> — GeoJSON boundary files for all 140 constituencies and 14 districts, plus static lookup data. These are large files that don't change — serve from CDN. The GeoJSON is critical for the Mapbox constituency map.</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--green-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
+        <div class="mc-meta">
+          <div class="mc-layer" style="color:var(--green)">packages/data</div>
+          <div class="mc-title">GeoJSON + Static Data</div>
+          <div class="mc-sub">Constituency boundary files, election date constant, party color mapping</div>
+        </div>
+        <div class="mc-right"><span class="mc-badge p1">P1</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Source Kerala constituency GeoJSON boundary data</div><div class="task-detail">Source from Datameet India open data repository (github.com/datameet/maps). The <code>parliamentary</code> folder has Kerala constituency boundaries. May need to simplify polygons using Mapshaper (tolerance 0.001) to reduce file size from ~20MB to ~2MB.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create per-constituency GeoJSON files (or single FeatureCollection)</div><div class="task-detail">Option A: One big FeatureCollection for the KeralaMap component. Option B: Per-constituency files loaded on-demand in ConstituencyMap. Recommend Option A for the overview map + store per-constituency in DB jsonb field.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>constants/election.ts</code> — election date, phase dates</div><div class="task-detail">Export ELECTION_DATE (2026 — update once announced), RESULT_DATE, NOMINATION_DEADLINE, CAMPAIGN_END_DATE. Used in countdown timer and Phase 2 scraper activation check.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>constants/parties.ts</code> — party color and coalition mapping</div><div class="task-detail">Static record of party abbreviation → { colorHex, coalition, displayName }. Fallback when party data isn't loaded from DB. Must stay in sync with seed/data/parties.ts.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ API SERVER CORE ══════════════════ -->
+<div class="page" id="page-mod-api-server">
+  <div class="eyebrow">Layer 2 — Backend API</div>
+  <h1>API Server <em>Core</em></h1>
+  <p class="lead"><strong>apps/api/src</strong> — Express server entry point, environment config validation (Zod), global middleware stack, and Neon+Drizzle database connection. The skeleton that all other API modules plug into.</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--blue-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+        <div class="mc-meta">
+          <div class="mc-layer" style="color:var(--blue)">apps/api</div>
+          <div class="mc-title">Express Server Core</div>
+          <div class="mc-sub">Server entry, env config, middleware pipeline, DB connection, error handling</div>
+        </div>
+        <div class="mc-right"><span class="mc-badge p0">P0 — Build Second</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>config/env.ts</code> — Zod-validated environment variables</div><div class="task-detail">Validate all required env vars at startup. App must crash with descriptive error if any required variable is missing. Variables: PORT, NODE_ENV, DATABASE_URL, CF_ACCOUNT_ID, CF_R2_ACCESS_KEY, CF_R2_SECRET_KEY, CF_R2_BUCKET, CF_R2_PUBLIC_URL, MEILISEARCH_HOST, MEILISEARCH_MASTER_KEY, ADMIN_JWT_SECRET (min 32 chars), ADMIN_PASSWORD_HASH, RATE_LIMIT_WINDOW_MS, RATE_LIMIT_MAX, ALLOWED_ORIGINS, RESEND_API_KEY (optional), SCRAPER_ENABLED, SCRAPER_INTERVAL_MS, CEO_KERALA_URL.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>config/db.ts</code> — Neon serverless + Drizzle connection</div><div class="task-detail">Use <code>@neondatabase/serverless</code> neon() function + <code>drizzle-orm/neon-http</code>. Enable Drizzle logger in development. Export <code>db</code> singleton. This file is imported by every service file.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>config/r2.ts</code> — Cloudflare R2 S3 client</div><div class="task-detail">S3Client from @aws-sdk/client-s3 with custom endpoint <code>https://{CF_ACCOUNT_ID}.r2.cloudflarestorage.com</code> and region 'auto'. Export r2Client singleton.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>middleware/errorHandler.ts</code> — AppError class + global error handler</div><div class="task-detail">AppError class with message, statusCode, code. errorHandler middleware: handle ZodError → 422, AppError → statusCode, Postgres 23505 → 409, unknown → 500. Always return { success: false, error, code } JSON.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>middleware/validate.ts</code> — Zod request validation wrappers</div><div class="task-detail">validateBody(schema): validates req.body, calls next(zodError) on failure. validateQuery(schema): validates req.query, stores result in req.parsedQuery. Both replace raw values with parsed (coerced/sanitized) data.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>src/index.ts</code> — Express app with full middleware stack</div><div class="task-detail">Order: helmet() → cors() → rateLimit('/api/*') → compression() → express.json(10mb) → express.urlencoded() → morgan() → route registrations → notFoundHandler → errorHandler. Add /health endpoint. Listen on env.PORT.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>apps/api/.env.example</code> — example environment file for contributors</div><div class="task-detail">All variables with placeholder values and comments explaining each one. Include instructions to never commit the real .env file.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ AUTH MODULE ══════════════════ -->
+<div class="page" id="page-mod-api-auth">
+  <div class="eyebrow">Layer 2 — Backend API</div>
+  <h1>Auth <em>Module</em></h1>
+  <p class="lead"><strong>apps/api/src/modules/auth</strong> — Single admin JWT authentication. Login endpoint, token verification, and <code>requireAdmin</code> middleware used on all write endpoints.</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--red-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+        <div class="mc-meta">
+          <div class="mc-layer" style="color:var(--red)">modules/auth</div>
+          <div class="mc-title">Authentication Module</div>
+          <div class="mc-sub">JWT admin login, requireAdmin middleware, token generation</div>
+        </div>
+        <div class="mc-right"><span class="mc-badge p0">P0</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>auth.service.ts</code> — adminLogin function</div><div class="task-detail">bcrypt.compare password against ADMIN_PASSWORD_HASH from env. On success: jwt.sign({ role: 'admin' }, ADMIN_JWT_SECRET, expiresIn: '12h'). On failure: throw AppError(401). Include utility comment for generating ADMIN_PASSWORD_HASH: <code>node -e "require('bcryptjs').hash('pass', 12).then(console.log)"</code></div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>middleware/auth.ts</code> — requireAdmin Express middleware</div><div class="task-detail">Read Authorization: Bearer header. Verify JWT with ADMIN_JWT_SECRET. Check payload.role === 'admin'. Handle TokenExpiredError → 401 TOKEN_EXPIRED. Handle invalid → 401. Export requireAdmin function.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create auth routes: POST /api/v1/auth/login and GET /api/v1/auth/verify</div><div class="task-detail">POST /login: accepts { password }, returns { token, expiresIn: '12h' }. GET /verify: requires Bearer JWT, returns { valid: true, role }. Both return JSON error on failure.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ CONSTITUENCIES API ══════════════════ -->
+<div class="page" id="page-mod-api-const">
+  <div class="eyebrow">Layer 2 — Backend API</div>
+  <h1>Constituencies <em>API Module</em></h1>
+  <p class="lead"><strong>apps/api/src/modules/constituencies</strong> — CRUD for constituencies and districts. The most-queried module — every page load of a constituency page hits this.</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--blue-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+        <div class="mc-meta"><div class="mc-layer" style="color:var(--blue)">modules/constituencies</div><div class="mc-title">Constituencies API Module</div><div class="mc-sub">Routes, controller, service, Zod schemas for constituency + district endpoints</div></div>
+        <div class="mc-right"><span class="mc-badge p0">P0</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>constituencies.routes.ts</code> — register all 8 routes</div><div class="task-detail">GET /constituencies (list), GET /constituencies/:slug (detail), GET /constituencies/:slug/results (historical), GET /constituencies/:slug/candidates (2026 candidates), GET /districts, GET /districts/:slug/constituencies, POST /constituencies (admin), PUT /constituencies/:id (admin).</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>constituencies.service.ts</code> — all DB query functions</div><div class="task-detail">listConstituencies(query): paginated, filterable by district/category/coalition. getConstituencyBySlug(slug): returns full object with district, candidates, historicalResults. getConstituencyResults(slug, fromYear?, toYear?). getConstituencyById(id). createConstituency(data). updateConstituency(id, data).</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>constituencies.controller.ts</code> — request/response handling</div><div class="task-detail">Each handler: parse params, call service, wrap in ApiResponse envelope { success: true, data }, return with correct HTTP status. Use next(err) to delegate errors to global errorHandler.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>constituencies.schema.ts</code> — Zod validation schemas</div><div class="task-detail">listConstituenciesQuerySchema: page, limit, district, category, coalition, sort. updateConstituencySchema: description, totalVoters2026, maleVoters, femaleVoters, geojson (optional). Use .strict() to reject unknown keys.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Implement district routes (GET /districts and GET /districts/:slug/constituencies)</div><div class="task-detail">listDistricts(): returns all 14 with constituency count. getDistrictConstituencies(slug): returns all constituencies in that district. These are used by the district overview page and the constituency filter dropdown.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Trigger cache revalidation after admin updates a constituency</div><div class="task-detail">After PUT /constituencies/:id, POST to Next.js /api/revalidate endpoint with { type: 'constituency', slug }. Requires REVALIDATION_SECRET in env. This ensures the SSG page is regenerated on next request.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ CANDIDATES API ══════════════════ -->
+<div class="page" id="page-mod-api-cand">
+  <div class="eyebrow">Layer 2 — Backend API</div>
+  <h1>Candidates <em>API Module</em></h1>
+  <p class="lead"><strong>apps/api/src/modules/candidates</strong> — The most complex API module. Handles candidate profiles, asset details, criminal cases, election history, bulk import, and individual CRUD.</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--saffron-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--saffron)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <div class="mc-meta"><div class="mc-layer" style="color:var(--saffron)">modules/candidates</div><div class="mc-title">Candidates API Module</div><div class="mc-sub">Full candidate CRUD, assets, criminal cases, history, CSV import</div></div>
+        <div class="mc-right"><span class="mc-badge p0">P0</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>candidates.routes.ts</code> — all 7 endpoints</div><div class="task-detail">GET /candidates (list+filter), GET /candidates/:slug (full profile), GET /candidates/:slug/history (past elections), POST /candidates (admin), PUT /candidates/:id (admin), POST /candidates/import (admin CSV), POST /upload/candidate-photo (admin).</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>candidates.service.ts</code> — listCandidates with full filter/sort/pagination</div><div class="task-detail">Filters: q (ILIKE name_en), party (party.slug), district (constituency.district.slug), gender, isIncumbent, hasCriminalCases (criminal_cases > 0). Sort: name (asc), assets (desc), terms (desc). Select only needed columns to avoid transferring bio/geojson on list views. Use Promise.all for parallel count + data queries.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create getCandidateBySlug() — full profile with all relations in parallel</div><div class="task-detail">Base query: candidate + party + constituency + district (single query). Then Promise.all([candidateAssets, criminalCases, electionHistory]). Merge and return. Keep relations parallel to minimize latency.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>candidates.schema.ts</code> — createCandidateSchema and listCandidatesQuerySchema</div><div class="task-detail">createCandidateSchema: all fields with proper types and validation rules. listCandidatesQuerySchema: page, limit, q, party, district, gender, isIncumbent, hasCriminalCases, sort. updateCandidateSchema = createCandidateSchema.partial().</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>candidates.import.ts</code> — CSV import service using Papaparse</div><div class="task-detail">Parse CSV with Papaparse. Pre-load constituency slug→id and party slug→id maps. Validate each row with Zod csvRowSchema. Collect errors with row numbers. Only insert if zero validation errors — return error details if any. Generate slug from nameEn + constituencySlug. Use .onConflictDoNothing().</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Add POST /candidates/:id/assets and POST /candidates/:id/criminal-cases endpoints</div><div class="task-detail">Separate endpoints for adding detailed asset records and criminal case records. Admin only. Also add DELETE for removing incorrect entries. Update denormalized criminal_cases count on candidates table after any change.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ PARTIES API ══════════════════ -->
+<div class="page" id="page-mod-api-party">
+  <div class="eyebrow">Layer 2 — Backend API</div>
+  <h1>Parties & Results <em>API Module</em></h1>
+  <p class="lead"><strong>apps/api/src/modules/parties</strong> + <strong>modules/results</strong> + <strong>modules/stats</strong> — Party information, historical results querying, and platform statistics.</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--green-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="mc-meta"><div class="mc-layer" style="color:var(--green)">modules/parties + results + stats</div><div class="mc-title">Parties, Results & Stats API</div><div class="mc-sub">Party data, historical result queries, platform summary stats</div></div>
+        <div class="mc-right"><span class="mc-badge p1">P1</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">GET /parties — list all parties with 2026 candidate counts</div><div class="task-detail">Return: party fields + candidate count for election_year=2026 (subquery or join). Group by coalition for frontend coalition section. Sort by candidate count desc.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">GET /parties/:slug — party detail with all 2026 candidates + historical performance</div><div class="task-detail">Fetch party + all candidates (with photos, constituency names). Aggregate historical seat counts per year from election_results. Aggregate vote share per year. Return structured object for party detail page.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">GET /results/:year — all results for a given election year</div><div class="task-detail">Optional ?district= filter. Returns winner per constituency with votes, margin, party. Joins with constituencies and parties tables. Used for the historical data page year selector.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">GET /stats/summary — platform statistics for home page</div><div class="task-detail">Return: total candidates (2026), total constituencies (140, static), total parties, data completeness % (candidates with photo / total candidates). Cache response for 1 hour — this is called on every home page load.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">POST /parties (admin) — create new party record</div><div class="task-detail">Needed as new minor parties announce candidacies. Validate with createPartySchema. After creation, sync to Meilisearch parties index.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ SEARCH MODULE ══════════════════ -->
+<div class="page" id="page-mod-api-search">
+  <div class="eyebrow">Layer 2 — Backend API</div>
+  <h1>Search <em>Module</em></h1>
+  <p class="lead"><strong>apps/api/src/modules/search</strong> — Meilisearch integration. Index configuration, data synchronisation, and the unified search endpoint that powers the SearchBar UI.</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--purple-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <div class="mc-meta"><div class="mc-layer" style="color:var(--purple)">modules/search</div><div class="mc-title">Search Module (Meilisearch)</div><div class="mc-sub">Index config, data sync, unified /search endpoint, Malayalam support</div></div>
+        <div class="mc-right"><span class="mc-badge p1">P1</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>search.service.ts</code> — Meilisearch client + configureCandidatesIndex()</div><div class="task-detail">Configure searchableAttributes (nameEn, nameMl, party.nameEn, constituency.nameEn, profession), filterableAttributes (district, party.slug, coalition, gender, isIncumbent, criminalCases, nominationStatus), sortableAttributes (nameEn, termsServed, totalAssetsInr). Enable typo tolerance (minWordSizeForTypos: { oneTypo: 4, twoTypos: 8 }).</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create configureConstituenciesIndex() and configurePartiesIndex()</div><div class="task-detail">Constituencies: searchable (nameEn, nameMl, description, district.nameEn), filterable (district, category), sortable (number, nameEn). Parties: searchable (nameEn, nameMl, abbreviation, ideology), filterable (coalition), sortable (nameEn).</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create syncCandidatesToSearch(), syncConstituenciesToSearch(), syncPartiesToSearch()</div><div class="task-detail">Fetch all records from DB with their relations (party, constituency, district). Transform to flat objects suitable for Meilisearch. Use addDocuments() with primaryKey: 'id'. Run as pnpm script: <code>pnpm search:sync</code>. Also call these from the API after any create/update operation.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create GET /search endpoint — unified multi-index search</div><div class="task-detail">Query param: q (required), type (optional: candidates|constituencies|parties|all). Use Meilisearch multiSearch() for parallel queries across all 3 indexes. Return grouped: { candidates: [...], constituencies: [...], parties: [...] }. Apply highlight tags &lt;mark&gt;/&lt;/mark&gt; on nameEn and nameMl. Limit to 5 per index in the quick-search modal, 20+ on full /search page.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create npm script <code>search:configure</code> and <code>search:sync</code></div><div class="task-detail">search:configure: run all three configureXIndex() functions. search:sync: run all three syncXToSearch() functions. Must be run after first deploy and after bulk candidate imports. Add to post-deploy checklist.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ UPLOAD MODULE ══════════════════ -->
+<div class="page" id="page-mod-api-upload">
+  <div class="eyebrow">Layer 2 — Backend API</div>
+  <h1>Upload Module <em>(Cloudflare R2)</em></h1>
+  <p class="lead"><strong>apps/api/src/modules/upload</strong> — Multipart photo upload, Sharp image optimization (resize + WebP conversion), and storage to Cloudflare R2. Admin-only.</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--gold-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg></div>
+        <div class="mc-meta"><div class="mc-layer" style="color:var(--gold)">modules/upload</div><div class="mc-title">File Upload Module</div><div class="mc-sub">Multer multipart handling, Sharp WebP resize, R2 PutObject, CDN URL return</div></div>
+        <div class="mc-right"><span class="mc-badge p0">P0</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>upload.service.ts</code> — uploadCandidatePhoto(buffer, originalName, candidateSlug)</div><div class="task-detail">1. Validate buffer.byteLength ≤ 5MB. 2. sharp(buffer).resize(600, 800, { fit: 'cover', position: 'top' }).webp({ quality: 85 }).toBuffer(). 3. PutObjectCommand with key = candidates/{slug}/photo-{uuid}.webp, ContentType: image/webp, CacheControl: public max-age=31536000 immutable. 4. Return CF_R2_PUBLIC_URL + key.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create uploadPartyLogo(buffer, partySlug) function</div><div class="task-detail">Resize to 200×200, fit: 'contain', transparent background. Convert to WebP quality 90. Key: parties/{slug}/logo.webp (no UUID — deterministic key so re-upload replaces old logo).</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>upload.routes.ts</code> with Multer memory storage</div><div class="task-detail">POST /upload/candidate-photo: requireAdmin → multer.single('photo') → uploadCandidatePhoto → return { url }. POST /upload/party-logo: requireAdmin → multer.single('logo') → uploadPartyLogo → return { url }. Multer fileFilter: only accept image/jpeg, image/png, image/webp.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ FRONTEND PAGES ══════════════════ -->
+<div class="page" id="page-mod-fe-pages">
+  <div class="eyebrow">Layer 3 — Frontend (Next.js 14)</div>
+  <h1>Pages & <em>Routing</em></h1>
+  <p class="lead"><strong>apps/web/app/</strong> — All 12 Next.js App Router pages with SSG, ISR, and SSR strategies. Includes metadata generation, generateStaticParams for bulk page generation, and the on-demand revalidation API route.</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--saffron-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--saffron)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+        <div class="mc-meta"><div class="mc-layer" style="color:var(--saffron)">apps/web/app</div><div class="mc-title">Next.js Pages & Routing</div><div class="mc-sub">12 routes, SSG/ISR/SSR config, metadata, generateStaticParams, layout files</div></div>
+        <div class="mc-right"><span class="mc-badge p0">P0</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create root <code>layout.tsx</code> — global HTML shell, font loading, header, footer</div><div class="task-detail">Load Playfair Display (700/800/900), DM Sans (300/400/500/600), JetBrains Mono (400/500), Noto Sans Malayalam via next/font/google. Include global CSS variables. Import SearchBar for global keyboard shortcut. Add Plausible analytics script tag.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>(home)/page.tsx</code> — home page (SSG, ISR 1h)</div><div class="task-detail">Sections: Hero with election countdown timer + quick SearchBar, Stats bar (total candidates, constituencies, parties), Featured Constituencies grid (3-4 high-profile ones), Coalition seat chart from 2021, CTA "Find Your Constituency". Fetch summary stats from /api/v1/stats/summary at build time.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>constituencies/page.tsx</code> — all constituencies list (SSG, ISR 6h)</div><div class="task-detail">Grid of all 140 ConstituencyCards. Client-side filter controls for district, category, party (filter the pre-fetched array). Map toggle button that shows KeralaMap. Export revalidate = 21600.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>constituencies/[slug]/page.tsx</code> — single constituency (SSG × 140, ISR 24h)</div><div class="task-detail">generateStaticParams(): fetch all 140 slugs. generateMetadata(): unique title/description/OG image per constituency. Page sections: ConstituencyHero, CandidateGrid (2026), VoteShareChart, HistoricalResults, ConstituencyMap, StatsGrid. export revalidate = 86400.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>candidates/[slug]/page.tsx</code> — candidate profile (SSG × 1000+, ISR 24h)</div><div class="task-detail">generateStaticParams(): fetch all accepted candidate slugs. generateMetadata(): candidate name, party, constituency in title. Page: CandidateProfile component with photo, party badge, bio, tabbed sections (Bio/Assets/Criminal Cases/History), affidavit PDF link.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>parties/page.tsx</code> and <code>parties/[slug]/page.tsx</code></div><div class="task-detail">List page: grid of PartyCards with coalition grouping. Detail page: party history, all 2026 candidates with photos, historical seat chart (Recharts), vote share trend chart, district-wise map fill.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>districts/[slug]/page.tsx</code> — district overview (SSG × 14)</div><div class="task-detail">All constituencies in the district with ConstituencyCard grid. Party distribution donut chart. Total voter count. Historical winner-by-party analysis. Map showing the district's constituencies.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>search/page.tsx</code> — full search results page (SSR, dynamic)</div><div class="task-detail">Read ?q= from searchParams. Call Meilisearch with full 20-per-index results. Show tabbed results: All / Candidates / Constituencies / Parties. Filter sidebar with district, party, gender dropdowns. No SSG — fully dynamic.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>compare/page.tsx</code> — candidate comparison tool (SSR)</div><div class="task-detail">Two search/select inputs for picking candidates. Side-by-side comparison table: photo, party, assets, criminal cases, education, past wins. URL-driven state (?a=slug1&b=slug2) so comparisons are shareable.</div><div class="task-tags"><span class="ttag p2">P2</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>results/page.tsx</code> — Phase 2 live results (CSR, WebSocket)</div><div class="task-detail">Client-only page (no SSR). Connects to Socket.io. Shows all 140 constituencies with live leader, vote count, rounds. District filter. Coalition tracker sidebar showing total leads per alliance. Must include "Connecting..." and "Disconnected" states.</div><div class="task-tags"><span class="ttag ph2">Phase 2</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>app/api/revalidate/route.ts</code> — on-demand ISR revalidation webhook</div><div class="task-detail">POST endpoint. Verify REVALIDATION_SECRET header. Accept { type: 'candidate'|'constituency'|'party'|'all', slug?: string }. Call revalidatePath() for the relevant page(s). Return { revalidated: true }. Called by the backend after admin edits.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>app/api/og/constituency/[slug]/route.tsx</code> — dynamic OG image generation</div><div class="task-detail">Use @vercel/og with ImageResponse. Show constituency name (big), district, number, 2021 winner party color background. Used in generateMetadata openGraph.images for rich social sharing previews.</div><div class="task-tags"><span class="ttag p2">P2</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ CANDIDATE COMPONENTS ══════════════════ -->
+<div class="page" id="page-mod-fe-candidate">
+  <div class="eyebrow">Layer 3 — Frontend Components</div>
+  <h1>Candidate <em>Components</em></h1>
+  <p class="lead"><strong>apps/web/components/candidate/</strong> — All React components related to candidates: Card (used in grids), Profile (full page layout), Grid (collection container), History table (past elections).</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--gold-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <div class="mc-meta"><div class="mc-layer" style="color:var(--gold)">components/candidate</div><div class="mc-title">Candidate Components</div><div class="mc-sub">CandidateCard, CandidateProfile, CandidateGrid, CandidateHistory</div></div>
+        <div class="mc-right"><span class="mc-badge p0">P0</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>CandidateCard</code> — 3 variants: default, compact, featured</div><div class="task-detail">Props: candidate (Candidate type), variant, showConstituency, showAssets, showCriminalBadge, priority. default: portrait aspect ratio photo, party badge, name EN+ML, age, terms, assets/criminal row. compact: horizontal layout, 64px square photo. featured: tall photo, larger typography. Handle missing photo gracefully with silhouette SVG. Party color strip at bottom of photo. Incumbent badge top-left. Entire card is Next.js Link → /candidates/[slug].</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>CandidateGrid</code> — responsive grid with incumbent-first sort</div><div class="task-detail">Props: candidates, columns (default 4), showPartyBadge. Sorts so incumbent appears first with special border/badge. Handles empty state ("No candidates announced yet"). Loading skeleton using the same card dimensions.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>CandidateProfile</code> — full candidate detail layout</div><div class="task-detail">Two-column grid (photo column + info column) on desktop, stacked on mobile. Photo: 3:4 aspect, zoom on hover, party color strip, social links below. Info: party badge, name EN (Playfair Display large), name ML (Noto Sans Malayalam), InfoGrid with Constituency/Age/Education/Profession/Terms. Tag row: AssetTag + CriminalCaseTag + IncumbentTag. Below: Tabs component with Bio/Assets/Criminal Cases/History panels. Affidavit PDF button at bottom.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>CandidateHistory</code> — past elections table</div><div class="task-detail">Shows all years candidate contested, constituency name, party, votes received, position, won/lost status. Won rows highlighted green, lost rows neutral. Link to constituency page for each row. Used in CandidateProfile History tab.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ CONSTITUENCY COMPONENTS ══════════════════ -->
+<div class="page" id="page-mod-fe-constituency">
+  <div class="eyebrow">Layer 3 — Frontend Components</div>
+  <h1>Constituency <em>Components</em></h1>
+  <p class="lead"><strong>apps/web/components/constituency/</strong> — ConstituencyCard, ConstituencyHero, and HistoricalResults table. These are Server Components unless they need interactivity.</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--blue-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></div>
+        <div class="mc-meta"><div class="mc-layer" style="color:var(--blue)">components/constituency</div><div class="mc-title">Constituency Components</div><div class="mc-sub">ConstituencyCard, ConstituencyHero, HistoricalResults, ConstituencyStatsGrid</div></div>
+        <div class="mc-right"><span class="mc-badge p0">P0</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>ConstituencyCard</code> — used in grid lists</div><div class="task-detail">Props: constituency (with district + last election result). Shows: constituency number badge, name EN + ML, district chip, category badge (SC/ST/General), party holder badge with color, voter count, candidate count for 2026. Card links to /constituencies/[slug]. Hover: translate up + saffron border.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>ConstituencyHero</code> — full-width page header</div><div class="task-detail">Large constituency name in Playfair Display. Malayalam name below in smaller Noto Sans Malayalam. District badge + constituency number + category badge. Voter count pill. Party color strip at very bottom of hero (2021 winner's coalition color). Election countdown timer if election date set. Background: subtle geometric pattern or gradient mesh in Kerala colors.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>HistoricalResults</code> — election results table going back to 1957</div><div class="task-detail">Server Component. Columns: Year, Winner, Party, Votes, Runner-Up (name only), Margin, Turnout %. Sort by year desc (most recent first). Expandable rows: click any row to expand and see all candidates for that year with their vote counts. Alternate row backgrounds for readability. Party badge in Party column.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>ConstituencyStatsGrid</code> — voter demographic stats</div><div class="task-detail">Stat cards grid: Total Voters (2026), Male Voters, Female Voters, Third Gender, Polling Stations, Area sq km, Literacy Rate. Source data from constituency record. Shows 2021 vs 2026 comparison where available.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ CHARTS & MAPS ══════════════════ -->
+<div class="page" id="page-mod-fe-charts">
+  <div class="eyebrow">Layer 3 — Data Visualization</div>
+  <h1>Charts <em>& Maps</em></h1>
+  <p class="lead"><strong>apps/web/components/charts/</strong> and <strong>components/map/</strong> — All data visualizations. Recharts for vote share + turnout charts. Mapbox GL JS for interactive Kerala constituency map. All Client Components.</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--green-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+        <div class="mc-meta"><div class="mc-layer" style="color:var(--green)">components/charts + map</div><div class="mc-title">Charts & Maps</div><div class="mc-sub">VoteShareChart, TurnoutChart, SeatDistributionChart, KeralaMap, ConstituencyMap</div></div>
+        <div class="mc-right"><span class="mc-badge p1">P1</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>VoteShareChart</code> — Recharts LineChart of party vote % over election years</div><div class="task-detail">"use client". Transform raw ElectionResult[] into { year, LDF: %, UDF: %, NDA: % } array. ResponsiveContainer → LineChart. XAxis: year, YAxis: 0-100 with % formatter. Tooltip: custom showing all parties. Legend: clickable to toggle series. Apply PARTY_COLORS mapping. connectNulls: true for years with missing data. Lazy load: dynamic(() => import('recharts'), { ssr: false }).</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>TurnoutTrendChart</code> — BarChart of voter turnout by year</div><div class="task-detail">Bar chart showing voter turnout % per election year. Add a ReferenceLine at state average turnout. Color bars: above average = green, below = red/orange. Tooltip shows exact % + voter counts.</div><div class="task-tags"><span class="ttag p2">P2</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>SeatDistributionChart</code> — PieChart/DonutChart of coalition seats</div><div class="task-detail">Shows LDF/UDF/NDA seat counts. Animated on mount. Clicking a segment navigates to that coalition's party page. Shows total seats in center (140). Used on home page and historical page.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>KeralaMap</code> — Mapbox GL JS interactive state map</div><div class="task-detail">"use client". useRef for map container + map instance. On load: addSource with constituencies GeoJSON FeatureCollection. addLayer fill (color from coalition, opacity 0.65). addLayer outline (white, 0.8px). Click handler: navigate to /constituencies/[slug]. Mouseenter/leave: pointer cursor. Props: colorBy ('party'|'turnout'|'margin'), highlightSlug, onConstituencyClick. Map constrained to Kerala bounds. Center: [76.27, 10.85], zoom 6.8.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>ConstituencyMap</code> — single constituency boundary map</div><div class="task-detail">Same Mapbox setup but zoomed in to single constituency. Shows boundary in 2021 winner's coalition color. Shows neighboring constituency names as labels. "View on full map" link button that opens KeralaMap with this constituency highlighted.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ SEARCH UI ══════════════════ -->
+<div class="page" id="page-mod-fe-search">
+  <div class="eyebrow">Layer 3 — Frontend</div>
+  <h1>Search <em>UI</em></h1>
+  <p class="lead"><strong>apps/web/components/search/</strong> — Global search bar with keyboard shortcut (⌘K), modal overlay, debounced Meilisearch queries, and grouped results with highlighting.</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--purple-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <div class="mc-meta"><div class="mc-layer" style="color:var(--purple)">components/search</div><div class="mc-title">Search UI</div><div class="mc-sub">SearchBar trigger, modal overlay, debounced queries, grouped results with highlights</div></div>
+        <div class="mc-right"><span class="mc-badge p0">P0</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>SearchBar</code> — trigger button + modal + input + results</div><div class="task-detail">"use client". State: open, query, results, loading. Keyboard: ⌘K/Ctrl+K to open, Escape to close. Input: ref for focus, onChange calls debounced search (300ms). Modal: fixed overlay backdrop + white rounded panel (max-w-2xl). Input at top, SearchResults below. Close on backdrop click. Keyboard navigation through results (↑↓ arrows, Enter to navigate).</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>SearchResults</code> — grouped results with highlight rendering</div><div class="task-detail">Three sections: Candidates, Constituencies, Parties. Each section header shows count. Each result item: icon, highlighted name (dangerouslySetInnerHTML for &lt;mark&gt; tags), subtitle. Loading skeleton: 3 placeholder rows. Empty state: "No results for X". On item click: navigate to result URL, close modal.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>app/api/search/route.ts</code> — Next.js API route proxying to Meilisearch</div><div class="task-detail">GET /api/search?q= — call the backend /api/v1/search endpoint (or call Meilisearch directly from the frontend using the public search key). Return grouped results. Add cache header: no-store (search results are always fresh).</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ UI LIBRARY ══════════════════ -->
+<div class="page" id="page-mod-fe-ui">
+  <div class="eyebrow">Layer 3 — UI Component Library</div>
+  <h1>UI Component <em>Library</em></h1>
+  <p class="lead"><strong>apps/web/components/ui/</strong> — Primitive UI building blocks used everywhere. PartyBadge, AssetTag, CriminalCaseTag, IncumbentTag, Tabs, CountdownTimer, InfoGrid, Skeleton loaders.</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--teal-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41"/><path d="M4.93 4.93l1.41 1.41"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg></div>
+        <div class="mc-meta"><div class="mc-layer" style="color:var(--teal)">components/ui</div><div class="mc-title">UI Component Library</div><div class="mc-sub">Primitives: PartyBadge, AssetTag, CriminalCaseTag, Tabs, Skeleton, CountdownTimer</div></div>
+        <div class="mc-right"><span class="mc-badge p0">P0</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>PartyBadge</code> — inline party pill with coalition color</div><div class="task-detail">Props: party (Party type), size (xs/sm/md/lg), showFullName (bool). Renders: colored dot + party abbreviation. Large size shows full party name. Color from party.colorHex with fallback to PARTY_COLORS[coalition]. Four sizes: xs (tiny, for table cells), sm (default, cards), md (hero areas), lg (candidate profile header).</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>CriminalCaseTag</code> — warning badge for criminal cases</div><div class="task-detail">Props: cases (int), large (bool). 0 cases: green checkmark + "No Cases". 1+ non-serious: orange badge + "X Cases". Serious cases: red badge + "X Serious Cases". large prop: show full text, small: just number or icon. Links to criminal cases section of candidate profile.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>AssetTag</code> — declared assets summary pill</div><div class="task-detail">Props: value (bigint|null). null/undefined → "Assets N/A" (gray). >0 → "₹X Cr" in green-ish. Uses formatCrores() from utils. Tooltip on hover shows full number.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>Tabs</code> — controlled tab panel component</div><div class="task-detail">Props: tabs (array of { id, label, badge? }), defaultTab. Renders tab bar + content panel. Tab with badge: shows count in small circle. Keyboard accessible (arrow key navigation). Used in CandidateProfile for Bio/Assets/Cases/History.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>CountdownTimer</code> — election day countdown</div><div class="task-detail">"use client". Uses useEffect + setInterval (1s). Reads ELECTION_DATE from constants. Shows Days, Hours, Minutes, Seconds in large Playfair Display numbers. When over: shows "Voting in Progress" or "Results Day" message.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build skeleton loading components for each card type</div><div class="task-detail">CandidateCardSkeleton, ConstituencyCardSkeleton, ResultCardSkeleton. Use Tailwind animate-pulse with rounded gray blocks matching the real component's layout. Used during client-side data fetching states.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>AssetBreakdown</code> — detailed asset listing component</div><div class="task-detail">Shows movable vs immovable breakdown with individual line items from candidate_assets table. Visual bar chart showing proportion. Total at bottom. Source citation for each item. Used in CandidateProfile Assets tab.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ ADMIN PANEL ══════════════════ -->
+<div class="page" id="page-mod-admin">
+  <div class="eyebrow">Layer 4 — Admin Panel</div>
+  <h1>Admin <em>Dashboard</em></h1>
+  <p class="lead"><strong>apps/admin/</strong> — Internal Next.js app at admin.kerala2026.in. Protected by JWT middleware. Used by constituency coordinators to add, edit, and verify candidate data before it goes live.</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--teal-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+        <div class="mc-meta"><div class="mc-layer" style="color:var(--teal)">apps/admin</div><div class="mc-title">Admin Panel</div><div class="mc-sub">Login, dashboard, candidate CRUD forms, constituency management, photo upload</div></div>
+        <div class="mc-right"><span class="mc-badge p0">P0</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>middleware.ts</code> — JWT route protection using jose library</div><div class="task-detail">Exempt /login and /api/auth/login. All other routes: read admin_token cookie, jwtVerify against ADMIN_JWT_SECRET using jose (edge-compatible). Redirect to /login on failure, delete stale cookie.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>/login</code> page — password form, store JWT in httpOnly cookie</div><div class="task-detail">Simple centered form. POST to /api/v1/auth/login, receive token, store in httpOnly cookie (admin_token) with SameSite=strict. Redirect to /admin on success. Show error on wrong password.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>/admin</code> dashboard — data completeness overview</div><div class="task-detail">Table per district: district name, constituency count, candidates entered, candidates with photos, data completeness %. Quick-links to constituencies missing data. Recently updated records list. Total stats header.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>/admin/candidates/new</code> — add candidate form</div><div class="task-detail">Multi-step or single long form. Step 1: Basic info (name EN+ML, constituency select, party select, DOB, gender). Step 2: Bio info (education, profession, bio text). Step 3: Electoral (terms served, is incumbent, nomination status). Step 4: Financial (total assets, liabilities, affidavit URL). Step 5: Photo upload (drag-drop, preview, crop). Submit → POST /api/v1/candidates.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>/admin/candidates/[id]/edit</code> — pre-filled edit form</div><div class="task-detail">Fetches existing candidate data. Same form as /new but pre-populated. Photo shows existing photo with "Replace" button. Shows last_updated_by and when. After save → PUT /api/v1/candidates/:id → trigger revalidation.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>/admin/candidates</code> — candidate list table</div><div class="task-detail">Table with: thumbnail photo, name, constituency, party, nomination status badge, data completeness indicator (has photo? has bio? has assets?), edit button, delete button (with confirm dialog). Filter by district + constituency. Searchable by name. Sortable columns.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>/admin/constituencies</code> — constituency edit (voter counts, description)</div><div class="task-detail">Table of all 140 with edit-in-place for total_voters_2026, male_voters, female_voters. Textarea for description. GeoJSON upload for boundary update. Changes trigger ISR revalidation.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>/admin/parties</code> — party management</div><div class="task-detail">Table of all parties. Edit: color hex (color picker), logo upload, website URL, ideology text. Add new party form. Coalition assignment dropdown. Used when new small parties announce candidacies.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ CSV IMPORT ══════════════════ -->
+<div class="page" id="page-mod-csv">
+  <div class="eyebrow">Layer 4 — Admin Panel</div>
+  <h1>CSV Data <em>Import System</em></h1>
+  <p class="lead"><strong>apps/admin/app/import/</strong> — Bulk candidate data import via CSV. Drag-drop file upload, parse preview, validation error display, and confirmed insert. Critical for efficiently entering hundreds of candidates.</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--gold-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        <div class="mc-meta"><div class="mc-layer" style="color:var(--gold)">admin/import</div><div class="mc-title">CSV Import System</div><div class="mc-sub">Papaparse CSV parsing, Zod row validation, error preview, bulk DB insert</div></div>
+        <div class="mc-right"><span class="mc-badge p0">P0</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create CSV template download — candidates import format</div><div class="task-detail">Provide downloadable CSV template with correct headers: name_en, name_ml, constituency_slug, party_slug, dob (YYYY-MM-DD), gender, education, profession, is_incumbent, terms_served, criminal_cases, total_assets_inr, total_liabilities_inr, affidavit_url, nomination_status. Include a row of example data.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build import page: drag-drop upload → parse → preview → validate → confirm</div><div class="task-detail">Step 1: Drag-drop zone or click-to-browse for CSV file. Step 2: Parse with Papaparse client-side, show first 10 rows preview. Step 3: POST to /api/v1/candidates/import — backend validates all rows. Step 4: Show validation errors table (row number, field, issue). Step 5: If no errors, confirm button triggers actual insert. Show success count.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create CSV import for historical election results</div><div class="task-detail">Separate import flow for election_results table. Format: constituency_slug, election_year, candidate_name, party_slug, votes_received, position, is_winner, winning_margin, total_votes_polled, voter_turnout_pct. Validate: constituency_slug and party_slug must exist. Critical for populating 1957-2021 historical data.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ SCRAPER ══════════════════ -->
+<div class="page" id="page-mod-scraper">
+  <div class="eyebrow">Layer 5 — Phase 2</div>
+  <h1>Live Results <em>Scraper</em></h1>
+  <p class="lead"><strong>apps/scraper/</strong> — Separate service, disabled until election result day. Puppeteer + Cheerio scraping from Kerala CEO website and ECI results portal. 60-second interval scheduler. Upserts live_results table and broadcasts via WebSocket.</p>
+
+  <div class="note-box"><strong>Phase 2 Only:</strong> Keep <code>SCRAPER_ENABLED=false</code> until result day. The scraper service can be built and tested in a staging environment before then using the official 2021 results page as a test target.</div>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--purple-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <div class="mc-meta"><div class="mc-layer" style="color:var(--purple)">apps/scraper</div><div class="mc-title">Live Results Scraper</div><div class="mc-sub">Puppeteer navigation, Cheerio parsing, DB upsert, 60s scheduler, error recovery</div></div>
+        <div class="mc-right"><span class="mc-badge ph2">Phase 2</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>scraper.ts</code> — Puppeteer browser + page navigation</div><div class="task-detail">Launch Puppeteer headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox']. Set realistic user agent. goto() ECI results URL with waitUntil: 'networkidle2'. waitForSelector('.result-table'). page.content() → Cheerio load. Parse each constituency row: number, leading candidate name, party, votes, lead margin, rounds completed, status. Close browser in finally block even on error.</div><div class="task-tags"><span class="ttag ph2">Phase 2</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create upsertLiveResults(updates[]) — DB upsert function</div><div class="task-detail">Map constituency numbers to constituency IDs (pre-loaded lookup). Map candidate names to candidate IDs where possible (from candidates table). Use Drizzle .insert().onConflictDoUpdate() on (constituency_id, candidate_id) unique pair. Update: votes_so_far, rounds_counted, is_leading, lead_margin, status, last_updated.</div><div class="task-tags"><span class="ttag ph2">Phase 2</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>scheduler.ts</code> — 60-second interval with SCRAPER_ENABLED guard</div><div class="task-detail">Check process.env.SCRAPER_ENABLED === 'true'. If false: log "Scraper disabled" and return. If true: run scrapeAndUpdate() immediately, then setInterval(scrapeAndUpdate, 60_000). Do not throw from interval callback — always catch and log errors so the scheduler continues running.</div><div class="task-tags"><span class="ttag ph2">Phase 2</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Test scraper against 2021 Kerala results page in staging</div><div class="task-detail">The ECI keeps past election result pages live. Use these as test target. Verify: all 140 constituencies parse correctly, constituency number → DB ID mapping works, no data corruption. Write scraper integration test that validates output shape.</div><div class="task-tags"><span class="ttag ph2">Phase 2</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ WEBSOCKET ══════════════════ -->
+<div class="page" id="page-mod-ws">
+  <div class="eyebrow">Layer 5 — Phase 2</div>
+  <h1>WebSocket <em>& Live UI</em></h1>
+  <p class="lead"><strong>apps/scraper/src/websocket.ts</strong> + <strong>apps/web/components/results/</strong> — Socket.io server that broadcasts result updates to all connected browsers. LiveResultCard component with pulse animation on update.</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--red-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
+        <div class="mc-meta"><div class="mc-layer" style="color:var(--red)">websocket + live UI</div><div class="mc-title">WebSocket & Live Results UI</div><div class="mc-sub">Socket.io server, useLiveResults hook, LiveResultCard, LiveResultsDashboard</div></div>
+        <div class="mc-right"><span class="mc-badge ph2">Phase 2</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>websocket.ts</code> — Socket.io server initialization</div><div class="task-detail">initWebSocket(httpServer): new Server(httpServer, { cors: { origin: FRONTEND_URL } }). On connection: sendCurrentResults(socket) — sends the current DB state to the new client immediately. subscribe:constituency room event for per-constituency subscriptions. Export broadcast(data) and broadcastToConstituency(slug, data).</div><div class="task-tags"><span class="ttag ph2">Phase 2</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>useLiveResults</code> hook — React WebSocket state management</div><div class="task-detail">"use client". Connects to NEXT_PUBLIC_WEBSOCKET_URL via socket.io-client. State: results (Record&lt;string, LiveResult&gt;), connected (bool). On 'results:update': merge new results into state (don't replace all — only update changed constituencies). Cleanup: socket.disconnect() on unmount.</div><div class="task-tags"><span class="ttag ph2">Phase 2</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>LiveResultCard</code> — constituency result card with pulse animation</div><div class="task-detail">Shows: live indicator dot (green pulse = connected, gray = disconnected), leading candidate name, party badge, vote count formatted in-IN, lead margin, rounds completed. On new update: set pulse=true for 1000ms causing green border + glow animation. "Awaiting results..." placeholder before data arrives.</div><div class="task-tags"><span class="ttag ph2">Phase 2</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Build <code>LiveResultsDashboard</code> — the /results page content</div><div class="task-detail">Coalition counter at top (LDF seats: X | UDF seats: Y | NDA seats: Z | Leads). District tabs to filter by district. Grid of 140 LiveResultCards. KeralaMap color-coded by leading party. Last-updated timestamp. "Declared" constituencies highlighted differently from "Leading".</div><div class="task-tags"><span class="ttag ph2">Phase 2</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ DEPLOYMENT ══════════════════ -->
+<div class="page" id="page-mod-deploy">
+  <div class="eyebrow">Layer 6 — Infrastructure</div>
+  <h1>Deployment <em>& CI/CD</em></h1>
+  <p class="lead">Vercel for the frontend + admin. Railway for the backend API + Meilisearch + scraper. GitHub Actions for CI (lint, type-check, test on every PR). Auto-deploy to both platforms on merge to main.</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--green-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+        <div class="mc-meta"><div class="mc-layer" style="color:var(--green)">Infrastructure</div><div class="mc-title">Deployment & CI/CD</div><div class="mc-sub">Vercel configs, Railway configs, GitHub Actions workflow, environment checklists</div></div>
+        <div class="mc-right"><span class="mc-badge p0">P0</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>apps/web/vercel.json</code> — Vercel deployment config</div><div class="task-detail">buildCommand: pnpm --filter @kerala2026/web build. outputDirectory: apps/web/.next. framework: nextjs. regions: ['bom1'] (Mumbai — closest to Kerala). Security headers: X-Content-Type-Options, X-Frame-Options, Referrer-Policy. Rewrite: /api/v1/* → Railway API URL.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>apps/api/railway.json</code> — Railway deployment config</div><div class="task-detail">Builder: NIXPACKS. buildCommand: pnpm --filter @kerala2026/api build. startCommand: pnpm --filter @kerala2026/api start. healthcheckPath: /health. healthcheckTimeout: 30. restartPolicyType: ON_FAILURE, maxRetries: 3.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Set up Meilisearch on Railway using Docker image</div><div class="task-detail">New Railway service from Docker image: getmeili/meilisearch:v1.7. Env vars: MEILI_MASTER_KEY, MEILI_ENV=production, MEILI_DB_PATH=/meili_data. Mount persistent volume at /meili_data. Expose on private network only (Railway internal URL). Do NOT expose publicly.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Create <code>.github/workflows/ci.yml</code> — GitHub Actions CI pipeline</div><div class="task-detail">Triggers: pull_request to main/develop + push to main. Jobs: (1) lint-and-typecheck: pnpm install → pnpm typecheck → pnpm lint. (2) test: spin up postgres:16 service container, run migrations, run pnpm test. (3) build: pnpm build with NEXT_PUBLIC env vars. All jobs use pnpm/action-setup@v3 + actions/setup-node@v4 (node 20) + pnpm cache.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Set up all production environment variables</div><div class="task-detail">In Vercel: NEXT_PUBLIC_API_URL, NEXT_PUBLIC_MAPBOX_TOKEN, NEXT_PUBLIC_MEILISEARCH_HOST (public key only!), NEXT_PUBLIC_WEBSOCKET_URL, NEXT_PUBLIC_SITE_URL, REVALIDATION_SECRET, DATABASE_URL (for SSG build-time fetches). In Railway: all backend vars including ADMIN_JWT_SECRET, CF_R2_*, MEILISEARCH_MASTER_KEY, DATABASE_URL, ALLOWED_ORIGINS.</div><div class="task-tags"><span class="ttag p0">P0</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Set up uptime monitoring with Better Uptime (free tier)</div><div class="task-detail">Monitor: API /health endpoint every 3 minutes. Alert via email if down for >2 consecutive checks. Add extra monitors for /constituencies (test SSG working) and Meilisearch health. Critical: increase frequency to 1-minute check on election day.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Document election day runbook in RUNBOOK.md</div><div class="task-detail">Day-before checklist: data completeness check, full test run, Railway scale to 2 replicas. 6AM result day: set SCRAPER_ENABLED=true, redeploy scraper service, verify WebSocket on /results. Monitor Railway logs for scraper activity. Post-results: set SCRAPER_ENABLED=false, copy live_results to election_results permanent table.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ TESTING ══════════════════ -->
+<div class="page" id="page-mod-testing">
+  <div class="eyebrow">Layer 6 — Quality Assurance</div>
+  <h1>Testing <em>Suite</em></h1>
+  <p class="lead">Vitest for unit + integration tests. Supertest for API endpoint testing. Playwright for critical E2E flows. Target: 80%+ coverage on utility functions and service layer. All tests must pass in CI before merge.</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--blue-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+        <div class="mc-meta"><div class="mc-layer" style="color:var(--blue)">Testing</div><div class="mc-title">Testing Suite</div><div class="mc-sub">Vitest unit tests, Supertest API tests, Playwright E2E, coverage reports</div></div>
+        <div class="mc-right"><span class="mc-badge p1">P1</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Write unit tests for all packages/utils functions</div><div class="task-detail">formatCrores: test ≥1 crore, lakhs, zero, undefined. calculateAge: test past/future birthday, null input. generateSlug: test special chars, punctuation in names. formatVoteCount: Indian number formatting. getPartyColor: all coalition codes + unknown fallback. Each test file in packages/utils/src/__tests__/.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Write Supertest integration tests for all API endpoints</div><div class="task-detail">Setup: beforeAll seedTestData(), afterAll clearTestData(). Test GET /candidates: pagination, gender filter, invalid query → 422. Test GET /constituencies/:slug: valid slug returns data, invalid → 404. Test POST /candidates without token → 401, with token + valid body → 201, invalid body → 422. Test search endpoint: returns grouped results.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Write Playwright E2E tests for critical user flows</div><div class="task-detail">Test 1: Home page loads, countdown visible. Test 2: Navigate to /constituencies, all cards render. Test 3: Click constituency card → detail page loads with candidate grid. Test 4: Ctrl+K opens search, type query, results appear. Test 5: Click candidate card → profile page loads with all tabs. Test 6: /candidates/[slug] affidavit link present.</div><div class="task-tags"><span class="ttag p2">P2</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Write test helpers: seedTestData(), clearTestData(), getTestAdminToken()</div><div class="task-detail">seedTestData(): insert 1 test district, 2 constituencies, 2 parties, 3 candidates (1 incumbent) into the test DB. clearTestData(): DELETE all inserted records by test prefix. getTestAdminToken(): sign JWT with test ADMIN_JWT_SECRET. These are used by all API integration tests.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ SECURITY ══════════════════ -->
+<div class="page" id="page-mod-security">
+  <div class="eyebrow">Layer 6 — Security & Performance</div>
+  <h1>Security <em>& Performance</em></h1>
+  <p class="lead">Security hardening (Helmet CSP, CORS, input sanitization) and performance optimizations (DB indexes, ISR cache strategy, image optimization, compression). Must be done before launch.</p>
+
+  <div class="module-grid">
+    <div class="module-card open">
+      <div class="mc-header" onclick="toggleCard(this)">
+        <div class="mc-icon" style="background:var(--red-dim)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div class="mc-meta"><div class="mc-layer" style="color:var(--red)">Security + Performance</div><div class="mc-title">Security & Performance Hardening</div><div class="mc-sub">CSP headers, CORS allowlist, DB indexes, ISR strategy, image optimization</div></div>
+        <div class="mc-right"><span class="mc-badge p1">P1</span><div class="mc-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></div></div>
+      </div>
+      <div class="mc-body">
+        <div class="task-list">
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Configure Helmet Content Security Policy for production</div><div class="task-detail">defaultSrc: ['self']. scriptSrc: ['self', 'unsafe-inline'] (Next.js needs this). styleSrc: ['self', 'unsafe-inline', 'fonts.googleapis.com']. fontSrc: ['self', 'fonts.gstatic.com']. imgSrc: ['self', 'data:', 'media.kerala2026.in', '*.mapbox.com']. connectSrc: ['self', 'api.kerala2026.in', '*.mapbox.com']. frameSrc: ['none']. HSTS: maxAge 63072000 (2 years), includeSubDomains, preload.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Apply all recommended DB performance indexes</div><div class="task-detail">Run CREATE EXTENSION IF NOT EXISTS pg_trgm. GIN trigram index on candidates.name_en and name_ml. Composite index on candidates(constituency_id, election_year) WHERE deleted_at IS NULL. Index on election_results(constituency_id, election_year). Index on live_results(constituency_id, last_updated DESC). Apply via psql script to production Neon DB.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Configure next.config.mjs — image domains, bundle analysis</div><div class="task-detail">Add media.kerala2026.in to images.domains (or remotePatterns). Enable @next/bundle-analyzer for bundle size monitoring. Configure headers for static assets (immutable cache). Add rewrites for /api/v1/* → Railway API URL for same-domain API calls.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Lazy-load all chart components to avoid blocking page render</div><div class="task-detail">All Recharts components: dynamic(() => import('./VoteShareChart'), { ssr: false }). Mapbox map: dynamic(() => import('./KeralaMap'), { ssr: false }). This ensures the constituent page's above-fold content (hero, candidate grid) renders immediately without waiting for chart JS bundles.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Verify Lighthouse scores ≥90 on key pages</div><div class="task-detail">Run Lighthouse on: / (home), /constituencies, /constituencies/thiruvananthapuram, /candidates/[incumbent-with-full-data]. Fix any issues below 90 on Performance, Accessibility, Best Practices, SEO. Focus: CLS (layout shift from fonts/images), LCP (hero image/text), accessibility (alt texts, ARIA labels).</div><div class="task-tags"><span class="ttag p2">P2</span></div></div></div>
+          <div class="task-item" onclick="toggleTask(this)"><div class="task-cb"></div><div class="task-content"><div class="task-text">Add CONTRIBUTING.md, CODE_OF_CONDUCT.md, and security policy</div><div class="task-detail">CONTRIBUTING.md: types of contributions, git workflow (fork → branch → PR), commit message format, code standards, branch naming convention. CODE_OF_CONDUCT.md: community standards. SECURITY.md: responsible disclosure email security@kerala2026.in, do not open public issues for security vulnerabilities.</div><div class="task-tags"><span class="ttag p1">P1</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<script>
+const CRUMBS = {
+  'overview': 'All Modules Overview',
+  'howto': 'How to Use This File',
+  'mod-db-schema': 'DB Schema (packages/db)',
+  'mod-types': 'Shared Types',
+  'mod-utils': 'Shared Utilities',
+  'mod-data': 'Static Data (GeoJSON)',
+  'mod-api-server': 'API Server Core',
+  'mod-api-const': 'Constituencies API',
+  'mod-api-cand': 'Candidates API',
+  'mod-api-party': 'Parties & Results API',
+  'mod-api-search': 'Search Module',
+  'mod-api-upload': 'Upload Module (R2)',
+  'mod-api-auth': 'Auth Module',
+  'mod-fe-pages': 'Pages & Routing',
+  'mod-fe-candidate': 'Candidate Components',
+  'mod-fe-constituency': 'Constituency Components',
+  'mod-fe-charts': 'Charts & Maps',
+  'mod-fe-search': 'Search UI',
+  'mod-fe-ui': 'UI Component Library',
+  'mod-admin': 'Admin Dashboard',
+  'mod-csv': 'CSV Import System',
+  'mod-scraper': 'Live Results Scraper',
+  'mod-ws': 'WebSocket & Live UI',
+  'mod-deploy': 'Deployment & CI/CD',
+  'mod-testing': 'Testing Suite',
+  'mod-security': 'Security & Performance'
+};
+
+function go(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sb-link').forEach(l => l.classList.remove('active'));
+  const page = document.getElementById('page-' + id);
+  if (page) page.classList.add('active');
+  if (el) el.classList.add('active');
+  document.getElementById('crumb').textContent = CRUMBS[id] || id;
+  window.scrollTo(0, 0);
+  closeSB();
+}
+
+function toggleCard(header) {
+  const card = header.closest('.module-card');
+  card.classList.toggle('open');
+}
+
+function toggleTask(item) {
+  item.classList.toggle('done');
+  updateProgress();
+}
+
+function updateProgress() {
+  // Count tasks per page and update any progress bars
+  document.querySelectorAll('.page.active .task-list').forEach(list => {
+    const total = list.querySelectorAll('.task-item').length;
+    const done = list.querySelectorAll('.task-item.done').length;
+    const bar = list.closest('.mc-body')?.querySelector('.progress-fill');
+    if (bar && total > 0) {
+      bar.style.width = Math.round((done / total) * 100) + '%';
+    }
+  });
+}
+
+function toggleSB() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('visible');
+}
+function closeSB() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('visible');
+}
+
+// Persist task completion in localStorage
+function saveState() {
+  const state = {};
+  document.querySelectorAll('.task-item').forEach((item, i) => {
+    state[i] = item.classList.contains('done');
+  });
+  try { localStorage.setItem('kerala2026_tasks', JSON.stringify(state)); } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const state = JSON.parse(localStorage.getItem('kerala2026_tasks') || '{}');
+    document.querySelectorAll('.task-item').forEach((item, i) => {
+      if (state[i]) item.classList.add('done');
+    });
+  } catch(e) {}
+}
+
+// Override toggleTask to also save
+const originalToggle = window.toggleTask;
+window.toggleTask = function(item) {
+  item.classList.toggle('done');
+  saveState();
+  updateProgress();
+};
+
+// Load on start
+document.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  updateProgress();
+});
+</script>
+</body>
+</html>

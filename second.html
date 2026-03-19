@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kerala 2026 — Documentation Part 2: Frontend & API</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --saffron:#FF6B35;--saffron-dim:rgba(255,107,53,0.1);
+  --green:#138808;--green-dim:rgba(19,136,8,0.1);
+  --blue:#000080;--blue-dim:rgba(0,0,128,0.08);
+  --gold:#F4A500;--gold-dim:rgba(244,165,0,0.1);
+  --red:#E31E24;--red-dim:rgba(227,30,36,0.1);
+  --bg:#FAFAF8;--bg2:#F4F3EF;--bg3:#ECEAE3;
+  --surface:#FFFFFF;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --text:#1A1A1A;--text2:#4A4A4A;--text3:#8A8A8A;
+  --fd:'Playfair Display',serif;--fb:'DM Sans',sans-serif;--fm:'JetBrains Mono',monospace;
+  --r:4px;--rl:8px;--rxl:14px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--saffron);border-radius:3px}
+
+/* LAYOUT */
+.shell{display:flex;min-height:100vh}
+.sidebar{width:260px;min-width:260px;background:var(--surface);border-right:1px solid var(--border2);position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:50;display:flex;flex-direction:column}
+.main{margin-left:260px;flex:1}
+
+/* SIDEBAR */
+.sb-brand{padding:22px 20px 16px;border-bottom:2px solid var(--border2)}
+.sb-name{font-family:var(--fd);font-size:17px;font-weight:900;color:var(--text)}
+.sb-sub{font-size:10px;color:var(--text3);font-family:var(--fm);letter-spacing:0.06em;text-transform:uppercase;margin-top:4px}
+.sb-nav{padding:12px 10px;flex:1}
+.sb-group{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;padding:0 10px;margin:14px 0 5px}
+.sb-link{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r);cursor:pointer;color:var(--text2);font-size:12.5px;font-weight:500;transition:all 0.15s;text-decoration:none;border-left:3px solid transparent}
+.sb-link:hover{background:var(--bg2);color:var(--text);border-left-color:var(--saffron)}
+.sb-link.active{background:var(--saffron-dim);color:var(--saffron);border-left-color:var(--saffron);font-weight:600}
+.sb-link svg{width:14px;height:14px;flex-shrink:0}
+.sb-footer{padding:14px 20px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--fm)}
+
+/* TOPBAR */
+.topbar{background:rgba(250,250,248,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;position:sticky;top:0;z-index:20}
+.tb-crumb{font-size:12px;color:var(--text3);font-family:var(--fm);display:flex;align-items:center;gap:6px}
+.tb-sep{opacity:0.3}.tb-cur{color:var(--text2)}
+.tb-right{display:flex;gap:8px;align-items:center}
+.chip{font-size:10px;font-family:var(--fm);padding:3px 9px;border-radius:20px;border:1px solid}
+.chip-s{background:var(--saffron-dim);border-color:rgba(255,107,53,0.3);color:var(--saffron)}
+.chip-g{background:var(--green-dim);border-color:rgba(19,136,8,0.3);color:var(--green)}
+.chip-b{background:var(--blue-dim);border-color:rgba(0,0,128,0.3);color:var(--blue)}
+
+/* CONTENT */
+.content{padding:40px 48px 80px;max-width:920px}
+.page{display:none;animation:fadeUp 0.2s ease}
+.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* TYPOGRAPHY */
+.eyebrow{font-family:var(--fm);font-size:10px;color:var(--saffron);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.eyebrow::before{content:'';display:inline-block;width:24px;height:2px;background:var(--saffron)}
+h1{font-family:var(--fd);font-size:38px;font-weight:900;line-height:1.1;letter-spacing:-0.02em;margin-bottom:14px}
+h1 em{font-style:normal;color:var(--saffron)}
+.lead{font-size:15px;color:var(--text2);line-height:1.75;max-width:700px;margin-bottom:32px}
+h2{font-family:var(--fd);font-size:22px;font-weight:800;letter-spacing:-0.01em;margin:36px 0 12px;display:flex;align-items:center;gap:10px}
+h2::after{content:'';flex:1;height:1px;background:var(--border2);margin-left:8px}
+h3{font-size:15px;font-weight:700;margin:22px 0 10px;color:var(--text)}
+h4{font-size:13px;font-weight:600;margin:16px 0 8px;color:var(--text2)}
+p{font-size:13.5px;color:var(--text2);line-height:1.75;margin-bottom:12px}
+code{font-family:var(--fm);font-size:0.87em;background:var(--bg3);color:var(--saffron);padding:1px 6px;border-radius:3px;border:1px solid var(--border)}
+.divider{height:1px;background:var(--border);margin:28px 0}
+
+/* BOXES */
+.info-box,.warn-box,.success-box,.note-box{border-radius:var(--rl);padding:14px 18px;font-size:13px;line-height:1.65;margin:14px 0 20px;border-left:4px solid}
+.info-box{background:var(--blue-dim);border-color:var(--blue);color:#000060}
+.warn-box{background:var(--gold-dim);border-color:var(--gold);color:#7A5200}
+.success-box{background:var(--green-dim);border-color:var(--green);color:#0A5A04}
+.note-box{background:var(--saffron-dim);border-color:var(--saffron);color:#8B3A1A}
+
+/* CODE BLOCK */
+.cb{background:#1A1A2E;border-radius:var(--rxl);overflow:hidden;margin:14px 0 24px;border:1px solid rgba(255,255,255,0.08)}
+.cb-head{display:flex;align-items:center;padding:10px 16px;background:#16213E;border-bottom:1px solid rgba(255,255,255,0.06)}
+.cb-dots{display:flex;gap:5px}
+.cd{width:10px;height:10px;border-radius:50%}.cd.r{background:#ff5f57}.cd.y{background:#ffbd2e}.cd.g{background:#28c840}
+.cb-lang{flex:1;text-align:right;font-family:var(--fm);font-size:10px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.05em}
+.cb-copy{font-size:10px;font-family:var(--fm);padding:2px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:4px;color:rgba(255,255,255,0.5);cursor:pointer;margin-left:8px;transition:all 0.15s}
+.cb-copy:hover{background:rgba(255,255,255,0.15);color:#fff}
+.cb pre{padding:18px 20px;font-family:var(--fm);font-size:12px;line-height:1.75;color:#B8C5D6;overflow-x:auto;white-space:pre}
+.kw{color:#FF79C6}.str{color:#F1FA8C}.cm{color:#6272A4}.fn{color:#50FA7B}.num{color:#BD93F9}.ty{color:#8BE9FD}.at{color:#FFB86C}
+
+/* COMPONENT CARDS */
+.comp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-bottom:28px}
+.comp-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rxl);padding:18px;transition:all 0.2s;cursor:default}
+.comp-card:hover{border-color:var(--saffron);transform:translateY(-2px)}
+.comp-cat{font-size:9px;font-family:var(--fm);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;font-weight:600}
+.comp-name{font-size:14px;font-weight:700;margin-bottom:5px;font-family:var(--fd)}
+.comp-desc{font-size:12px;color:var(--text2);line-height:1.6}
+.comp-props{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px}
+.prop{font-size:10px;font-family:var(--fm);padding:2px 7px;background:var(--bg3);border-radius:20px;color:var(--text3)}
+
+/* PAGE ROUTE CARDS */
+.route-list{display:flex;flex-direction:column;gap:8px;margin-bottom:28px}
+.route-item{display:flex;align-items:flex-start;gap:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);transition:all 0.2s}
+.route-item:hover{border-color:var(--saffron)}
+.route-method{font-family:var(--fm);font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;border:1px solid;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.GET{background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.3)}
+.POST{background:var(--blue-dim);color:var(--blue);border-color:rgba(0,0,128,0.25)}
+.PUT{background:var(--gold-dim);color:#7A5200;border-color:rgba(244,165,0,0.3)}
+.DELETE{background:var(--red-dim);color:var(--red);border-color:rgba(227,30,36,0.3)}
+.route-path{font-family:var(--fm);font-size:12.5px;color:var(--text);margin-bottom:3px;font-weight:500}
+.route-desc{font-size:12px;color:var(--text3);line-height:1.5}
+.route-tags{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.rtag{font-size:10px;font-family:var(--fm);padding:2px 7px;border-radius:20px;border:1px solid}
+
+/* PAGE CARDS */
+.page-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-bottom:28px}
+.page-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rxl);padding:18px;transition:all 0.2s}
+.page-card:hover{border-color:var(--saffron);transform:translateY(-2px)}
+.page-route{font-family:var(--fm);font-size:11px;color:var(--saffron);margin-bottom:5px;font-weight:500}
+.page-name{font-size:14px;font-weight:700;margin-bottom:6px;font-family:var(--fd)}
+.page-desc{font-size:12px;color:var(--text2);line-height:1.6}
+.page-meta{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px}
+.pmeta{font-size:10px;font-family:var(--fm);padding:2px 7px;border-radius:20px}
+
+/* TABLES */
+.tbl-wrap{overflow-x:auto;border-radius:var(--rxl);border:1px solid var(--border2);margin-bottom:28px}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{padding:10px 14px;text-align:left;font-family:var(--fm);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;background:var(--bg2);border-bottom:1px solid var(--border2)}
+.tbl td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text2)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--bg2)}
+
+/* SWATCH */
+.swatch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:24px}
+.swatch{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rxl);overflow:hidden}
+.swatch-color{height:48px}
+.swatch-info{padding:10px 12px}
+.swatch-name{font-family:var(--fm);font-size:11px;font-weight:600}
+.swatch-hex{font-family:var(--fm);font-size:10px;color:var(--text3)}
+.swatch-use{font-size:11px;color:var(--text2);margin-top:2px}
+
+/* MOB */
+.mob-btn{display:none;position:fixed;bottom:20px;right:20px;width:44px;height:44px;background:var(--saffron);border:none;border-radius:50%;cursor:pointer;z-index:200;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(255,107,53,0.4)}
+.mob-btn svg{width:20px;height:20px;color:#fff}
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:49}
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);transition:transform 0.2s ease}
+  .sidebar.open{transform:translateX(0)}
+  .sb-overlay.visible{display:block}
+  .main{margin-left:0}
+  .content{padding:24px 18px 60px}
+  h1{font-size:28px}
+  .mob-btn{display:flex}
+}
+</style>
+</head>
+<body>
+<div class="sb-overlay" id="overlay" onclick="closeSB()"></div>
+<button class="mob-btn" onclick="toggleSB()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+
+<div class="shell">
+<aside class="sidebar" id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-name">Kerala2026-2031</div>
+    <div class="sb-sub">Docs Part 2 · Frontend & API</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-group">Documentation Parts</div>
+    <a href="main.html" class="sb-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+      Part 1: Overview
+    </a>
+    <a href="second.html" class="sb-link" style="color:var(--saffron);background:var(--saffron-dim);border-left-color:var(--saffron);font-weight:600">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+      Part 2: Frontend & API
+    </a>
+    <a href="third.html" class="sb-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+      Part 3: Backend & Deploy
+    </a>
+    <a href="fourth.html" class="sb-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Part 4: Module Tracker
+    </a>
+
+    <div class="sb-group">Frontend</div>
+    <div class="sb-link active" onclick="go('pages',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      Frontend Pages
+    </div>
+    <div class="sb-link" onclick="go('components',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      UI Components
+    </div>
+    <div class="sb-link" onclick="go('candidatecard',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Candidate Card
+    </div>
+    <div class="sb-link" onclick="go('constituency',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+      Constituency Page
+    </div>
+    <div class="sb-link" onclick="go('search',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Search System
+    </div>
+    <div class="sb-link" onclick="go('charts',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Charts & Maps
+    </div>
+    <div class="sb-group">Backend API</div>
+    <div class="sb-link" onclick="go('apioverview',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      API Overview
+    </div>
+    <div class="sb-link" onclick="go('apiconst',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      Constituency API
+    </div>
+    <div class="sb-link" onclick="go('apicand',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Candidate API
+    </div>
+    <div class="sb-link" onclick="go('apiparty',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Party & Results API
+    </div>
+    <div class="sb-link" onclick="go('p2scraper',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Phase 2: Live Scraper
+    </div>
+  </nav>
+  <div class="sb-footer">Kerala 2026 · Open Source<br>Part 2 of 3 · Frontend & API</div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tb-crumb"><span>Kerala2026</span><span class="tb-sep">/</span><span class="tb-cur" id="crumb">Frontend Pages</span></div>
+    <div class="tb-right">
+      <span class="chip chip-s">Next.js 14</span>
+      <span class="chip chip-g">Express API</span>
+      <span class="chip chip-b">TypeScript</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+<!-- ═══ FRONTEND PAGES ═══ -->
+<div class="page active" id="page-pages">
+  <div class="eyebrow">Next.js 14 — App Router</div>
+  <h1>Frontend <em>Pages</em></h1>
+  <p class="lead">Kerala 2026 uses Next.js 14 App Router with a strategic mix of Static Site Generation (SSG), Incremental Static Regeneration (ISR), and Server-Side Rendering (SSR). All 140 constituency pages and 1000+ candidate pages are statically generated at build time for maximum performance and SEO.</p>
+
+  <div class="info-box"><strong>Rendering Strategy:</strong> Constituency and candidate pages use SSG with <code>generateStaticParams()</code> — built once, served from CDN globally. Pages with frequently changing data (search results, comparison tool) use SSR. Phase 2 live results page uses client-side fetching with WebSocket.</div>
+
+  <h2>All Application Pages</h2>
+  <div class="page-cards">
+    <div class="page-card">
+      <div class="page-route">/</div>
+      <div class="page-name">Home Page</div>
+      <div class="page-desc">Election countdown timer, featured constituencies, recent news, quick search bar, coalition seat distribution preview, and "Meet Your Candidate" CTA.</div>
+      <div class="page-meta">
+        <span class="pmeta" style="background:var(--green-dim);color:var(--green)">SSG</span>
+        <span class="pmeta" style="background:var(--bg3);color:var(--text2)">ISR 1h</span>
+      </div>
+    </div>
+    <div class="page-card">
+      <div class="page-route">/constituencies</div>
+      <div class="page-name">All Constituencies</div>
+      <div class="page-desc">Grid of all 140 constituencies. Filter by district, party holding, category (General/SC/ST). Sort by number, alphabetical, turnout. Map toggle view.</div>
+      <div class="page-meta">
+        <span class="pmeta" style="background:var(--green-dim);color:var(--green)">SSG</span>
+        <span class="pmeta" style="background:var(--bg3);color:var(--text2)">ISR 6h</span>
+      </div>
+    </div>
+    <div class="page-card">
+      <div class="page-route">/constituencies/[slug]</div>
+      <div class="page-name">Constituency Detail</div>
+      <div class="page-desc">Full constituency page: description, voter stats, all current candidates (2026), historical results table (1957–2021), vote share charts, interactive map, incumbent info.</div>
+      <div class="page-meta">
+        <span class="pmeta" style="background:var(--green-dim);color:var(--green)">SSG × 140</span>
+        <span class="pmeta" style="background:var(--bg3);color:var(--text2)">ISR 24h</span>
+      </div>
+    </div>
+    <div class="page-card">
+      <div class="page-route">/candidates/[slug]</div>
+      <div class="page-name">Candidate Profile</div>
+      <div class="page-desc">Full candidate page: HD photo, bio, party badge, asset declaration breakdown, criminal cases (if any), past election history, social links, affidavit PDF link.</div>
+      <div class="page-meta">
+        <span class="pmeta" style="background:var(--green-dim);color:var(--green)">SSG × 1000+</span>
+        <span class="pmeta" style="background:var(--bg3);color:var(--text2)">ISR 24h</span>
+      </div>
+    </div>
+    <div class="page-card">
+      <div class="page-route">/parties</div>
+      <div class="page-name">All Parties</div>
+      <div class="page-desc">Overview of all political parties and coalitions contesting 2026. Seat count history, current candidates count, vote share trends chart.</div>
+      <div class="page-meta">
+        <span class="pmeta" style="background:var(--green-dim);color:var(--green)">SSG</span>
+        <span class="pmeta" style="background:var(--bg3);color:var(--text2)">ISR 6h</span>
+      </div>
+    </div>
+    <div class="page-card">
+      <div class="page-route">/parties/[slug]</div>
+      <div class="page-name">Party Detail</div>
+      <div class="page-desc">Party history, all 2026 candidates (with photos), historical seat performance chart, district-wise strength map, manifesto link, party leadership profiles.</div>
+      <div class="page-meta">
+        <span class="pmeta" style="background:var(--green-dim);color:var(--green)">SSG</span>
+        <span class="pmeta" style="background:var(--bg3);color:var(--text2)">ISR 24h</span>
+      </div>
+    </div>
+    <div class="page-card">
+      <div class="page-route">/districts/[slug]</div>
+      <div class="page-name">District Overview</div>
+      <div class="page-desc">All constituencies in the district, party distribution, key candidates, total voter count, historical dominance analysis, geographic context.</div>
+      <div class="page-meta">
+        <span class="pmeta" style="background:var(--green-dim);color:var(--green)">SSG × 14</span>
+        <span class="pmeta" style="background:var(--bg3);color:var(--text2)">ISR 24h</span>
+      </div>
+    </div>
+    <div class="page-card">
+      <div class="page-route">/search</div>
+      <div class="page-name">Search Results</div>
+      <div class="page-desc">Full-text search via Meilisearch. Results across candidates, constituencies, parties. Filters by type, district, party, gender. Malayalam + English support.</div>
+      <div class="page-meta">
+        <span class="pmeta" style="background:var(--blue-dim);color:var(--blue)">SSR</span>
+        <span class="pmeta" style="background:var(--bg3);color:var(--text2)">Dynamic</span>
+      </div>
+    </div>
+    <div class="page-card">
+      <div class="page-route">/compare</div>
+      <div class="page-name">Candidate Compare</div>
+      <div class="page-desc">Side-by-side comparison of 2 candidates from the same constituency. Assets, criminal cases, education, past performance, party affiliation, social reach.</div>
+      <div class="page-meta">
+        <span class="pmeta" style="background:var(--blue-dim);color:var(--blue)">SSR</span>
+        <span class="pmeta" style="background:var(--bg3);color:var(--text2)">Dynamic</span>
+      </div>
+    </div>
+    <div class="page-card">
+      <div class="page-route">/results</div>
+      <div class="page-name">Live Results (Phase 2)</div>
+      <div class="page-desc">Real-time election result dashboard. Live counts, leads, winning margins. WebSocket-powered auto-update. District heat map. National coalition tracker.</div>
+      <div class="page-meta">
+        <span class="pmeta" style="background:var(--red-dim);color:var(--red)">CSR</span>
+        <span class="pmeta" style="background:var(--saffron-dim);color:var(--saffron)">Phase 2</span>
+        <span class="pmeta" style="background:var(--bg3);color:var(--text2)">WebSocket</span>
+      </div>
+    </div>
+    <div class="page-card">
+      <div class="page-route">/about</div>
+      <div class="page-name">About Kerala 2026</div>
+      <div class="page-desc">Project mission, data sources, team, open-source contribution info, data accuracy disclaimer, contact form.</div>
+      <div class="page-meta">
+        <span class="pmeta" style="background:var(--green-dim);color:var(--green)">SSG</span>
+      </div>
+    </div>
+    <div class="page-card">
+      <div class="page-route">/historical</div>
+      <div class="page-name">Historical Data</div>
+      <div class="page-desc">Browse all Kerala election results from 1957 to 2021. Filter by year, district, party. Interactive charts showing coalition dominance over time.</div>
+      <div class="page-meta">
+        <span class="pmeta" style="background:var(--green-dim);color:var(--green)">SSG</span>
+        <span class="pmeta" style="background:var(--bg3);color:var(--text2)">ISR 7d</span>
+      </div>
+    </div>
+  </div>
+
+  <h2>Page Generation Example</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — app/constituencies/[slug]/page.tsx</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { <span class="ty">Metadata</span> } <span class="kw">from</span> <span class="str">'next'</span>;
+<span class="kw">import</span> { notFound } <span class="kw">from</span> <span class="str">'next/navigation'</span>;
+<span class="kw">import</span> ConstituencyHero <span class="kw">from</span> <span class="str">'@/components/constituency/ConstituencyHero'</span>;
+<span class="kw">import</span> CandidateGrid <span class="kw">from</span> <span class="str">'@/components/candidate/CandidateGrid'</span>;
+<span class="kw">import</span> HistoricalResults <span class="kw">from</span> <span class="str">'@/components/constituency/HistoricalResults'</span>;
+<span class="kw">import</span> VoteShareChart <span class="kw">from</span> <span class="str">'@/components/charts/VoteShareChart'</span>;
+<span class="kw">import</span> ConstituencyMap <span class="kw">from</span> <span class="str">'@/components/map/ConstituencyMap'</span>;
+<span class="kw">import</span> { getConstituencyBySlug, getAllConstituencySlugs } <span class="kw">from</span> <span class="str">'@/lib/api'</span>;
+
+<span class="cm">// Generate all 140 constituency pages at build time</span>
+<span class="kw">export async function</span> <span class="fn">generateStaticParams</span>() {
+  <span class="kw">const</span> slugs = <span class="kw">await</span> <span class="fn">getAllConstituencySlugs</span>();
+  <span class="kw">return</span> slugs.<span class="fn">map</span>(slug => ({ slug }));
+}
+
+<span class="cm">// Dynamic metadata for SEO — each constituency gets unique title/description</span>
+<span class="kw">export async function</span> <span class="fn">generateMetadata</span>({ params }: Props): <span class="ty">Promise</span>&lt;<span class="ty">Metadata</span>&gt; {
+  <span class="kw">const</span> constituency = <span class="kw">await</span> <span class="fn">getConstituencyBySlug</span>(params.slug);
+  <span class="kw">if</span> (!constituency) <span class="kw">return</span> {};
+
+  <span class="kw">return</span> {
+    title: <span class="str">`</span><span class="at">${constituency.nameEn}</span><span class="str"> Constituency — Kerala 2026 Election`</span>,
+    description: <span class="str">`2026 election candidates, historical results, and voter data for </span><span class="at">${constituency.nameEn}</span><span class="str"> (</span><span class="at">${constituency.nameMl}</span><span class="str">) constituency in </span><span class="at">${constituency.district.nameEn}</span><span class="str"> district, Kerala.`</span>,
+    openGraph: {
+      title: <span class="str">`</span><span class="at">${constituency.nameEn}</span><span class="str"> — Kerala 2026`</span>,
+      images: [<span class="str">`/api/og/constituency/</span><span class="at">${constituency.slug}</span><span class="str">`</span>],
+    },
+    alternates: {
+      canonical: <span class="str">`/constituencies/</span><span class="at">${constituency.slug}</span><span class="str">`</span>,
+    },
+  };
+}
+
+<span class="cm">// Revalidate every 24 hours (ISR)</span>
+<span class="kw">export const</span> revalidate = <span class="num">86400</span>;
+
+<span class="kw">type</span> Props = { params: { slug: <span class="ty">string</span> } };
+
+<span class="kw">export default async function</span> <span class="fn">ConstituencyPage</span>({ params }: Props) {
+  <span class="kw">const</span> constituency = <span class="kw">await</span> <span class="fn">getConstituencyBySlug</span>(params.slug);
+  <span class="kw">if</span> (!constituency) <span class="fn">notFound</span>();
+
+  <span class="kw">return</span> (
+    &lt;<span class="fn">main</span>&gt;
+      &lt;<span class="fn">ConstituencyHero</span> constituency={constituency} /&gt;
+
+      &lt;<span class="fn">section</span> className=<span class="str">"container py-12"</span>&gt;
+        &lt;<span class="fn">h2</span>&gt;2026 Candidates&lt;/<span class="fn">h2</span>&gt;
+        &lt;<span class="fn">CandidateGrid</span>
+          candidates={constituency.candidates}
+          constituencySlug={constituency.slug}
+        /&gt;
+      &lt;/<span class="fn">section</span>&gt;
+
+      &lt;<span class="fn">section</span> className=<span class="str">"container py-12 bg-surface"</span>&gt;
+        &lt;<span class="fn">h2</span>&gt;Historical Vote Share&lt;/<span class="fn">h2</span>&gt;
+        &lt;<span class="fn">VoteShareChart</span> data={constituency.historicalResults} /&gt;
+      &lt;/<span class="fn">section</span>&gt;
+
+      &lt;<span class="fn">section</span> className=<span class="str">"container py-12"</span>&gt;
+        &lt;<span class="fn">h2</span>&gt;Past Election Results&lt;/<span class="fn">h2</span>&gt;
+        &lt;<span class="fn">HistoricalResults</span> results={constituency.historicalResults} /&gt;
+      &lt;/<span class="fn">section</span>&gt;
+
+      &lt;<span class="fn">ConstituencyMap</span> geojson={constituency.geojson} /&gt;
+    &lt;/<span class="fn">main</span>&gt;
+  );
+}</pre>
+  </div>
+</div>
+
+<!-- ═══ UI COMPONENTS ═══ -->
+<div class="page" id="page-components">
+  <div class="eyebrow">Component Library</div>
+  <h1>UI <em>Components</em></h1>
+  <p class="lead">Kerala 2026's component library is built entirely with Tailwind CSS and TypeScript. All components are Server Components by default, with <code>"use client"</code> only where interactivity is needed. Fully accessible, WCAG AA compliant, Malayalam-text ready.</p>
+
+  <h2>Component Directory</h2>
+  <div class="comp-grid">
+    <div class="comp-card">
+      <div class="comp-cat" style="color:var(--saffron)">Candidate</div>
+      <div class="comp-name">CandidateCard</div>
+      <div class="comp-desc">The primary card showing candidate photo, name (English + Malayalam), party badge, constituency, and quick stats. Used in grids across the site.</div>
+      <div class="comp-props"><span class="prop">candidate</span><span class="prop">variant</span><span class="prop">showConstituency</span><span class="prop">compact</span></div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-cat" style="color:var(--saffron)">Candidate</div>
+      <div class="comp-name">CandidateProfile</div>
+      <div class="comp-desc">Full candidate detail view: HD photo with zoom, complete bio, tabbed sections (Assets, Criminal Cases, History, Social), affidavit PDF embed.</div>
+      <div class="comp-props"><span class="prop">candidate</span><span class="prop">historicalResults</span></div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-cat" style="color:var(--saffron)">Candidate</div>
+      <div class="comp-name">CandidateGrid</div>
+      <div class="comp-desc">Responsive grid of CandidateCards. Handles empty state, loading skeleton, and shows incumbents first with a special badge.</div>
+      <div class="comp-props"><span class="prop">candidates</span><span class="prop">columns</span><span class="prop">showPartyBadge</span></div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-cat" style="color:var(--blue)">Constituency</div>
+      <div class="comp-name">ConstituencyCard</div>
+      <div class="comp-desc">Card showing constituency number, name (EN + ML), district, current party holder, candidate count, and last election margin.</div>
+      <div class="comp-props"><span class="prop">constituency</span><span class="prop">showMap</span><span class="prop">compact</span></div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-cat" style="color:var(--blue)">Constituency</div>
+      <div class="comp-name">ConstituencyHero</div>
+      <div class="comp-desc">Full-width hero section for a constituency page. Shows name, district, voter count, category badge, election countdown, and party colour strip.</div>
+      <div class="comp-props"><span class="prop">constituency</span><span class="prop">electionDate</span></div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-cat" style="color:var(--blue)">Constituency</div>
+      <div class="comp-name">HistoricalResults</div>
+      <div class="comp-desc">Table of past election results with winner name, party, votes, margin, and turnout. Sortable by year. Expandable rows show all candidates.</div>
+      <div class="comp-props"><span class="prop">results</span><span class="prop">defaultYears</span></div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-cat" style="color:var(--green)">Charts</div>
+      <div class="comp-name">VoteShareChart</div>
+      <div class="comp-desc">Interactive line chart showing party vote share across elections. Party colours applied automatically. Hover tooltips. Powered by Recharts.</div>
+      <div class="comp-props"><span class="prop">data</span><span class="prop">parties</span><span class="prop">height</span></div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-cat" style="color:var(--green)">Charts</div>
+      <div class="comp-name">SeatDistributionChart</div>
+      <div class="comp-desc">Donut chart showing current seat distribution across coalitions. Animated on mount. Clickable segments navigate to party pages.</div>
+      <div class="comp-props"><span class="prop">data</span><span class="prop">totalSeats</span></div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-cat" style="color:var(--green)">Charts</div>
+      <div class="comp-name">TurnoutTrendChart</div>
+      <div class="comp-desc">Bar chart of voter turnout by election year for a constituency. Compares against state average line. Color-codes above/below average bars.</div>
+      <div class="comp-props"><span class="prop">data</span><span class="prop">stateAverage</span></div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-cat" style="color:var(--gold)">Maps</div>
+      <div class="comp-name">KeralaMap</div>
+      <div class="comp-desc">Interactive Mapbox map of all 140 constituencies. Click to navigate. Color-coded by current party holder or winning coalition. Zoom to district.</div>
+      <div class="comp-props"><span class="prop">colorBy</span><span class="prop">onConstituencyClick</span><span class="prop">highlightSlug</span></div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-cat" style="color:var(--gold)">Maps</div>
+      <div class="comp-name">ConstituencyMap</div>
+      <div class="comp-desc">Single constituency map showing the constituency boundary within Kerala. Shows neighboring constituencies. Displays voter polling booth count.</div>
+      <div class="comp-props"><span class="prop">geojson</span><span class="prop">constituency</span></div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-cat" style="color:var(--text3)">Search</div>
+      <div class="comp-name">SearchBar</div>
+      <div class="comp-desc">Global search input with keyboard shortcut (⌘K / Ctrl+K). Debounced Meilisearch queries. Grouped results: candidates, constituencies, parties.</div>
+      <div class="comp-props"><span class="prop">placeholder</span><span class="prop">autoFocus</span><span class="prop">onSelect</span></div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-cat" style="color:var(--text3)">UI</div>
+      <div class="comp-name">PartyBadge</div>
+      <div class="comp-desc">Inline party badge with party colour, abbreviation, and optional full name. Sizes: xs, sm, md, lg. Used extensively across candidate cards.</div>
+      <div class="comp-props"><span class="prop">party</span><span class="prop">size</span><span class="prop">showFullName</span></div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-cat" style="color:var(--text3)">UI</div>
+      <div class="comp-name">AssetBreakdown</div>
+      <div class="comp-desc">Visual breakdown of candidate declared assets. Shows movable vs immovable split, total value formatted in INR lakhs/crores, source citation.</div>
+      <div class="comp-props"><span class="prop">assets</span><span class="prop">totalValue</span></div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-cat" style="color:var(--text3)">UI</div>
+      <div class="comp-name">CriminalCaseTag</div>
+      <div class="comp-desc">Warning badge showing criminal case count. Red for serious cases, orange for others. Links to full case details. 0 cases shows a green checkmark.</div>
+      <div class="comp-props"><span class="prop">cases</span><span class="prop">candidateSlug</span></div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-cat" style="color:var(--red)">Phase 2</div>
+      <div class="comp-name">LiveResultCard</div>
+      <div class="comp-desc">Real-time result card per constituency. Shows leader name, party, current vote count, opponent gap, rounds completed. Pulses when updated.</div>
+      <div class="comp-props"><span class="prop">constituencyId</span><span class="prop">socket</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CANDIDATE CARD ═══ -->
+<div class="page" id="page-candidatecard">
+  <div class="eyebrow">Core Component</div>
+  <h1>Candidate <em>Card</em> Component</h1>
+  <p class="lead">The CandidateCard is the most visible component on the platform. It appears on constituency pages, party pages, search results, and the candidates grid. It must display beautifully at multiple sizes and handle missing photos gracefully.</p>
+
+  <h2>Component Specification</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Prop</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>candidate</code></td><td><code>Candidate</code></td><td>required</td><td>Full candidate object from DB</td></tr>
+        <tr><td><code>variant</code></td><td><code>'default' | 'compact' | 'featured'</code></td><td><code>'default'</code></td><td>Layout variant</td></tr>
+        <tr><td><code>showConstituency</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Show constituency name below candidate name</td></tr>
+        <tr><td><code>showAssets</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Show declared assets summary</td></tr>
+        <tr><td><code>showCriminalBadge</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Show criminal case count badge</td></tr>
+        <tr><td><code>priority</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Next.js image priority (above fold candidates)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Full Component Code</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — components/candidate/CandidateCard.tsx</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> Image <span class="kw">from</span> <span class="str">'next/image'</span>;
+<span class="kw">import</span> Link <span class="kw">from</span> <span class="str">'next/link'</span>;
+<span class="kw">import</span> { <span class="ty">Candidate</span> } <span class="kw">from</span> <span class="str">'@kerala2026/types'</span>;
+<span class="kw">import</span> PartyBadge <span class="kw">from</span> <span class="str">'@/components/ui/PartyBadge'</span>;
+<span class="kw">import</span> CriminalCaseTag <span class="kw">from</span> <span class="str">'@/components/ui/CriminalCaseTag'</span>;
+<span class="kw">import</span> { <span class="fn">formatCrores</span>, <span class="fn">calculateAge</span> } <span class="kw">from</span> <span class="str">'@kerala2026/utils'</span>;
+<span class="kw">import</span> { <span class="fn">cn</span> } <span class="kw">from</span> <span class="str">'@/lib/utils'</span>;
+
+<span class="kw">interface</span> <span class="ty">CandidateCardProps</span> {
+  candidate:           <span class="ty">Candidate</span>;
+  variant?:            <span class="str">'default'</span> | <span class="str">'compact'</span> | <span class="str">'featured'</span>;
+  showConstituency?:   <span class="ty">boolean</span>;
+  showAssets?:         <span class="ty">boolean</span>;
+  showCriminalBadge?:  <span class="ty">boolean</span>;
+  priority?:           <span class="ty">boolean</span>;
+}
+
+<span class="kw">export default function</span> <span class="fn">CandidateCard</span>({
+  candidate,
+  variant = <span class="str">'default'</span>,
+  showConstituency = <span class="kw">false</span>,
+  showAssets = <span class="kw">false</span>,
+  showCriminalBadge = <span class="kw">true</span>,
+  priority = <span class="kw">false</span>,
+}: <span class="ty">CandidateCardProps</span>) {
+  <span class="kw">const</span> age = candidate.dateOfBirth
+    ? <span class="fn">calculateAge</span>(candidate.dateOfBirth)
+    : <span class="kw">null</span>;
+
+  <span class="kw">return</span> (
+    &lt;<span class="fn">Link</span>
+      href={<span class="str">`/candidates/</span><span class="at">${candidate.slug}</span><span class="str">`</span>}
+      className={<span class="fn">cn</span>(
+        <span class="str">"group block bg-white border border-border2 rounded-xl overflow-hidden"</span>,
+        <span class="str">"transition-all duration-200 hover:border-saffron hover:shadow-md hover:-translate-y-1"</span>,
+        variant === <span class="str">'compact'</span> &amp;&amp; <span class="str">"flex items-center gap-4 p-3"</span>,
+        variant === <span class="str">'featured'</span> &amp;&amp; <span class="str">"relative"</span>,
+      )}
+    &gt;
+      {<span class="cm">/* PHOTO */</span>}
+      &lt;<span class="fn">div</span> className={<span class="fn">cn</span>(
+        <span class="str">"relative bg-bg2 overflow-hidden"</span>,
+        variant === <span class="str">'default'</span> &amp;&amp; <span class="str">"aspect-[3/4]"</span>,
+        variant === <span class="str">'compact'</span> &amp;&amp; <span class="str">"w-16 h-16 rounded-lg flex-shrink-0"</span>,
+        variant === <span class="str">'featured'</span> &amp;&amp; <span class="str">"aspect-[4/5]"</span>,
+      )}&gt;
+        {candidate.photoUrl ? (
+          &lt;<span class="fn">Image</span>
+            src={candidate.photoUrl}
+            alt={<span class="str">`</span><span class="at">${candidate.nameEn}</span><span class="str"> — </span><span class="at">${candidate.party?.nameEn}</span><span class="str"> candidate`</span>}
+            fill
+            className=<span class="str">"object-cover object-top transition-transform duration-300 group-hover:scale-105"</span>
+            priority={priority}
+            sizes=<span class="str">"(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"</span>
+          /&gt;
+        ) : (
+          &lt;<span class="fn">div</span> className=<span class="str">"w-full h-full flex items-center justify-center text-text3"</span>&gt;
+            &lt;<span class="cm">{/* Placeholder silhouette SVG */}</span>
+            &lt;<span class="fn">svg</span> className=<span class="str">"w-1/3 h-1/3 opacity-20"</span> viewBox=<span class="str">"0 0 24 24"</span> fill=<span class="str">"currentColor"</span>&gt;
+              &lt;<span class="fn">path</span> d=<span class="str">"M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"</span>/&gt;
+            &lt;/<span class="fn">svg</span>&gt;
+          &lt;/<span class="fn">div</span>&gt;
+        )}
+
+        {<span class="cm">{/* Incumbent badge */}</span>}
+        {candidate.isIncumbent &amp;&amp; (
+          &lt;<span class="fn">div</span> className=<span class="str">"absolute top-2 left-2 bg-saffron text-white text-xs font-bold px-2 py-0.5 rounded"</span>&gt;
+            Incumbent
+          &lt;/<span class="fn">div</span>&gt;
+        )}
+
+        {<span class="cm">{/* Party color strip at bottom */}</span>}
+        <span class="kw">if</span> (candidate.party) {
+          &lt;<span class="fn">div</span>
+            className=<span class="str">"absolute bottom-0 left-0 right-0 h-1"</span>
+            style={{ background: candidate.party.colorHex }}
+          /&gt;
+        }
+      &lt;/<span class="fn">div</span>&gt;
+
+      {<span class="cm">{/* INFO */}</span>}
+      &lt;<span class="fn">div</span> className=<span class="str">"p-4"</span>&gt;
+        {<span class="cm">{/* Party badge */}</span>}
+        {candidate.party &amp;&amp; (
+          &lt;<span class="fn">PartyBadge</span> party={candidate.party} size=<span class="str">"sm"</span> className=<span class="str">"mb-2"</span> /&gt;
+        )}
+
+        {<span class="cm">{/* Candidate name in English */}</span>}
+        &lt;<span class="fn">h3</span> className=<span class="str">"font-display font-bold text-base text-text leading-tight"</span>&gt;
+          {candidate.nameEn}
+        &lt;/<span class="fn">h3</span>&gt;
+
+        {<span class="cm">{/* Candidate name in Malayalam */}</span>}
+        {candidate.nameMl &amp;&amp; (
+          &lt;<span class="fn">p</span> className=<span class="str">"font-ml text-sm text-text2 mt-0.5"</span>&gt;{candidate.nameMl}&lt;/<span class="fn">p</span>&gt;
+        )}
+
+        {showConstituency &amp;&amp; candidate.constituency &amp;&amp; (
+          &lt;<span class="fn">p</span> className=<span class="str">"text-xs text-text3 mt-1"</span>&gt;
+            {candidate.constituency.nameEn}
+          &lt;/<span class="fn">p</span>&gt;
+        )}
+
+        {<span class="cm">{/* Meta row: age, terms */}</span>}
+        &lt;<span class="fn">div</span> className=<span class="str">"flex items-center gap-3 mt-2 text-xs text-text3"</span>&gt;
+          {age &amp;&amp; &lt;<span class="fn">span</span>&gt;Age {age}&lt;/<span class="fn">span</span>&gt;}
+          {candidate.termsServed &gt; <span class="num">0</span> &amp;&amp; (
+            &lt;<span class="fn">span</span>&gt;{candidate.termsServed} term{candidate.termsServed &gt; <span class="num">1</span> ? <span class="str">'s'</span> : <span class="str">''</span>}&lt;/<span class="fn">span</span>&gt;
+          )}
+        &lt;/<span class="fn">div</span>&gt;
+
+        {<span class="cm">{/* Assets + Criminal badge row */}</span>}
+        &lt;<span class="fn">div</span> className=<span class="str">"flex items-center justify-between mt-3"</span>&gt;
+          {showAssets &amp;&amp; candidate.totalAssetsInr &amp;&amp; (
+            &lt;<span class="fn">span</span> className=<span class="str">"text-xs text-text2"</span>&gt;
+              ₹{<span class="fn">formatCrores</span>(candidate.totalAssetsInr)}
+            &lt;/<span class="fn">span</span>&gt;
+          )}
+          {showCriminalBadge &amp;&amp; (
+            &lt;<span class="fn">CriminalCaseTag</span> cases={candidate.criminalCases} /&gt;
+          )}
+        &lt;/<span class="fn">div</span>&gt;
+      &lt;/<span class="fn">div</span>&gt;
+    &lt;/<span class="fn">Link</span>&gt;
+  );
+}</pre>
+  </div>
+
+  <h2>Candidate Profile Page Layout</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — components/candidate/CandidateProfile.tsx</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="cm">// Full candidate profile — used at /candidates/[slug]</span>
+<span class="kw">export default function</span> <span class="fn">CandidateProfile</span>({ candidate, results }: Props) {
+  <span class="kw">return</span> (
+    &lt;<span class="fn">article</span> className=<span class="str">"max-w-5xl mx-auto px-4 py-12"</span>&gt;
+
+      {<span class="cm">{/* HERO: Photo + Quick Info */}</span>}
+      &lt;<span class="fn">section</span> className=<span class="str">"grid grid-cols-1 md:grid-cols-[300px_1fr] gap-10 mb-12"</span>&gt;
+        &lt;<span class="fn">div</span>&gt;
+          &lt;<span class="fn">div</span> className=<span class="str">"relative aspect-[3/4] rounded-xl overflow-hidden shadow-lg"</span>&gt;
+            &lt;<span class="fn">Image</span> src={candidate.photoUrl} fill className=<span class="str">"object-cover object-top"</span>
+              alt={candidate.nameEn} priority /&gt;
+            &lt;<span class="fn">div</span> className=<span class="str">"absolute bottom-0 left-0 right-0 h-1.5"</span>
+              style={{ background: candidate.party?.colorHex }} /&gt;
+          &lt;/<span class="fn">div</span>&gt;
+          &lt;<span class="fn">SocialLinks</span> candidate={candidate} className=<span class="str">"mt-4"</span> /&gt;
+        &lt;/<span class="fn">div</span>&gt;
+
+        &lt;<span class="fn">div</span>&gt;
+          &lt;<span class="fn">PartyBadge</span> party={candidate.party} size=<span class="str">"lg"</span> className=<span class="str">"mb-3"</span> /&gt;
+          &lt;<span class="fn">h1</span> className=<span class="str">"font-display text-4xl font-black mb-1"</span>&gt;{candidate.nameEn}&lt;/<span class="fn">h1</span>&gt;
+          &lt;<span class="fn">p</span> className=<span class="str">"font-ml text-2xl text-text2 mb-4"</span>&gt;{candidate.nameMl}&lt;/<span class="fn">p</span>&gt;
+
+          &lt;<span class="fn">InfoGrid</span>&gt;
+            &lt;<span class="fn">InfoItem</span> label=<span class="str">"Constituency"</span>
+              value={candidate.constituency.nameEn} /&gt;
+            &lt;<span class="fn">InfoItem</span> label=<span class="str">"Age"</span>
+              value={<span class="fn">calculateAge</span>(candidate.dateOfBirth) + <span class="str">' years'</span>} /&gt;
+            &lt;<span class="fn">InfoItem</span> label=<span class="str">"Education"</span>
+              value={candidate.education} /&gt;
+            &lt;<span class="fn">InfoItem</span> label=<span class="str">"Profession"</span>
+              value={candidate.profession} /&gt;
+            &lt;<span class="fn">InfoItem</span> label=<span class="str">"Terms Served"</span>
+              value={candidate.termsServed || <span class="str">'First Time'</span>} /&gt;
+          &lt;/<span class="fn">InfoGrid</span>&gt;
+
+          &lt;<span class="fn">div</span> className=<span class="str">"flex gap-3 mt-6"</span>&gt;
+            &lt;<span class="fn">AssetTag</span> value={candidate.totalAssetsInr} /&gt;
+            &lt;<span class="fn">CriminalCaseTag</span> cases={candidate.criminalCases} large /&gt;
+            {candidate.isIncumbent &amp;&amp; &lt;<span class="fn">IncumbentTag</span> /&gt;}
+          &lt;/<span class="fn">div</span>&gt;
+        &lt;/<span class="fn">div</span>&gt;
+      &lt;/<span class="fn">section</span>&gt;
+
+      {<span class="cm">{/* TABS: Bio / Assets / Criminal Cases / History */}</span>}
+      &lt;<span class="fn">Tabs</span> defaultTab=<span class="str">"bio"</span>&gt;
+        &lt;<span class="fn">TabPanel</span> id=<span class="str">"bio"</span> label=<span class="str">"Biography"</span>&gt;
+          &lt;<span class="fn">p</span> className=<span class="str">"text-text2 leading-relaxed"</span>&gt;{candidate.bio}&lt;/<span class="fn">p</span>&gt;
+        &lt;/<span class="fn">TabPanel</span>&gt;
+        &lt;<span class="fn">TabPanel</span> id=<span class="str">"assets"</span> label=<span class="str">"Assets & Liabilities"</span>&gt;
+          &lt;<span class="fn">AssetBreakdown</span> assets={candidate.assets} /&gt;
+        &lt;/<span class="fn">TabPanel</span>&gt;
+        &lt;<span class="fn">TabPanel</span> id=<span class="str">"cases"</span> label={<span class="str">`Criminal Cases (</span><span class="at">${candidate.criminalCases}</span><span class="str">)`</span>}&gt;
+          &lt;<span class="fn">CriminalCaseList</span> cases={candidate.cases} /&gt;
+        &lt;/<span class="fn">TabPanel</span>&gt;
+        &lt;<span class="fn">TabPanel</span> id=<span class="str">"history"</span> label=<span class="str">"Election History"</span>&gt;
+          &lt;<span class="fn">CandidateHistory</span> results={results} /&gt;
+        &lt;/<span class="fn">TabPanel</span>&gt;
+      &lt;/<span class="fn">Tabs</span>&gt;
+
+      {<span class="cm">{/* Affidavit PDF embed */}</span>}
+      {candidate.affidavitUrl &amp;&amp; (
+        &lt;<span class="fn">section</span> className=<span class="str">"mt-8"</span>&gt;
+          &lt;<span class="fn">h2</span>&gt;Official Affidavit&lt;/<span class="fn">h2</span>&gt;
+          &lt;<span class="fn">a</span> href={candidate.affidavitUrl} target=<span class="str">"_blank"</span>
+            className=<span class="str">"btn btn-outline"</span>&gt;
+            Download Affidavit PDF ↗
+          &lt;/<span class="fn">a</span>&gt;
+        &lt;/<span class="fn">section</span>&gt;
+      )}
+    &lt;/<span class="fn">article</span>&gt;
+  );
+}</pre>
+  </div>
+</div>
+
+<!-- ═══ CONSTITUENCY PAGE ═══ -->
+<div class="page" id="page-constituency">
+  <div class="eyebrow">Core Page</div>
+  <h1>Constituency <em>Page</em> Design</h1>
+  <p class="lead">Each of the 140 constituency pages is a data-rich, SEO-optimised static page generated at build time. It's the heart of the platform — where voters come to understand their local election landscape.</p>
+
+  <h2>Page Section Breakdown</h2>
+  <div class="route-list">
+    <div class="route-item">
+      <div class="route-method GET">SEC 1</div>
+      <div>
+        <div class="route-path">Constituency Hero</div>
+        <div class="route-desc">Full-width header with constituency name in English and Malayalam, district badge, constituency number, category (General/SC/ST), voter count (2026 updated rolls), and election countdown timer. Party colour strip at bottom based on 2021 winner.</div>
+        <div class="route-tags"><span class="rtag" style="background:var(--saffron-dim);color:var(--saffron);border-color:rgba(255,107,53,0.3)">Server Component</span></div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method GET">SEC 2</div>
+      <div>
+        <div class="route-path">2026 Candidates Grid</div>
+        <div class="route-desc">Full grid of all candidates standing from this constituency in 2026. Shows CandidateCard with photo, name, party badge, criminal case tag, and declared assets. Incumbent candidate marked with a special badge. Sorted: incumbent first, then by party (LDF → UDF → NDA → Others).</div>
+        <div class="route-tags"><span class="rtag" style="background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.3)">SSG</span></div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method GET">SEC 3</div>
+      <div>
+        <div class="route-path">Vote Share Trend Chart</div>
+        <div class="route-desc">Interactive Recharts line chart showing vote share percentage for each major party across all elections (1957–2021). Hover tooltips show exact percentages. Legend below chart. Party colours applied. Toggleable series by clicking legend items.</div>
+        <div class="route-tags"><span class="rtag" style="background:var(--saffron-dim);color:var(--saffron);border-color:rgba(255,107,53,0.3)">Client Component</span><span class="rtag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">Recharts</span></div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method GET">SEC 4</div>
+      <div>
+        <div class="route-path">Historical Results Table</div>
+        <div class="route-desc">Complete table of all election results for this constituency going back to 1957. Columns: Year, Winner, Party, Votes, Runner-Up, Margin, Turnout. Expandable rows show all candidates for that year. Alternating row background for readability.</div>
+        <div class="route-tags"><span class="rtag" style="background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.3)">Server Component</span></div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method GET">SEC 5</div>
+      <div>
+        <div class="route-path">Constituency Map</div>
+        <div class="route-desc">Mapbox GL JS map showing the constituency boundary. Colour-filled with 2021 winning party colour. Labels for major towns within the constituency. Shows neighboring constituency names. "Open in Full Map" button links to the Kerala state map with this constituency highlighted.</div>
+        <div class="route-tags"><span class="rtag" style="background:var(--saffron-dim);color:var(--saffron);border-color:rgba(255,107,53,0.3)">Client Component</span><span class="rtag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">Mapbox GL</span></div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method GET">SEC 6</div>
+      <div>
+        <div class="route-path">Constituency Stats</div>
+        <div class="route-desc">Key stats cards: Total voters (2026), Male voters, Female voters, Other voters, Number of polling stations, Area (sq km), Literacy rate, Urban/Rural split. Data sourced from Election Commission of India.</div>
+        <div class="route-tags"><span class="rtag" style="background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.3)">Server Component</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SEARCH ═══ -->
+<div class="page" id="page-search">
+  <div class="eyebrow">Search System</div>
+  <h1>Search <em>System</em></h1>
+  <p class="lead">Kerala 2026 uses Meilisearch for fast full-text search across candidates, constituencies, and parties. Meilisearch is chosen for its excellent multilingual support (critical for Malayalam), typo tolerance, and open-source nature.</p>
+
+  <h2>Search Indices</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Index</th><th>Searchable Fields</th><th>Filterable Fields</th><th>Sortable Fields</th></tr></thead>
+      <tbody>
+        <tr><td><code>candidates</code></td><td>nameEn, nameMl, profession, bio, party.nameEn</td><td>district, party, gender, isIncumbent, criminalCases, electionYear</td><td>nameEn, termsServed, totalAssetsInr</td></tr>
+        <tr><td><code>constituencies</code></td><td>nameEn, nameMl, description, district.nameEn</td><td>district, category, partyHolder</td><td>number, nameEn</td></tr>
+        <tr><td><code>parties</code></td><td>nameEn, nameMl, abbreviation, ideology</td><td>coalition</td><td>nameEn</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Search Setup — Meilisearch Configuration</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — apps/api/src/modules/search/search.service.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> MeiliSearch <span class="kw">from</span> <span class="str">'meilisearch'</span>;
+<span class="kw">import</span> { env } <span class="kw">from</span> <span class="str">'../config/env'</span>;
+
+<span class="kw">export const</span> meilisearch = <span class="kw">new</span> <span class="fn">MeiliSearch</span>({
+  host:   env.MEILISEARCH_HOST,
+  apiKey: env.MEILISEARCH_MASTER_KEY,
+});
+
+<span class="cm">// Configure candidates index</span>
+<span class="kw">export async function</span> <span class="fn">configureCandidatesIndex</span>() {
+  <span class="kw">const</span> index = meilisearch.<span class="fn">index</span>(<span class="str">'candidates'</span>);
+
+  <span class="kw">await</span> index.<span class="fn">updateSettings</span>({
+    searchableAttributes: [
+      <span class="str">'nameEn'</span>, <span class="str">'nameMl'</span>, <span class="str">'party.nameEn'</span>, <span class="str">'party.abbreviation'</span>,
+      <span class="str">'constituency.nameEn'</span>, <span class="str">'constituency.nameMl'</span>, <span class="str">'profession'</span>, <span class="str">'bio'</span>,
+    ],
+    filterableAttributes: [
+      <span class="str">'district'</span>, <span class="str">'party.slug'</span>, <span class="str">'party.coalition'</span>,
+      <span class="str">'gender'</span>, <span class="str">'isIncumbent'</span>, <span class="str">'electionYear'</span>,
+      <span class="str">'criminalCases'</span>, <span class="str">'nominationStatus'</span>,
+    ],
+    sortableAttributes: [<span class="str">'nameEn'</span>, <span class="str">'termsServed'</span>, <span class="str">'totalAssetsInr'</span>],
+    typoTolerance: {
+      enabled: <span class="kw">true</span>,
+      minWordSizeForTypos: { oneTypo: <span class="num">4</span>, twoTypos: <span class="num">8</span> },
+    },
+    <span class="cm">// Support both Malayalam and English characters</span>
+    nonSeparatorTokens: [],
+    separatorTokens:    [],
+    dictionary:         [],
+  });
+}
+
+<span class="cm">// Sync all candidates to Meilisearch</span>
+<span class="kw">export async function</span> <span class="fn">syncCandidatesToSearch</span>(candidates: <span class="ty">any</span>[]) {
+  <span class="kw">const</span> index = meilisearch.<span class="fn">index</span>(<span class="str">'candidates'</span>);
+  <span class="kw">await</span> index.<span class="fn">addDocuments</span>(candidates, { primaryKey: <span class="str">'id'</span> });
+}
+
+<span class="cm">// Search candidates with filters</span>
+<span class="kw">export async function</span> <span class="fn">searchCandidates</span>(query: <span class="ty">string</span>, filters?: <span class="ty">SearchFilters</span>) {
+  <span class="kw">const</span> index = meilisearch.<span class="fn">index</span>(<span class="str">'candidates'</span>);
+  <span class="kw">const</span> filterStr = <span class="fn">buildFilterString</span>(filters);
+
+  <span class="kw">return</span> index.<span class="fn">search</span>(query, {
+    limit:             <span class="num">20</span>,
+    attributesToHighlight: [<span class="str">'nameEn'</span>, <span class="str">'nameMl'</span>],
+    highlightPreTag:   <span class="str">'&lt;mark&gt;'</span>,
+    highlightPostTag:  <span class="str">'&lt;/mark&gt;'</span>,
+    filter:            filterStr || <span class="kw">undefined</span>,
+    sort:              filters?.sort || [<span class="str">'nameEn:asc'</span>],
+  });
+}</pre>
+  </div>
+
+  <h2>SearchBar Component</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — components/search/SearchBar.tsx</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="str">"use client"</span>;
+
+<span class="kw">import</span> { useState, useEffect, useRef, useCallback } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> { useRouter } <span class="kw">from</span> <span class="str">'next/navigation'</span>;
+<span class="kw">import</span> { useDebouncedCallback } <span class="kw">from</span> <span class="str">'use-debounce'</span>;
+
+<span class="kw">export default function</span> <span class="fn">SearchBar</span>() {
+  <span class="kw">const</span> [open, setOpen] = <span class="fn">useState</span>(<span class="kw">false</span>);
+  <span class="kw">const</span> [query, setQuery] = <span class="fn">useState</span>(<span class="str">''</span>);
+  <span class="kw">const</span> [results, setResults] = <span class="fn">useState</span>({ candidates: [], constituencies: [], parties: [] });
+  <span class="kw">const</span> [loading, setLoading] = <span class="fn">useState</span>(<span class="kw">false</span>);
+  <span class="kw">const</span> inputRef = <span class="fn">useRef</span>&lt;<span class="ty">HTMLInputElement</span>&gt;(<span class="kw">null</span>);
+  <span class="kw">const</span> router = <span class="fn">useRouter</span>();
+
+  <span class="cm">// Keyboard shortcut: ⌘K or Ctrl+K</span>
+  <span class="fn">useEffect</span>(() => {
+    <span class="kw">function</span> <span class="fn">handler</span>(e: <span class="ty">KeyboardEvent</span>) {
+      <span class="kw">if</span> ((e.metaKey || e.ctrlKey) &amp;&amp; e.key === <span class="str">'k'</span>) {
+        e.<span class="fn">preventDefault</span>();
+        <span class="fn">setOpen</span>(prev => !prev);
+        <span class="fn">setTimeout</span>(() => inputRef.current?.<span class="fn">focus</span>(), <span class="num">50</span>);
+      }
+      <span class="kw">if</span> (e.key === <span class="str">'Escape'</span>) <span class="fn">setOpen</span>(<span class="kw">false</span>);
+    }
+    document.<span class="fn">addEventListener</span>(<span class="str">'keydown'</span>, handler);
+    <span class="kw">return</span> () => document.<span class="fn">removeEventListener</span>(<span class="str">'keydown'</span>, handler);
+  }, []);
+
+  <span class="cm">// Debounced search — fires 300ms after user stops typing</span>
+  <span class="kw">const</span> <span class="fn">search</span> = <span class="fn">useDebouncedCallback</span>(<span class="kw">async</span> (q: <span class="ty">string</span>) => {
+    <span class="kw">if</span> (!q.trim()) { <span class="fn">setResults</span>({ candidates: [], constituencies: [], parties: [] }); <span class="kw">return</span>; }
+    <span class="fn">setLoading</span>(<span class="kw">true</span>);
+    <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">`/api/search?q=</span><span class="at">${encodeURIComponent(q)}</span><span class="str">`</span>);
+    <span class="kw">const</span> data = <span class="kw">await</span> res.<span class="fn">json</span>();
+    <span class="fn">setResults</span>(data);
+    <span class="fn">setLoading</span>(<span class="kw">false</span>);
+  }, <span class="num">300</span>);
+
+  <span class="kw">return</span> (
+    &lt;&gt;
+      {<span class="cm">{/* Trigger button in header */}</span>}
+      &lt;<span class="fn">button</span> onClick={() => <span class="fn">setOpen</span>(<span class="kw">true</span>)}
+        className=<span class="str">"flex items-center gap-2 px-4 py-2 bg-bg2 rounded-full text-text3 text-sm"</span>&gt;
+        Search candidates, constituencies...
+        &lt;<span class="fn">kbd</span> className=<span class="str">"ml-auto text-xs bg-white border rounded px-1"</span>&gt;⌘K&lt;/<span class="fn">kbd</span>&gt;
+      &lt;/<span class="fn">button</span>&gt;
+
+      {<span class="cm">{/* Modal overlay */}</span>}
+      {open &amp;&amp; (
+        &lt;<span class="fn">div</span> className=<span class="str">"fixed inset-0 z-50 flex items-start justify-center pt-20 px-4"</span>&gt;
+          &lt;<span class="fn">div</span> className=<span class="str">"absolute inset-0 bg-black/50"</span> onClick={() => <span class="fn">setOpen</span>(<span class="kw">false</span>)} /&gt;
+          &lt;<span class="fn">div</span> className=<span class="str">"relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden"</span>&gt;
+            &lt;<span class="fn">input</span>
+              ref={inputRef}
+              value={query}
+              onChange={e => { <span class="fn">setQuery</span>(e.target.value); <span class="fn">search</span>(e.target.value); }}
+              placeholder=<span class="str">"Search candidates, constituencies, parties..."</span>
+              className=<span class="str">"w-full px-6 py-4 text-lg border-b border-border outline-none"</span>
+            /&gt;
+            &lt;<span class="fn">SearchResults</span> results={results} loading={loading} onSelect={() => <span class="fn">setOpen</span>(<span class="kw">false</span>)} /&gt;
+          &lt;/<span class="fn">div</span>&gt;
+        &lt;/<span class="fn">div</span>&gt;
+      )}
+    &lt;/&gt;
+  );
+}</pre>
+  </div>
+</div>
+
+<!-- ═══ CHARTS ═══ -->
+<div class="page" id="page-charts">
+  <div class="eyebrow">Data Visualization</div>
+  <h1>Charts <em>& Maps</em></h1>
+  <p class="lead">Kerala 2026 uses Recharts for vote share charts and D3.js for complex custom visualizations. Mapbox GL JS powers all geographic constituency maps. All charts are responsive, animated on mount, and accessible.</p>
+
+  <h2>VoteShareChart — Full Implementation</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — components/charts/VoteShareChart.tsx</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="str">"use client"</span>;
+
+<span class="kw">import</span> {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  Legend, ResponsiveContainer
+} <span class="kw">from</span> <span class="str">'recharts'</span>;
+<span class="kw">import</span> { <span class="ty">ElectionResult</span> } <span class="kw">from</span> <span class="str">'@kerala2026/types'</span>;
+
+<span class="kw">const</span> PARTY_COLORS = {
+  <span class="str">'LDF'</span>: <span class="str">'#E31E24'</span>,
+  <span class="str">'UDF'</span>: <span class="str">'#00BFFF'</span>,
+  <span class="str">'NDA'</span>: <span class="str">'#FF6B35'</span>,
+  <span class="str">'INC'</span>: <span class="str">'#00BFFF'</span>,
+  <span class="str">'CPM'</span>: <span class="str">'#E31E24'</span>,
+  <span class="str">'IND'</span>: <span class="str">'#888888'</span>,
+} <span class="kw">as const</span>;
+
+<span class="kw">interface</span> Props {
+  data:     <span class="ty">ElectionResult</span>[];
+  height?:  <span class="ty">number</span>;
+}
+
+<span class="cm">// Transform raw results into chart-friendly format</span>
+<span class="kw">function</span> <span class="fn">transformData</span>(data: <span class="ty">ElectionResult</span>[]) {
+  <span class="kw">const</span> byYear = <span class="kw">new</span> <span class="ty">Map</span>&lt;<span class="ty">number</span>, <span class="ty">Record</span>&lt;<span class="ty">string</span>, <span class="ty">number</span>&gt;&gt;();
+
+  data.<span class="fn">forEach</span>(result => {
+    <span class="kw">if</span> (!byYear.<span class="fn">has</span>(result.electionYear)) {
+      byYear.<span class="fn">set</span>(result.electionYear, { year: result.electionYear });
+    }
+    <span class="kw">const</span> yearData = byYear.<span class="fn">get</span>(result.electionYear)!;
+    yearData[result.party?.coalition || <span class="str">'IND'</span>] = result.votePercentage;
+  });
+
+  <span class="kw">return</span> <span class="ty">Array</span>.<span class="fn">from</span>(byYear.values()).<span class="fn">sort</span>((a, b) => a.year - b.year);
+}
+
+<span class="kw">export default function</span> <span class="fn">VoteShareChart</span>({ data, height = <span class="num">320</span> }: Props) {
+  <span class="kw">const</span> chartData = <span class="fn">transformData</span>(data);
+  <span class="kw">const</span> parties = [<span class="str">'LDF'</span>, <span class="str">'UDF'</span>, <span class="str">'NDA'</span>];
+
+  <span class="kw">return</span> (
+    &lt;<span class="fn">ResponsiveContainer</span> width=<span class="str">"100%"</span> height={height}&gt;
+      &lt;<span class="fn">LineChart</span> data={chartData} margin={{ top: <span class="num">5</span>, right: <span class="num">20</span>, left: <span class="num">0</span>, bottom: <span class="num">5</span> }}&gt;
+        &lt;<span class="fn">CartesianGrid</span> strokeDasharray=<span class="str">"3 3"</span> stroke=<span class="str">"#f0f0f0"</span> /&gt;
+        &lt;<span class="fn">XAxis</span> dataKey=<span class="str">"year"</span> tick={{ fontSize: <span class="num">12</span>, fontFamily: <span class="str">'var(--fm)'</span> }} /&gt;
+        &lt;<span class="fn">YAxis</span>
+          domain={[<span class="num">0</span>, <span class="num">100</span>]}
+          tickFormatter={v => <span class="str">`</span><span class="at">${v}</span><span class="str">%`</span>}
+          tick={{ fontSize: <span class="num">12</span>, fontFamily: <span class="str">'var(--fm)'</span> }}
+        /&gt;
+        &lt;<span class="fn">Tooltip</span>
+          formatter={(value: <span class="ty">number</span>, name: <span class="ty">string</span>) => [<span class="str">`</span><span class="at">${value.toFixed(1)}</span><span class="str">%`</span>, name]}
+          contentStyle={{ fontFamily: <span class="str">'var(--fb)'</span>, fontSize: <span class="num">12</span> }}
+        /&gt;
+        &lt;<span class="fn">Legend</span> /&gt;
+        {parties.<span class="fn">map</span>(party => (
+          &lt;<span class="fn">Line</span>
+            key={party}
+            type=<span class="str">"monotone"</span>
+            dataKey={party}
+            stroke={PARTY_COLORS[party <span class="kw">as</span> <span class="kw">keyof typeof</span> PARTY_COLORS]}
+            strokeWidth={<span class="num">2.5</span>}
+            dot={{ r: <span class="num">4</span>, strokeWidth: <span class="num">2</span> }}
+            activeDot={{ r: <span class="num">6</span> }}
+            connectNulls
+          /&gt;
+        ))}
+      &lt;/<span class="fn">LineChart</span>&gt;
+    &lt;/<span class="fn">ResponsiveContainer</span>&gt;
+  );
+}</pre>
+  </div>
+
+  <h2>Kerala Map Implementation</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — components/map/KeralaMap.tsx</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="str">"use client"</span>;
+
+<span class="kw">import</span> { useEffect, useRef } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> mapboxgl <span class="kw">from</span> <span class="str">'mapbox-gl'</span>;
+<span class="kw">import</span> { useRouter } <span class="kw">from</span> <span class="str">'next/navigation'</span>;
+<span class="kw">import</span> { <span class="ty">Constituency</span> } <span class="kw">from</span> <span class="str">'@kerala2026/types'</span>;
+
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
+
+<span class="kw">const</span> COALITION_COLORS = {
+  LDF: <span class="str">'#E31E24'</span>, UDF: <span class="str">'#00BFFF'</span>,
+  NDA: <span class="str">'#FF6B35'</span>, IND: <span class="str">'#888888'</span>
+};
+
+<span class="kw">export default function</span> <span class="fn">KeralaMap</span>({
+  constituencies, colorBy = <span class="str">'party'</span>, onConstituencyClick
+}: Props) {
+  <span class="kw">const</span> mapContainer = <span class="fn">useRef</span>&lt;<span class="ty">HTMLDivElement</span>&gt;(<span class="kw">null</span>);
+  <span class="kw">const</span> map = <span class="fn">useRef</span>&lt;<span class="ty">mapboxgl.Map</span> | <span class="kw">null</span>&gt;(<span class="kw">null</span>);
+  <span class="kw">const</span> router = <span class="fn">useRouter</span>();
+
+  <span class="fn">useEffect</span>(() => {
+    <span class="kw">if</span> (map.current || !mapContainer.current) <span class="kw">return</span>;
+
+    map.current = <span class="kw">new</span> mapboxgl.<span class="fn">Map</span>({
+      container:  mapContainer.current,
+      style:      <span class="str">'mapbox://styles/mapbox/light-v11'</span>,
+      center:     [<span class="num">76.2711</span>, <span class="num">10.8505</span>],  <span class="cm">// Kerala center</span>
+      zoom:       <span class="num">6.8</span>,
+      minZoom:    <span class="num">6</span>,
+      maxZoom:    <span class="num">12</span>,
+      maxBounds:  [[<span class="num">74.8</span>, <span class="num">8.2</span>], [<span class="num">77.6</span>, <span class="num">12.8</span>]], <span class="cm">// Constrain to Kerala</span>
+    });
+
+    map.current.<span class="fn">on</span>(<span class="str">'load'</span>, () => {
+      <span class="cm">// Add constituency GeoJSON source</span>
+      map.current!.<span class="fn">addSource</span>(<span class="str">'constituencies'</span>, {
+        type: <span class="str">'geojson'</span>,
+        data: { type: <span class="str">'FeatureCollection'</span>, features: constituencies.<span class="fn">map</span>(c => ({
+          type: <span class="str">'Feature'</span>,
+          properties: {
+            slug:      c.slug,
+            nameEn:    c.nameEn,
+            nameMl:    c.nameMl,
+            coalition: c.lastWinner?.party?.coalition || <span class="str">'IND'</span>,
+            color:     COALITION_COLORS[c.lastWinner?.party?.coalition || <span class="str">'IND'</span>],
+          },
+          geometry: c.geojson
+        }))},
+      });
+
+      <span class="cm">// Fill layer: colour by winning coalition</span>
+      map.current!.<span class="fn">addLayer</span>({
+        id:     <span class="str">'constituencies-fill'</span>,
+        type:   <span class="str">'fill'</span>,
+        source: <span class="str">'constituencies'</span>,
+        paint: {
+          <span class="str">'fill-color'</span>:   [<span class="str">'get'</span>, <span class="str">'color'</span>],
+          <span class="str">'fill-opacity'</span>: <span class="num">0.65</span>,
+        },
+      });
+
+      <span class="cm">// Outline layer</span>
+      map.current!.<span class="fn">addLayer</span>({
+        id:     <span class="str">'constituencies-outline'</span>,
+        type:   <span class="str">'line'</span>,
+        source: <span class="str">'constituencies'</span>,
+        paint: { <span class="str">'line-color'</span>: <span class="str">'#FFFFFF'</span>, <span class="str">'line-width'</span>: <span class="num">0.8</span> },
+      });
+
+      <span class="cm">// Click handler: navigate to constituency page</span>
+      map.current!.<span class="fn">on</span>(<span class="str">'click'</span>, <span class="str">'constituencies-fill'</span>, e => {
+        <span class="kw">const</span> props = e.features?.[<span class="num">0</span>]?.properties;
+        <span class="kw">if</span> (props?.slug) {
+          <span class="kw">if</span> (onConstituencyClick) <span class="fn">onConstituencyClick</span>(props.slug);
+          <span class="kw">else</span> router.<span class="fn">push</span>(<span class="str">`/constituencies/</span><span class="at">${props.slug}</span><span class="str">`</span>);
+        }
+      });
+
+      <span class="cm">// Hover cursor</span>
+      map.current!.<span class="fn">on</span>(<span class="str">'mouseenter'</span>, <span class="str">'constituencies-fill'</span>, () => {
+        map.current!.getCanvas().style.cursor = <span class="str">'pointer'</span>;
+      });
+      map.current!.<span class="fn">on</span>(<span class="str">'mouseleave'</span>, <span class="str">'constituencies-fill'</span>, () => {
+        map.current!.getCanvas().style.cursor = <span class="str">''</span>;
+      });
+    });
+
+    <span class="kw">return</span> () => map.current?.<span class="fn">remove</span>();
+  }, []);
+
+  <span class="kw">return</span> &lt;<span class="fn">div</span> ref={mapContainer} className=<span class="str">"w-full h-[500px] rounded-xl overflow-hidden"</span> /&gt;;
+}</pre>
+  </div>
+</div>
+
+<!-- ═══ API OVERVIEW ═══ -->
+<div class="page" id="page-apioverview">
+  <div class="eyebrow">REST API — Node.js + Express</div>
+  <h1>API <em>Overview</em></h1>
+  <p class="lead">The Kerala 2026 backend is a RESTful API built with Node.js and Express. All endpoints are versioned under <code>/api/v1</code>. The API is publicly accessible — no authentication required for read endpoints. Write endpoints (for admin data entry) require admin JWT.</p>
+
+  <div class="success-box"><strong>Public API:</strong> All GET endpoints are public and can be used by journalists, researchers, and third-party applications. Please credit Kerala 2026 when using the data. Rate limit: 100 requests/minute per IP.</div>
+
+  <h2>Base URLs</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Environment</th><th>URL</th></tr></thead>
+      <tbody>
+        <tr><td>Production</td><td><code>https://api.kerala2026.in/api/v1</code></td></tr>
+        <tr><td>Development</td><td><code>http://localhost:3001/api/v1</code></td></tr>
+        <tr><td>Health Check</td><td><code>GET /health</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Response Format</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">JSON — Standard response envelope</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="cm">// Success response</span>
+{
+  <span class="str">"success"</span>: <span class="kw">true</span>,
+  <span class="str">"data"</span>: { ... },            <span class="cm">// or array for lists</span>
+  <span class="str">"message"</span>: <span class="str">"Success"</span>,
+  <span class="str">"pagination"</span>: {             <span class="cm">// only for list endpoints</span>
+    <span class="str">"page"</span>:       <span class="num">1</span>,
+    <span class="str">"limit"</span>:      <span class="num">20</span>,
+    <span class="str">"total"</span>:      <span class="num">140</span>,
+    <span class="str">"totalPages"</span>: <span class="num">7</span>
+  }
+}
+
+<span class="cm">// Error response</span>
+{
+  <span class="str">"success"</span>: <span class="kw">false</span>,
+  <span class="str">"error"</span>: <span class="str">"Constituency not found"</span>,
+  <span class="str">"code"</span>:  <span class="str">"NOT_FOUND"</span>,
+  <span class="str">"status"</span>: <span class="num">404</span>
+}</pre>
+  </div>
+</div>
+
+<!-- ═══ CONSTITUENCY API ═══ -->
+<div class="page" id="page-apiconst">
+  <div class="eyebrow">API Reference</div>
+  <h1>Constituency <em>API</em></h1>
+  <p class="lead">Complete constituency data endpoints — list, detail, historical results, and district filtering.</p>
+
+  <div class="route-list">
+    <div class="route-item">
+      <div class="route-method GET">GET</div>
+      <div>
+        <div class="route-path">/api/v1/constituencies</div>
+        <div class="route-desc">List all 140 constituencies with basic info. Supports pagination, filtering by district, category, coalition. Returns name, number, slug, district, voter count.</div>
+        <div class="route-tags">
+          <span class="rtag" style="background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.3)">Public</span>
+          <span class="rtag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">?district=thiruvananthapuram</span>
+          <span class="rtag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">?category=general</span>
+          <span class="rtag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">?coalition=LDF</span>
+        </div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method GET">GET</div>
+      <div>
+        <div class="route-path">/api/v1/constituencies/:slug</div>
+        <div class="route-desc">Full constituency detail including candidates (2026), historical results, voter stats, geojson boundary, and district info. This is the main data source for constituency pages.</div>
+        <div class="route-tags">
+          <span class="rtag" style="background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.3)">Public</span>
+          <span class="rtag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">?includeGeojson=true</span>
+          <span class="rtag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">?includeHistory=true</span>
+        </div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method GET">GET</div>
+      <div>
+        <div class="route-path">/api/v1/constituencies/:slug/results</div>
+        <div class="route-desc">All historical election results for one constituency. Year range filter optional. Returns winner, all candidates, vote counts, percentages, turnout, margin.</div>
+        <div class="route-tags">
+          <span class="rtag" style="background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.3)">Public</span>
+          <span class="rtag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">?fromYear=2001</span>
+          <span class="rtag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">?toYear=2021</span>
+        </div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method GET">GET</div>
+      <div>
+        <div class="route-path">/api/v1/constituencies/:slug/candidates</div>
+        <div class="route-desc">All 2026 candidates for a constituency. Includes party info, photo URL, criminal case count, asset totals, nomination status.</div>
+        <div class="route-tags">
+          <span class="rtag" style="background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.3)">Public</span>
+        </div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method GET">GET</div>
+      <div>
+        <div class="route-path">/api/v1/districts</div>
+        <div class="route-desc">All 14 districts with constituency count and basic stats. Used for district navigation and filtering.</div>
+        <div class="route-tags"><span class="rtag" style="background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.3)">Public</span></div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method GET">GET</div>
+      <div>
+        <div class="route-path">/api/v1/districts/:slug/constituencies</div>
+        <div class="route-desc">All constituencies in a district. Returns same format as /constituencies but filtered. Used for district overview pages.</div>
+        <div class="route-tags"><span class="rtag" style="background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.3)">Public</span></div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method POST">POST</div>
+      <div>
+        <div class="route-path">/api/v1/constituencies</div>
+        <div class="route-desc">Create a new constituency record. Admin only. Body: name_en, name_ml, district_id, number, category, geojson.</div>
+        <div class="route-tags"><span class="rtag" style="background:var(--blue-dim);color:var(--blue);border-color:rgba(0,0,128,0.2)">Admin JWT</span></div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method PUT">PUT</div>
+      <div>
+        <div class="route-path">/api/v1/constituencies/:id</div>
+        <div class="route-desc">Update constituency data (voter counts, geojson, description). Admin only. Partial updates supported (PATCH semantics).</div>
+        <div class="route-tags"><span class="rtag" style="background:var(--blue-dim);color:var(--blue);border-color:rgba(0,0,128,0.2)">Admin JWT</span></div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Constituency Service Implementation</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — modules/constituencies/constituencies.service.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { eq, and, isNull, ilike } <span class="kw">from</span> <span class="str">'drizzle-orm'</span>;
+<span class="kw">import</span> { db } <span class="kw">from</span> <span class="str">'../../config/db'</span>;
+<span class="kw">import</span> { constituencies, candidates, electionResults, parties, districts } <span class="kw">from</span> <span class="str">'@kerala2026/db'</span>;
+
+<span class="kw">export async function</span> <span class="fn">getConstituencyBySlug</span>(slug: <span class="ty">string</span>) {
+  <span class="kw">const</span> [constituency] = <span class="kw">await</span> db
+    .<span class="fn">select</span>()
+    .<span class="fn">from</span>(constituencies)
+    .<span class="fn">leftJoin</span>(districts, eq(constituencies.districtId, districts.id))
+    .<span class="fn">where</span>(<span class="fn">and</span>(
+      <span class="fn">eq</span>(constituencies.slug, slug),
+      <span class="fn">isNull</span>(constituencies.deletedAt)
+    ))
+    .<span class="fn">limit</span>(<span class="num">1</span>);
+
+  <span class="kw">if</span> (!constituency) <span class="kw">return null</span>;
+
+  <span class="cm">// Fetch candidates for this constituency</span>
+  <span class="kw">const</span> constituencyCandidates = <span class="kw">await</span> db
+    .<span class="fn">select</span>()
+    .<span class="fn">from</span>(candidates)
+    .<span class="fn">leftJoin</span>(parties, <span class="fn">eq</span>(candidates.partyId, parties.id))
+    .<span class="fn">where</span>(<span class="fn">and</span>(
+      <span class="fn">eq</span>(candidates.constituencyId, constituency.constituencies.id),
+      <span class="fn">eq</span>(candidates.electionYear, <span class="num">2026</span>),
+      <span class="fn">isNull</span>(candidates.deletedAt)
+    ))
+    .<span class="fn">orderBy</span>(candidates.isIncumbent); <span class="cm">// incumbents first</span>
+
+  <span class="cm">// Fetch historical results</span>
+  <span class="kw">const</span> results = <span class="kw">await</span> db
+    .<span class="fn">select</span>()
+    .<span class="fn">from</span>(electionResults)
+    .<span class="fn">leftJoin</span>(parties, <span class="fn">eq</span>(electionResults.partyId, parties.id))
+    .<span class="fn">where</span>(<span class="fn">eq</span>(electionResults.constituencyId, constituency.constituencies.id))
+    .<span class="fn">orderBy</span>(electionResults.electionYear);
+
+  <span class="kw">return</span> {
+    ...constituency.constituencies,
+    district:          constituency.districts,
+    candidates:        constituencyCandidates,
+    historicalResults: results,
+  };
+}</pre>
+  </div>
+</div>
+
+<!-- ═══ CANDIDATE API ═══ -->
+<div class="page" id="page-apicand">
+  <div class="eyebrow">API Reference</div>
+  <h1>Candidate <em>API</em></h1>
+  <p class="lead">Candidate data endpoints including profiles, assets, criminal cases, and election history.</p>
+
+  <div class="route-list">
+    <div class="route-item">
+      <div class="route-method GET">GET</div>
+      <div>
+        <div class="route-path">/api/v1/candidates</div>
+        <div class="route-desc">List candidates with pagination and filtering. Filter by constituency, party, gender, isIncumbent, hasCriminalCases. Search by name using q= parameter.</div>
+        <div class="route-tags">
+          <span class="rtag" style="background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.3)">Public</span>
+          <span class="rtag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">?q=name</span>
+          <span class="rtag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">?party=cpim</span>
+          <span class="rtag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">?gender=female</span>
+          <span class="rtag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">?isIncumbent=true</span>
+        </div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method GET">GET</div>
+      <div>
+        <div class="route-path">/api/v1/candidates/:slug</div>
+        <div class="route-desc">Full candidate profile including assets list, criminal cases, election history (all past elections this person has contested), social links, affidavit URL.</div>
+        <div class="route-tags">
+          <span class="rtag" style="background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.3)">Public</span>
+        </div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method GET">GET</div>
+      <div>
+        <div class="route-path">/api/v1/candidates/:slug/history</div>
+        <div class="route-desc">All past elections this candidate has contested. Returns year, constituency, party, votes, position, won/lost. Used for the History tab on candidate profile page.</div>
+        <div class="route-tags"><span class="rtag" style="background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.3)">Public</span></div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method POST">POST</div>
+      <div>
+        <div class="route-path">/api/v1/candidates</div>
+        <div class="route-desc">Create candidate record. Admin only. Full candidate object including nomination_status. Photo upload handled separately via /api/v1/upload.</div>
+        <div class="route-tags"><span class="rtag" style="background:var(--blue-dim);color:var(--blue);border-color:rgba(0,0,128,0.2)">Admin JWT</span></div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method PUT">PUT</div>
+      <div>
+        <div class="route-path">/api/v1/candidates/:id</div>
+        <div class="route-desc">Update candidate data. Admin only. Used when nomination details change, assets updated, or criminal cases filed. Partial update supported.</div>
+        <div class="route-tags"><span class="rtag" style="background:var(--blue-dim);color:var(--blue);border-color:rgba(0,0,128,0.2)">Admin JWT</span></div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method POST">POST</div>
+      <div>
+        <div class="route-path">/api/v1/upload/candidate-photo</div>
+        <div class="route-desc">Upload candidate photo to Cloudflare R2. Returns CDN URL. Accepts multipart/form-data. Auto-optimises to WebP, 600×800px. Admin only.</div>
+        <div class="route-tags"><span class="rtag" style="background:var(--blue-dim);color:var(--blue);border-color:rgba(0,0,128,0.2)">Admin JWT</span><span class="rtag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">multipart/form-data</span></div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method POST">POST</div>
+      <div>
+        <div class="route-path">/api/v1/candidates/import</div>
+        <div class="route-desc">Bulk import candidates from CSV. CSV format: name_en, name_ml, constituency_slug, party_slug, dob, gender, education, profession, criminal_cases, total_assets. Admin only.</div>
+        <div class="route-tags"><span class="rtag" style="background:var(--blue-dim);color:var(--blue);border-color:rgba(0,0,128,0.2)">Admin JWT</span><span class="rtag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">CSV Import</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PARTY & RESULTS API ═══ -->
+<div class="page" id="page-apiparty">
+  <div class="eyebrow">API Reference</div>
+  <h1>Party & Results <em>API</em></h1>
+
+  <div class="route-list">
+    <div class="route-item">
+      <div class="route-method GET">GET</div>
+      <div><div class="route-path">/api/v1/parties</div><div class="route-desc">All parties contesting 2026. Returns name, abbreviation, coalition, color, logo, candidate count in 2026, historical seat counts.</div><div class="route-tags"><span class="rtag" style="background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.3)">Public</span></div></div>
+    </div>
+    <div class="route-item">
+      <div class="route-method GET">GET</div>
+      <div><div class="route-path">/api/v1/parties/:slug</div><div class="route-desc">Party detail with all 2026 candidates, historical performance (1957–2021), seat count by year, vote share by year. Used for party detail pages.</div><div class="route-tags"><span class="rtag" style="background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.3)">Public</span></div></div>
+    </div>
+    <div class="route-item">
+      <div class="route-method GET">GET</div>
+      <div><div class="route-path">/api/v1/results/:year</div><div class="route-desc">All election results for a given year across all constituencies. Optional district filter. Returns winner per constituency with vote counts and margins.</div><div class="route-tags"><span class="rtag" style="background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.3)">Public</span><span class="rtag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">?district=ernakulam</span></div></div>
+    </div>
+    <div class="route-item">
+      <div class="route-method GET">GET</div>
+      <div><div class="route-path">/api/v1/search</div><div class="route-desc">Unified search across candidates, constituencies, parties. Returns grouped results. Powered by Meilisearch. Supports Malayalam queries.</div><div class="route-tags"><span class="rtag" style="background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.3)">Public</span><span class="rtag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">?q=query</span><span class="rtag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">?type=candidates</span></div></div>
+    </div>
+    <div class="route-item">
+      <div class="route-method GET">GET</div>
+      <div><div class="route-path">/api/v1/stats/summary</div><div class="route-desc">Platform summary stats: total candidates, constituencies, parties, data completeness percentage. Used on home page and about page.</div><div class="route-tags"><span class="rtag" style="background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.3)">Public</span></div></div>
+    </div>
+    <div class="route-item">
+      <div class="route-method GET">GET</div>
+      <div><div class="route-path">/api/v1/live-results</div><div class="route-desc">Phase 2 only. Current live counting results for all constituencies. Returns leading candidate, vote count, rounds completed, status.</div><div class="route-tags"><span class="rtag" style="background:var(--saffron-dim);color:var(--saffron);border-color:rgba(255,107,53,0.3)">Phase 2</span><span class="rtag" style="background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.3)">Public</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PHASE 2 SCRAPER ═══ -->
+<div class="page" id="page-p2scraper">
+  <div class="eyebrow">Phase 2 — Result Day</div>
+  <h1>Live Results <em>Scraper</em></h1>
+  <p class="lead">On election result day, the Phase 2 scraper activates. It periodically scrapes official results from the Kerala CEO website and the Election Commission of India portal, storing updates in PostgreSQL and broadcasting via Socket.io WebSocket to all connected browsers.</p>
+
+  <div class="warn-box"><strong>Phase 2 is inactive during Phase 1.</strong> The <code>SCRAPER_ENABLED=false</code> environment variable ensures it doesn't run. On result day, flip to <code>true</code> and deploy. The scraper and WebSocket server activate automatically.</div>
+
+  <h2>Live Results Architecture</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — apps/scraper/src/scraper.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> puppeteer <span class="kw">from</span> <span class="str">'puppeteer'</span>;
+<span class="kw">import</span> * <span class="kw">as</span> cheerio <span class="kw">from</span> <span class="str">'cheerio'</span>;
+<span class="kw">import</span> { db } <span class="kw">from</span> <span class="str">'../../packages/db'</span>;
+<span class="kw">import</span> { liveResults } <span class="kw">from</span> <span class="str">'@kerala2026/db'</span>;
+<span class="kw">import</span> { broadcast } <span class="kw">from</span> <span class="str">'./websocket'</span>;
+
+<span class="kw">const</span> CEO_KERALA_URL = <span class="str">'https://ceo.kerala.gov.in/electoralroll2025.html'</span>;
+<span class="kw">const</span> ECI_RESULTS_URL = <span class="str">'https://results.eci.gov.in'</span>;
+
+<span class="kw">export async function</span> <span class="fn">scrapeAndUpdate</span>() {
+  <span class="kw">const</span> browser = <span class="kw">await</span> puppeteer.<span class="fn">launch</span>({
+    headless: <span class="kw">true</span>,
+    args: [<span class="str">'--no-sandbox'</span>, <span class="str">'--disable-setuid-sandbox'</span>],
+  });
+
+  <span class="kw">try</span> {
+    <span class="kw">const</span> page = <span class="kw">await</span> browser.<span class="fn">newPage</span>();
+
+    <span class="cm">// Set realistic user agent to avoid blocks</span>
+    <span class="kw">await</span> page.<span class="fn">setUserAgent</span>(
+      <span class="str">'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'</span>
+    );
+
+    <span class="cm">// Navigate to results page</span>
+    <span class="kw">await</span> page.<span class="fn">goto</span>(ECI_RESULTS_URL, {
+      waitUntil: <span class="str">'networkidle2'</span>,
+      timeout:   <span class="num">30000</span>,
+    });
+
+    <span class="cm">// Wait for results table to load</span>
+    <span class="kw">await</span> page.<span class="fn">waitForSelector</span>(<span class="str">'.result-table'</span>, { timeout: <span class="num">15000</span> });
+
+    <span class="kw">const</span> html = <span class="kw">await</span> page.<span class="fn">content</span>();
+    <span class="kw">const</span> $ = cheerio.<span class="fn">load</span>(html);
+    <span class="kw">const</span> updates: <span class="ty">LiveResultUpdate</span>[] = [];
+
+    <span class="cm">// Parse each constituency row</span>
+    $(<span class="str">'.result-table tr[data-constituency]'</span>).<span class="fn">each</span>((_, el) => {
+      <span class="kw">const</span> constituencyNum = $(<span class="fn">el</span>).<span class="fn">attr</span>(<span class="str">'data-constituency'</span>);
+      <span class="kw">const</span> rows = $(<span class="fn">el</span>).<span class="fn">find</span>(<span class="str">'td'</span>);
+
+      updates.<span class="fn">push</span>({
+        constituencyNumber:  <span class="ty">parseInt</span>(constituencyNum!),
+        leadingCandidateName: rows.<span class="fn">eq</span>(<span class="num">0</span>).<span class="fn">text</span>().<span class="fn">trim</span>(),
+        leadingParty:         rows.<span class="fn">eq</span>(<span class="num">1</span>).<span class="fn">text</span>().<span class="fn">trim</span>(),
+        votesSoFar:           <span class="ty">parseInt</span>(rows.<span class="fn">eq</span>(<span class="num">2</span>).<span class="fn">text</span>().<span class="fn">replace</span>(<span class="str">/,/g</span>, <span class="str">''</span>)),
+        leadMargin:           <span class="ty">parseInt</span>(rows.<span class="fn">eq</span>(<span class="num">3</span>).<span class="fn">text</span>().<span class="fn">replace</span>(<span class="str">/,/g</span>, <span class="str">''</span>)),
+        roundsCompleted:      <span class="ty">parseInt</span>(rows.<span class="fn">eq</span>(<span class="num">4</span>).<span class="fn">text</span>()),
+        status:               rows.<span class="fn">eq</span>(<span class="num">5</span>).<span class="fn">text</span>().<span class="fn">trim</span>() <span class="kw">as</span> <span class="ty">ResultStatus</span>,
+        lastUpdated:          <span class="kw">new</span> <span class="ty">Date</span>(),
+      });
+    });
+
+    <span class="cm">// Upsert to database</span>
+    <span class="kw">await</span> <span class="fn">upsertLiveResults</span>(updates);
+
+    <span class="cm">// Broadcast to all WebSocket clients</span>
+    <span class="fn">broadcast</span>({ type: <span class="str">'RESULTS_UPDATE'</span>, data: updates, timestamp: <span class="kw">new</span> <span class="ty">Date</span>() });
+
+    console.<span class="fn">log</span>(<span class="str">`Scraped </span><span class="at">${updates.length}</span><span class="str"> constituency updates`</span>);
+  } <span class="kw">catch</span> (err) {
+    console.<span class="fn">error</span>(<span class="str">'Scraping failed:'</span>, err);
+    <span class="cm">// Don't throw — scheduler will retry in 60s</span>
+  } <span class="kw">finally</span> {
+    <span class="kw">await</span> browser.<span class="fn">close</span>();
+  }
+}
+
+<span class="cm">// Scheduler: runs every 60 seconds on result day</span>
+<span class="kw">export function</span> <span class="fn">startScheduler</span>() {
+  <span class="kw">if</span> (process.env.SCRAPER_ENABLED !== <span class="str">'true'</span>) {
+    console.<span class="fn">log</span>(<span class="str">'Scraper disabled. Set SCRAPER_ENABLED=true on result day.'</span>);
+    <span class="kw">return</span>;
+  }
+  console.<span class="fn">log</span>(<span class="str">'🔴 LIVE SCRAPER ACTIVE — updating every 60 seconds'</span>);
+  <span class="fn">scrapeAndUpdate</span>(); <span class="cm">// Run immediately on start</span>
+  <span class="fn">setInterval</span>(<span class="fn">scrapeAndUpdate</span>, <span class="num">60_000</span>);
+}</pre>
+  </div>
+
+  <h2>WebSocket Server</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — apps/scraper/src/websocket.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { Server } <span class="kw">from</span> <span class="str">'socket.io'</span>;
+<span class="kw">import</span> http <span class="kw">from</span> <span class="str">'http'</span>;
+
+<span class="kw">let</span> io: Server;
+
+<span class="kw">export function</span> <span class="fn">initWebSocket</span>(httpServer: http.Server) {
+  io = <span class="kw">new</span> <span class="fn">Server</span>(httpServer, {
+    cors: { origin: process.env.FRONTEND_URL, methods: [<span class="str">'GET'</span>, <span class="str">'POST'</span>] }
+  });
+
+  io.<span class="fn">on</span>(<span class="str">'connection'</span>, socket => {
+    console.<span class="fn">log</span>(<span class="str">`Client connected: </span><span class="at">${socket.id}</span><span class="str">`</span>);
+
+    <span class="cm">// Send current state to newly connected client</span>
+    <span class="fn">sendCurrentResults</span>(socket);
+
+    <span class="cm">// Allow clients to subscribe to specific constituency</span>
+    socket.<span class="fn">on</span>(<span class="str">'subscribe:constituency'</span>, (slug: <span class="ty">string</span>) => {
+      socket.<span class="fn">join</span>(<span class="str">`constituency:</span><span class="at">${slug}</span><span class="str">`</span>);
+    });
+
+    socket.<span class="fn">on</span>(<span class="str">'disconnect'</span>, () => {
+      console.<span class="fn">log</span>(<span class="str">`Client disconnected: </span><span class="at">${socket.id}</span><span class="str">`</span>);
+    });
+  });
+}
+
+<span class="cm">// Broadcast to ALL connected clients</span>
+<span class="kw">export function</span> <span class="fn">broadcast</span>(data: <span class="ty">any</span>) {
+  io?.<span class="fn">emit</span>(<span class="str">'results:update'</span>, data);
+}
+
+<span class="cm">// Broadcast to specific constituency room</span>
+<span class="kw">export function</span> <span class="fn">broadcastToConstituency</span>(slug: <span class="ty">string</span>, data: <span class="ty">any</span>) {
+  io?.<span class="fn">to</span>(<span class="str">`constituency:</span><span class="at">${slug}</span><span class="str">`</span>).<span class="fn">emit</span>(<span class="str">'results:update'</span>, data);
+}</pre>
+  </div>
+
+  <h2>Live Results Frontend (Phase 2)</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — components/results/LiveResultCard.tsx</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="str">"use client"</span>;
+
+<span class="kw">import</span> { useEffect, useState } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> { io, Socket } <span class="kw">from</span> <span class="str">'socket.io-client'</span>;
+<span class="kw">import</span> { <span class="fn">cn</span> } <span class="kw">from</span> <span class="str">'@/lib/utils'</span>;
+
+<span class="kw">export function</span> <span class="fn">useLiveResults</span>() {
+  <span class="kw">const</span> [results, setResults] = <span class="fn">useState</span>&lt;<span class="ty">Record</span>&lt;<span class="ty">string</span>, <span class="ty">LiveResult</span>&gt;&gt;({});
+  <span class="kw">const</span> [connected, setConnected] = <span class="fn">useState</span>(<span class="kw">false</span>);
+
+  <span class="fn">useEffect</span>(() => {
+    <span class="kw">const</span> socket: <span class="ty">Socket</span> = <span class="fn">io</span>(process.env.NEXT_PUBLIC_WEBSOCKET_URL!);
+
+    socket.<span class="fn">on</span>(<span class="str">'connect'</span>, () => <span class="fn">setConnected</span>(<span class="kw">true</span>));
+    socket.<span class="fn">on</span>(<span class="str">'disconnect'</span>, () => <span class="fn">setConnected</span>(<span class="kw">false</span>));
+
+    socket.<span class="fn">on</span>(<span class="str">'results:update'</span>, (data: <span class="ty">ResultsUpdateEvent</span>) => {
+      <span class="fn">setResults</span>(prev => {
+        <span class="kw">const</span> updated = { ...prev };
+        data.data.<span class="fn">forEach</span>(r => { updated[r.constituencySlug] = r; });
+        <span class="kw">return</span> updated;
+      });
+    });
+
+    <span class="kw">return</span> () => { socket.<span class="fn">disconnect</span>(); };
+  }, []);
+
+  <span class="kw">return</span> { results, connected };
+}
+
+<span class="kw">export function</span> <span class="fn">LiveResultCard</span>({ constituencySlug }: { constituencySlug: <span class="ty">string</span> }) {
+  <span class="kw">const</span> { results, connected } = <span class="fn">useLiveResults</span>();
+  <span class="kw">const</span> result = results[constituencySlug];
+  <span class="kw">const</span> [pulse, setPulse] = <span class="fn">useState</span>(<span class="kw">false</span>);
+
+  <span class="fn">useEffect</span>(() => {
+    <span class="kw">if</span> (result) {
+      <span class="fn">setPulse</span>(<span class="kw">true</span>);
+      <span class="kw">const</span> t = <span class="fn">setTimeout</span>(() => <span class="fn">setPulse</span>(<span class="kw">false</span>), <span class="num">1000</span>);
+      <span class="kw">return</span> () => <span class="fn">clearTimeout</span>(t);
+    }
+  }, [result?.votesSoFar]);
+
+  <span class="kw">return</span> (
+    &lt;<span class="fn">div</span> className={<span class="fn">cn</span>(
+      <span class="str">"p-4 rounded-xl border border-border2 bg-white transition-all"</span>,
+      pulse &amp;&amp; <span class="str">"border-green bg-green-50 shadow-md"</span>
+    )}&gt;
+      &lt;<span class="fn">div</span> className=<span class="str">"flex items-center gap-2 mb-3"</span>&gt;
+        &lt;<span class="fn">span</span> className={<span class="fn">cn</span>(
+          <span class="str">"w-2 h-2 rounded-full"</span>,
+          connected ? <span class="str">"bg-green animate-pulse"</span> : <span class="str">"bg-gray-300"</span>
+        )} /&gt;
+        &lt;<span class="fn">span</span> className=<span class="str">"text-xs text-text3"</span>&gt;{connected ? <span class="str">'Live'</span> : <span class="str">'Connecting...'</span>}&lt;/<span class="fn">span</span>&gt;
+      &lt;/<span class="fn">div</span>&gt;
+      {result ? (
+        &lt;&gt;
+          &lt;<span class="fn">p</span> className=<span class="str">"font-display font-bold text-lg"</span>&gt;{result.leadingCandidateName}&lt;/<span class="fn">p</span>&gt;
+          &lt;<span class="fn">p</span> className=<span class="str">"text-sm text-text2"</span>&gt;{result.leadingParty}&lt;/<span class="fn">p</span>&gt;
+          &lt;<span class="fn">p</span> className=<span class="str">"font-mono text-xl font-bold mt-2"</span>&gt;
+            {result.votesSoFar.<span class="fn">toLocaleString</span>(<span class="str">'en-IN'</span>)}
+          &lt;/<span class="fn">p</span>&gt;
+          &lt;<span class="fn">p</span> className=<span class="str">"text-xs text-text3"</span>&gt;
+            Lead by {result.leadMargin.<span class="fn">toLocaleString</span>(<span class="str">'en-IN'</span>)} · Round {result.roundsCompleted}
+          &lt;/<span class="fn">p</span>&gt;
+        &lt;/&gt;
+      ) : (
+        &lt;<span class="fn">p</span> className=<span class="str">"text-text3 text-sm"</span>&gt;Awaiting results...&lt;/<span class="fn">p</span>&gt;
+      )}
+    &lt;/<span class="fn">div</span>&gt;
+  );
+}</pre>
+  </div>
+</div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<script>
+const CRUMBS = {
+  pages:'Frontend Pages',components:'UI Components',candidatecard:'Candidate Card',
+  constituency:'Constituency Page',search:'Search System',charts:'Charts & Maps',
+  apioverview:'API Overview',apiconst:'Constituency API',apicand:'Candidate API',
+  apiparty:'Party & Results API',p2scraper:'Phase 2: Live Scraper'
+};
+function go(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-link').forEach(l=>l.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(el)el.classList.add('active');
+  document.getElementById('crumb').textContent=CRUMBS[id]||id;
+  window.scrollTo(0,0);closeSB();
+}
+function toggleSB(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('visible')}
+function closeSB(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('visible')}
+function copyBlock(btn){
+  const pre=btn.closest('.cb').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent.trim()).then(()=>{
+    const o=btn.textContent;btn.textContent='copied!';
+    setTimeout(()=>{btn.textContent=o;},1800);
+  });
+}
+</script>
+</body>
+</html>

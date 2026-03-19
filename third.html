@@ -1,0 +1,2294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kerala 2026 — Documentation Part 3: Backend & Deploy</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --saffron:#FF6B35;--saffron-dim:rgba(255,107,53,0.10);
+  --green:#138808;--green-dim:rgba(19,136,8,0.10);
+  --blue:#000080;--blue-dim:rgba(0,0,128,0.08);
+  --gold:#F4A500;--gold-dim:rgba(244,165,0,0.10);
+  --red:#E31E24;--red-dim:rgba(227,30,36,0.10);
+  --bg:#FAFAF8;--bg2:#F4F3EF;--bg3:#ECEAE3;
+  --surface:#FFFFFF;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --text:#1A1A1A;--text2:#4A4A4A;--text3:#8A8A8A;
+  --fd:'Playfair Display',serif;--fb:'DM Sans',sans-serif;--fm:'JetBrains Mono',monospace;
+  --r:4px;--rl:8px;--rxl:14px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--saffron);border-radius:3px}
+
+.shell{display:flex;min-height:100vh}
+.sidebar{width:260px;min-width:260px;background:var(--surface);border-right:1px solid var(--border2);position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:50;display:flex;flex-direction:column}
+.main{margin-left:260px;flex:1}
+
+.sb-brand{padding:22px 20px 16px;border-bottom:2px solid var(--border2)}
+.sb-name{font-family:var(--fd);font-size:17px;font-weight:900;color:var(--text)}
+.sb-sub{font-size:10px;color:var(--text3);font-family:var(--fm);letter-spacing:0.06em;text-transform:uppercase;margin-top:4px}
+.sb-nav{padding:12px 10px;flex:1}
+.sb-group{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;padding:0 10px;margin:14px 0 5px}
+.sb-link{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r);cursor:pointer;color:var(--text2);font-size:12.5px;font-weight:500;transition:all 0.15s;text-decoration:none;border-left:3px solid transparent}
+.sb-link:hover{background:var(--bg2);color:var(--text);border-left-color:var(--saffron)}
+.sb-link.active{background:var(--saffron-dim);color:var(--saffron);border-left-color:var(--saffron);font-weight:600}
+.sb-link svg{width:14px;height:14px;flex-shrink:0}
+.sb-footer{padding:14px 20px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--fm)}
+
+.topbar{background:rgba(250,250,248,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;position:sticky;top:0;z-index:20}
+.tb-crumb{font-size:12px;color:var(--text3);font-family:var(--fm);display:flex;align-items:center;gap:6px}
+.tb-sep{opacity:0.3}.tb-cur{color:var(--text2)}
+.tb-right{display:flex;gap:8px;align-items:center}
+.chip{font-size:10px;font-family:var(--fm);padding:3px 9px;border-radius:20px;border:1px solid}
+.chip-s{background:var(--saffron-dim);border-color:rgba(255,107,53,0.3);color:var(--saffron)}
+.chip-g{background:var(--green-dim);border-color:rgba(19,136,8,0.3);color:var(--green)}
+.chip-b{background:var(--blue-dim);border-color:rgba(0,0,128,0.3);color:var(--blue)}
+
+.content{padding:40px 48px 80px;max-width:920px}
+.page{display:none;animation:fadeUp 0.2s ease}
+.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.eyebrow{font-family:var(--fm);font-size:10px;color:var(--saffron);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.eyebrow::before{content:'';display:inline-block;width:24px;height:2px;background:var(--saffron)}
+h1{font-family:var(--fd);font-size:38px;font-weight:900;line-height:1.1;letter-spacing:-0.02em;margin-bottom:14px}
+h1 em{font-style:normal;color:var(--saffron)}
+.lead{font-size:15px;color:var(--text2);line-height:1.75;max-width:700px;margin-bottom:32px}
+h2{font-family:var(--fd);font-size:22px;font-weight:800;letter-spacing:-0.01em;margin:36px 0 12px;display:flex;align-items:center;gap:10px}
+h2::after{content:'';flex:1;height:1px;background:var(--border2);margin-left:8px}
+h3{font-size:15px;font-weight:700;margin:22px 0 10px;color:var(--text)}
+h4{font-size:13px;font-weight:600;margin:16px 0 8px;color:var(--text2)}
+p{font-size:13.5px;color:var(--text2);line-height:1.75;margin-bottom:12px}
+code{font-family:var(--fm);font-size:0.87em;background:var(--bg3);color:var(--saffron);padding:1px 6px;border-radius:3px;border:1px solid var(--border)}
+
+.info-box,.warn-box,.success-box,.note-box{border-radius:var(--rl);padding:14px 18px;font-size:13px;line-height:1.65;margin:14px 0 20px;border-left:4px solid}
+.info-box{background:var(--blue-dim);border-color:var(--blue);color:#000060}
+.warn-box{background:var(--gold-dim);border-color:var(--gold);color:#7A5200}
+.success-box{background:var(--green-dim);border-color:var(--green);color:#0A5A04}
+.note-box{background:var(--saffron-dim);border-color:var(--saffron);color:#8B3A1A}
+
+.cb{background:#1A1A2E;border-radius:var(--rxl);overflow:hidden;margin:14px 0 24px;border:1px solid rgba(255,255,255,0.08)}
+.cb-head{display:flex;align-items:center;padding:10px 16px;background:#16213E;border-bottom:1px solid rgba(255,255,255,0.06)}
+.cb-dots{display:flex;gap:5px}
+.cd{width:10px;height:10px;border-radius:50%}.cd.r{background:#ff5f57}.cd.y{background:#ffbd2e}.cd.g{background:#28c840}
+.cb-lang{flex:1;text-align:right;font-family:var(--fm);font-size:10px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.05em}
+.cb-copy{font-size:10px;font-family:var(--fm);padding:2px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:4px;color:rgba(255,255,255,0.5);cursor:pointer;margin-left:8px;transition:all 0.15s}
+.cb-copy:hover{background:rgba(255,255,255,0.15);color:#fff}
+.cb pre{padding:18px 20px;font-family:var(--fm);font-size:12px;line-height:1.75;color:#B8C5D6;overflow-x:auto;white-space:pre}
+.kw{color:#FF79C6}.str{color:#F1FA8C}.cm{color:#6272A4}.fn{color:#50FA7B}.num{color:#BD93F9}.ty{color:#8BE9FD}.at{color:#FFB86C}
+
+.tree{background:#1A1A2E;border-radius:var(--rxl);overflow:hidden;margin:14px 0 24px;border:1px solid rgba(255,255,255,0.08)}
+.tree-head{display:flex;align-items:center;padding:10px 16px;background:#16213E;border-bottom:1px solid rgba(255,255,255,0.06)}
+.tree-dots{display:flex;gap:5px}
+.tree pre{padding:18px 20px;font-family:var(--fm);font-size:12px;line-height:1.7;color:#B8C5D6;overflow-x:auto;white-space:pre}
+.tr-dir{color:#8BE9FD}.tr-file{color:#F1FA8C}.tr-cm{color:#6272A4}
+
+.tbl-wrap{overflow-x:auto;border-radius:var(--rxl);border:1px solid var(--border2);margin-bottom:28px}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{padding:10px 14px;text-align:left;font-family:var(--fm);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;background:var(--bg2);border-bottom:1px solid var(--border2)}
+.tbl td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text2)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--bg2)}
+
+.route-list{display:flex;flex-direction:column;gap:8px;margin-bottom:28px}
+.route-item{display:flex;align-items:flex-start;gap:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);transition:all 0.2s}
+.route-item:hover{border-color:var(--saffron)}
+.route-method{font-family:var(--fm);font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;border:1px solid;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.GET{background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.3)}
+.POST{background:var(--blue-dim);color:var(--blue);border-color:rgba(0,0,128,0.25)}
+.PUT{background:var(--gold-dim);color:#7A5200;border-color:rgba(244,165,0,0.3)}
+.DELETE{background:var(--red-dim);color:var(--red);border-color:rgba(227,30,36,0.3)}
+.STEP{background:var(--saffron-dim);color:var(--saffron);border-color:rgba(255,107,53,0.3)}
+.route-path{font-family:var(--fm);font-size:12.5px;color:var(--text);margin-bottom:3px;font-weight:500}
+.route-desc{font-size:12px;color:var(--text3);line-height:1.5}
+.route-tags{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.rtag{font-size:10px;font-family:var(--fm);padding:2px 7px;border-radius:20px;border:1px solid}
+
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:28px}
+.card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rxl);padding:18px;transition:all 0.2s}
+.card:hover{border-color:var(--saffron);transform:translateY(-2px)}
+.card-label{font-size:9px;font-family:var(--fm);color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px}
+.card-title{font-size:14px;font-weight:600;margin-bottom:6px}
+.card-desc{font-size:12px;color:var(--text2);line-height:1.6}
+
+.stack-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:28px}
+.stack-item{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rxl);padding:16px;transition:all 0.2s}
+.stack-item:hover{border-color:var(--saffron);transform:translateY(-2px)}
+.stack-layer{font-family:var(--fm);font-size:9px;color:var(--saffron);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px}
+.stack-tech{font-family:var(--fd);font-size:14px;font-weight:700;margin-bottom:5px}
+.stack-detail{font-size:11.5px;color:var(--text2);line-height:1.5}
+
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:32px}
+.stat-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rxl);padding:20px;position:relative;overflow:hidden;transition:border-color 0.2s,transform 0.2s}
+.stat-card:hover{border-color:var(--saffron);transform:translateY(-2px)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--saffron),var(--gold))}
+.stat-label{font-size:10px;font-family:var(--fm);color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px}
+.stat-val{font-family:var(--fd);font-size:26px;font-weight:900;color:var(--text);margin-bottom:4px}
+.stat-sub{font-size:11px;color:var(--text3)}
+
+.pipeline-step{display:flex;gap:16px;padding:16px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--rxl);margin-bottom:10px;transition:all 0.2s}
+.pipeline-step:hover{border-color:var(--saffron)}
+.pipeline-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:13px;font-weight:700;flex-shrink:0;background:var(--saffron-dim);color:var(--saffron);border:2px solid rgba(255,107,53,0.3)}
+.pipeline-body{flex:1}
+.pipeline-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.pipeline-desc{font-size:12.5px;color:var(--text2);line-height:1.6}
+
+.mob-btn{display:none;position:fixed;bottom:20px;right:20px;width:44px;height:44px;background:var(--saffron);border:none;border-radius:50%;cursor:pointer;z-index:200;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(255,107,53,0.4)}
+.mob-btn svg{width:20px;height:20px;color:#fff}
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:49}
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);transition:transform 0.2s ease}
+  .sidebar.open{transform:translateX(0)}
+  .sb-overlay.visible{display:block}
+  .main{margin-left:0}
+  .content{padding:24px 18px 60px}
+  h1{font-size:28px}
+  .mob-btn{display:flex}
+}
+</style>
+</head>
+<body>
+<div class="sb-overlay" id="overlay" onclick="closeSB()"></div>
+<button class="mob-btn" onclick="toggleSB()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
+
+<div class="shell">
+<aside class="sidebar" id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-name">Kerala2026-2031</div>
+    <div class="sb-sub">Docs Part 3 · Backend & Deploy</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-group">Documentation Parts</div>
+    <a href="main.html" class="sb-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Part 1: Overview
+    </a>
+    <a href="second.html" class="sb-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Part 2: Frontend & API
+    </a>
+    <a href="third.html" class="sb-link" style="color:var(--saffron);background:var(--saffron-dim);border-left-color:var(--saffron);font-weight:600">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      Part 3: Backend & Deploy
+    </a>
+    <a href="fourth.html" class="sb-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Part 4: Module Tracker
+    </a>
+
+    <div class="sb-group">Backend</div>
+    <div class="sb-link active" onclick="go('express',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      Express Server
+    </div>
+    <div class="sb-link" onclick="go('middleware',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8"/><path d="M12 3v4"/></svg>
+      Middleware
+    </div>
+    <div class="sb-link" onclick="go('auth',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Auth & Admin
+    </div>
+    <div class="sb-link" onclick="go('upload',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+      File Uploads (R2)
+    </div>
+    <div class="sb-link" onclick="go('validation',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Validation & Errors
+    </div>
+    <div class="sb-group">Database</div>
+    <div class="sb-link" onclick="go('drizzle',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+      Drizzle ORM
+    </div>
+    <div class="sb-link" onclick="go('migrations',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      Migrations & Seed
+    </div>
+    <div class="sb-link" onclick="go('queries',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Query Patterns
+    </div>
+    <div class="sb-group">Infrastructure</div>
+    <div class="sb-link" onclick="go('deploy',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      Deployment
+    </div>
+    <div class="sb-link" onclick="go('cicd',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22C6.48 22 2 17.52 2 12S6.48 2 12 2s10 4.48 10 10"/><polyline points="12 6 12 12 16 14"/></svg>
+      CI/CD Pipeline
+    </div>
+    <div class="sb-link" onclick="go('monitoring',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      Monitoring & Logs
+    </div>
+    <div class="sb-link" onclick="go('security',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Security
+    </div>
+    <div class="sb-group">Admin Panel</div>
+    <div class="sb-link" onclick="go('admin',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Admin Panel
+    </div>
+    <div class="sb-link" onclick="go('csvimport',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      CSV Data Import
+    </div>
+    <div class="sb-group">Testing</div>
+    <div class="sb-link" onclick="go('testing',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Testing Guide
+    </div>
+    <div class="sb-link" onclick="go('performance',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Performance
+    </div>
+  </nav>
+  <div class="sb-footer">Kerala 2026 · Open Source<br>Part 3 of 3 · Backend & Deploy</div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tb-crumb"><span>Kerala2026</span><span class="tb-sep">/</span><span class="tb-cur" id="crumb">Express Server</span></div>
+    <div class="tb-right">
+      <span class="chip chip-s">Node.js</span>
+      <span class="chip chip-g">Railway</span>
+      <span class="chip chip-b">Vercel</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+<!-- ═══ EXPRESS SERVER ═══ -->
+<div class="page active" id="page-express">
+  <div class="eyebrow">Backend — Node.js + Express</div>
+  <h1>Express <em>Server</em></h1>
+  <p class="lead">The Kerala 2026 backend is a modular Express.js server written in TypeScript. It follows a feature-module pattern — each domain (constituencies, candidates, parties, results) lives in its own folder with its own routes, controller, service, and model. The server runs on Railway and exposes a versioned REST API consumed by the Next.js frontend.</p>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-label">API Version</div><div class="stat-val">v1</div><div class="stat-sub">All routes under /api/v1</div></div>
+    <div class="stat-card"><div class="stat-label">Runtime</div><div class="stat-val">Node 20</div><div class="stat-sub">LTS — required</div></div>
+    <div class="stat-card"><div class="stat-label">Port</div><div class="stat-val">3001</div><div class="stat-sub">Default dev port</div></div>
+    <div class="stat-card"><div class="stat-label">Rate Limit</div><div class="stat-val">100</div><div class="stat-sub">Requests per 15 min per IP</div></div>
+    <div class="stat-card"><div class="stat-label">Auth</div><div class="stat-val">JWT</div><div class="stat-sub">Admin-only write endpoints</div></div>
+  </div>
+
+  <h2>Server Entry Point</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — apps/api/src/index.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> express <span class="kw">from</span> <span class="str">'express'</span>;
+<span class="kw">import</span> cors <span class="kw">from</span> <span class="str">'cors'</span>;
+<span class="kw">import</span> helmet <span class="kw">from</span> <span class="str">'helmet'</span>;
+<span class="kw">import</span> morgan <span class="kw">from</span> <span class="str">'morgan'</span>;
+<span class="kw">import</span> compression <span class="kw">from</span> <span class="str">'compression'</span>;
+<span class="kw">import</span> { rateLimit } <span class="kw">from</span> <span class="str">'express-rate-limit'</span>;
+<span class="kw">import</span> { env } <span class="kw">from</span> <span class="str">'./config/env'</span>;
+<span class="kw">import</span> { errorHandler } <span class="kw">from</span> <span class="str">'./middleware/errorHandler'</span>;
+<span class="kw">import</span> { notFoundHandler } <span class="kw">from</span> <span class="str">'./middleware/notFoundHandler'</span>;
+<span class="kw">import</span> constituenciesRouter <span class="kw">from</span> <span class="str">'./modules/constituencies/constituencies.routes'</span>;
+<span class="kw">import</span> candidatesRouter <span class="kw">from</span> <span class="str">'./modules/candidates/candidates.routes'</span>;
+<span class="kw">import</span> partiesRouter <span class="kw">from</span> <span class="str">'./modules/parties/parties.routes'</span>;
+<span class="kw">import</span> resultsRouter <span class="kw">from</span> <span class="str">'./modules/results/results.routes'</span>;
+<span class="kw">import</span> searchRouter <span class="kw">from</span> <span class="str">'./modules/search/search.routes'</span>;
+<span class="kw">import</span> uploadRouter <span class="kw">from</span> <span class="str">'./modules/upload/upload.routes'</span>;
+<span class="kw">import</span> statsRouter <span class="kw">from</span> <span class="str">'./modules/stats/stats.routes'</span>;
+
+<span class="kw">const</span> app = <span class="fn">express</span>();
+
+<span class="cm">/* ── Security ─────────────────────────────── */</span>
+app.<span class="fn">use</span>(<span class="fn">helmet</span>());
+app.<span class="fn">use</span>(<span class="fn">cors</span>({
+  origin: env.ALLOWED_ORIGINS.<span class="fn">split</span>(<span class="str">','</span>),
+  methods: [<span class="str">'GET'</span>, <span class="str">'POST'</span>, <span class="str">'PUT'</span>, <span class="str">'DELETE'</span>],
+  credentials: <span class="kw">true</span>,
+}));
+
+<span class="cm">/* ── Rate Limiting ────────────────────────── */</span>
+<span class="kw">const</span> limiter = <span class="fn">rateLimit</span>({
+  windowMs: env.RATE_LIMIT_WINDOW_MS,    <span class="cm">// 15 minutes</span>
+  max:      env.RATE_LIMIT_MAX,           <span class="cm">// 100 requests</span>
+  standardHeaders: <span class="kw">true</span>,
+  legacyHeaders:   <span class="kw">false</span>,
+  message: { success: <span class="kw">false</span>, error: <span class="str">'Too many requests. Please slow down.'</span> },
+});
+app.<span class="fn">use</span>(<span class="str">'/api'</span>, limiter);
+
+<span class="cm">/* ── Body Parsing & Compression ──────────── */</span>
+app.<span class="fn">use</span>(<span class="fn">compression</span>());
+app.<span class="fn">use</span>(express.<span class="fn">json</span>({ limit: <span class="str">'10mb'</span> }));
+app.<span class="fn">use</span>(express.<span class="fn">urlencoded</span>({ extended: <span class="kw">true</span> }));
+
+<span class="cm">/* ── Logging ──────────────────────────────── */</span>
+app.<span class="fn">use</span>(<span class="fn">morgan</span>(env.NODE_ENV === <span class="str">'production'</span> ? <span class="str">'combined'</span> : <span class="str">'dev'</span>));
+
+<span class="cm">/* ── Health Check ─────────────────────────── */</span>
+app.<span class="fn">get</span>(<span class="str">'/health'</span>, (_, res) => {
+  res.<span class="fn">json</span>({ status: <span class="str">'ok'</span>, version: <span class="str">'1.0.0'</span>, uptime: process.<span class="fn">uptime</span>() });
+});
+
+<span class="cm">/* ── API Routes ───────────────────────────── */</span>
+app.<span class="fn">use</span>(<span class="str">'/api/v1/constituencies'</span>, constituenciesRouter);
+app.<span class="fn">use</span>(<span class="str">'/api/v1/candidates'</span>,    candidatesRouter);
+app.<span class="fn">use</span>(<span class="str">'/api/v1/parties'</span>,       partiesRouter);
+app.<span class="fn">use</span>(<span class="str">'/api/v1/results'</span>,       resultsRouter);
+app.<span class="fn">use</span>(<span class="str">'/api/v1/search'</span>,        searchRouter);
+app.<span class="fn">use</span>(<span class="str">'/api/v1/upload'</span>,        uploadRouter);
+app.<span class="fn">use</span>(<span class="str">'/api/v1/stats'</span>,         statsRouter);
+
+<span class="cm">/* ── Error Handlers ───────────────────────── */</span>
+app.<span class="fn">use</span>(notFoundHandler);
+app.<span class="fn">use</span>(errorHandler);
+
+app.<span class="fn">listen</span>(env.PORT, () => {
+  console.<span class="fn">log</span>(<span class="str">`Kerala 2026 API running on http://localhost:</span><span class="at">${env.PORT}</span><span class="str">`</span>);
+});
+
+<span class="kw">export default</span> app;</pre>
+  </div>
+
+  <h2>Module Structure Pattern</h2>
+  <p>Every feature module follows the same four-file pattern: <code>routes</code> (URL definitions), <code>controller</code> (request/response handling), <code>service</code> (business logic + DB queries), and an optional <code>model</code> (Drizzle schema helpers). This keeps concerns cleanly separated.</p>
+
+  <div class="tree">
+    <div class="tree-head"><div class="tree-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div></div>
+    <pre>
+<span class="tr-dir">apps/api/src/modules/candidates/</span>
+├── <span class="tr-file">candidates.routes.ts</span>      <span class="tr-cm"># Express Router — URL definitions only</span>
+├── <span class="tr-file">candidates.controller.ts</span>  <span class="tr-cm"># req/res, parse params, call service, return JSON</span>
+├── <span class="tr-file">candidates.service.ts</span>     <span class="tr-cm"># All business logic + Drizzle ORM queries</span>
+├── <span class="tr-file">candidates.schema.ts</span>      <span class="tr-cm"># Zod validation schemas for request bodies</span>
+└── <span class="tr-file">candidates.types.ts</span>       <span class="tr-cm"># TypeScript types local to this module</span>
+
+<span class="tr-dir">apps/api/src/modules/constituencies/</span>
+├── <span class="tr-file">constituencies.routes.ts</span>
+├── <span class="tr-file">constituencies.controller.ts</span>
+├── <span class="tr-file">constituencies.service.ts</span>
+└── <span class="tr-file">constituencies.schema.ts</span>
+
+<span class="tr-dir">apps/api/src/config/</span>
+├── <span class="tr-file">env.ts</span>       <span class="tr-cm"># Zod-validated environment variables</span>
+├── <span class="tr-file">db.ts</span>        <span class="tr-cm"># Neon + Drizzle connection</span>
+└── <span class="tr-file">r2.ts</span>        <span class="tr-cm"># Cloudflare R2 S3 client</span>
+
+<span class="tr-dir">apps/api/src/middleware/</span>
+├── <span class="tr-file">auth.ts</span>           <span class="tr-cm"># JWT verification middleware</span>
+├── <span class="tr-file">errorHandler.ts</span>   <span class="tr-cm"># Global error handler</span>
+├── <span class="tr-file">notFoundHandler.ts</span>
+└── <span class="tr-file">validate.ts</span>       <span class="tr-cm"># Zod request validation wrapper</span></pre>
+  </div>
+
+  <h2>Environment Config (Validated with Zod)</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — apps/api/src/config/env.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { z } <span class="kw">from</span> <span class="str">'zod'</span>;
+<span class="kw">import</span> <span class="str">'dotenv/config'</span>;
+
+<span class="kw">const</span> envSchema = z.<span class="fn">object</span>({
+  <span class="cm">// Server</span>
+  PORT:           z.<span class="fn">coerce</span>.<span class="fn">number</span>().<span class="fn">default</span>(<span class="num">3001</span>),
+  NODE_ENV:       z.<span class="fn">enum</span>([<span class="str">'development'</span>, <span class="str">'production'</span>, <span class="str">'test'</span>]).<span class="fn">default</span>(<span class="str">'development'</span>),
+
+  <span class="cm">// Database — Neon PostgreSQL</span>
+  DATABASE_URL:   z.<span class="fn">string</span>().<span class="fn">url</span>(),
+
+  <span class="cm">// Cloudflare R2</span>
+  CF_ACCOUNT_ID:    z.<span class="fn">string</span>(),
+  CF_R2_ACCESS_KEY: z.<span class="fn">string</span>(),
+  CF_R2_SECRET_KEY: z.<span class="fn">string</span>(),
+  CF_R2_BUCKET:     z.<span class="fn">string</span>(),
+  CF_R2_PUBLIC_URL: z.<span class="fn">string</span>().<span class="fn">url</span>(),
+
+  <span class="cm">// Meilisearch</span>
+  MEILISEARCH_HOST:       z.<span class="fn">string</span>().<span class="fn">url</span>(),
+  MEILISEARCH_MASTER_KEY: z.<span class="fn">string</span>(),
+
+  <span class="cm">// Admin JWT</span>
+  ADMIN_JWT_SECRET:    z.<span class="fn">string</span>().<span class="fn">min</span>(<span class="num">32</span>),
+  ADMIN_PASSWORD_HASH: z.<span class="fn">string</span>(),
+
+  <span class="cm">// Rate limiting</span>
+  RATE_LIMIT_WINDOW_MS: z.<span class="fn">coerce</span>.<span class="fn">number</span>().<span class="fn">default</span>(<span class="num">900000</span>),
+  RATE_LIMIT_MAX:       z.<span class="fn">coerce</span>.<span class="fn">number</span>().<span class="fn">default</span>(<span class="num">100</span>),
+
+  <span class="cm">// CORS</span>
+  ALLOWED_ORIGINS: z.<span class="fn">string</span>().<span class="fn">default</span>(<span class="str">'http://localhost:3000'</span>),
+
+  <span class="cm">// Email</span>
+  RESEND_API_KEY: z.<span class="fn">string</span>().<span class="fn">optional</span>(),
+
+  <span class="cm">// Phase 2 Scraper</span>
+  SCRAPER_ENABLED:    z.<span class="fn">enum</span>([<span class="str">'true'</span>, <span class="str">'false'</span>]).<span class="fn">default</span>(<span class="str">'false'</span>),
+  SCRAPER_INTERVAL_MS: z.<span class="fn">coerce</span>.<span class="fn">number</span>().<span class="fn">default</span>(<span class="num">60000</span>),
+  CEO_KERALA_URL:     z.<span class="fn">string</span>().<span class="fn">url</span>().<span class="fn">default</span>(<span class="str">'https://ceo.kerala.gov.in'</span>),
+});
+
+<span class="kw">const</span> parsed = envSchema.<span class="fn">safeParse</span>(process.env);
+<span class="kw">if</span> (!parsed.success) {
+  console.<span class="fn">error</span>(<span class="str">'❌ Invalid environment variables:'</span>);
+  console.<span class="fn">error</span>(parsed.error.<span class="fn">flatten</span>().fieldErrors);
+  process.<span class="fn">exit</span>(<span class="num">1</span>);
+}
+<span class="kw">export const</span> env = parsed.data;</pre>
+  </div>
+
+  <h2>Database Connection (Neon + Drizzle)</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — apps/api/src/config/db.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { neon } <span class="kw">from</span> <span class="str">'@neondatabase/serverless'</span>;
+<span class="kw">import</span> { drizzle } <span class="kw">from</span> <span class="str">'drizzle-orm/neon-http'</span>;
+<span class="kw">import</span> * <span class="kw">as</span> schema <span class="kw">from</span> <span class="str">'@kerala2026/db'</span>;
+<span class="kw">import</span> { env } <span class="kw">from</span> <span class="str">'./env'</span>;
+
+<span class="kw">const</span> sql = <span class="fn">neon</span>(env.DATABASE_URL);
+
+<span class="kw">export const</span> db = <span class="fn">drizzle</span>(sql, {
+  schema,
+  logger: env.NODE_ENV === <span class="str">'development'</span>,
+});</pre>
+  </div>
+</div>
+
+<!-- ═══ MIDDLEWARE ═══ -->
+<div class="page" id="page-middleware">
+  <div class="eyebrow">Express Middleware Stack</div>
+  <h1><em>Middleware</em></h1>
+  <p class="lead">Kerala 2026 uses a layered middleware stack. Security headers (Helmet), CORS, rate limiting, and compression are global. Validation, authentication, and error handling are applied per-route where needed.</p>
+
+  <h2>Global Middleware Order</h2>
+  <div class="route-list">
+    <div class="route-item">
+      <div class="route-method STEP">1</div>
+      <div>
+        <div class="route-path">helmet()</div>
+        <div class="route-desc">Sets security HTTP headers: X-Content-Type-Options, X-Frame-Options, Strict-Transport-Security, Content-Security-Policy, and more. Applied to every request.</div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method STEP">2</div>
+      <div>
+        <div class="route-path">cors()</div>
+        <div class="route-desc">Restricts cross-origin requests to origins listed in ALLOWED_ORIGINS env var. In production: https://kerala2026.in and https://admin.kerala2026.in only.</div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method STEP">3</div>
+      <div>
+        <div class="route-path">rateLimit() — /api/* only</div>
+        <div class="route-desc">100 requests per 15-minute window per IP. Returns 429 with JSON error on breach. Uses standard headers (RateLimit-Remaining, RateLimit-Reset).</div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method STEP">4</div>
+      <div>
+        <div class="route-path">compression()</div>
+        <div class="route-desc">Gzip/deflate compression for all responses over 1KB. Critical for large constituency GeoJSON payloads and candidate list responses.</div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method STEP">5</div>
+      <div>
+        <div class="route-path">express.json() + urlencoded()</div>
+        <div class="route-desc">Body parsing limited to 10MB to support GeoJSON uploads in the admin panel. All incoming bodies are validated by Zod schemas in the route handlers.</div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method STEP">6</div>
+      <div>
+        <div class="route-path">morgan() — logging</div>
+        <div class="route-desc">Development: colored <code>dev</code> format. Production: <code>combined</code> Apache format piped to stdout, collected by Railway logging infrastructure.</div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method STEP">7</div>
+      <div>
+        <div class="route-path">notFoundHandler → errorHandler</div>
+        <div class="route-desc">Catch-all 404 handler, then global error handler. Both return consistent JSON envelope format matching the API response contract defined in Part 2.</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Error Handler</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — middleware/errorHandler.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { Request, Response, NextFunction } <span class="kw">from</span> <span class="str">'express'</span>;
+<span class="kw">import</span> { ZodError } <span class="kw">from</span> <span class="str">'zod'</span>;
+
+<span class="kw">export class</span> <span class="ty">AppError</span> <span class="kw">extends</span> <span class="ty">Error</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">public</span> message: <span class="ty">string</span>,
+    <span class="kw">public</span> statusCode: <span class="ty">number</span> = <span class="num">500</span>,
+    <span class="kw">public</span> code: <span class="ty">string</span> = <span class="str">'INTERNAL_ERROR'</span>
+  ) {
+    <span class="kw">super</span>(message);
+    <span class="kw">this</span>.name = <span class="str">'AppError'</span>;
+  }
+}
+
+<span class="kw">export function</span> <span class="fn">errorHandler</span>(
+  err: <span class="ty">Error</span>,
+  _req: <span class="ty">Request</span>,
+  res: <span class="ty">Response</span>,
+  _next: <span class="ty">NextFunction</span>
+) {
+  <span class="cm">// Zod validation error</span>
+  <span class="kw">if</span> (err <span class="kw">instanceof</span> <span class="ty">ZodError</span>) {
+    <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">422</span>).<span class="fn">json</span>({
+      success: <span class="kw">false</span>,
+      error:   <span class="str">'Validation failed'</span>,
+      code:    <span class="str">'VALIDATION_ERROR'</span>,
+      issues:  err.<span class="fn">flatten</span>().fieldErrors,
+    });
+  }
+
+  <span class="cm">// Known application error</span>
+  <span class="kw">if</span> (err <span class="kw">instanceof</span> <span class="ty">AppError</span>) {
+    <span class="kw">return</span> res.<span class="fn">status</span>(err.statusCode).<span class="fn">json</span>({
+      success: <span class="kw">false</span>,
+      error:   err.message,
+      code:    err.code,
+    });
+  }
+
+  <span class="cm">// Drizzle / Postgres constraint violations</span>
+  <span class="kw">if</span> ((err <span class="kw">as</span> <span class="ty">any</span>).code === <span class="str">'23505'</span>) {
+    <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">409</span>).<span class="fn">json</span>({
+      success: <span class="kw">false</span>,
+      error:   <span class="str">'A record with this value already exists'</span>,
+      code:    <span class="str">'DUPLICATE_ENTRY'</span>,
+    });
+  }
+
+  <span class="cm">// Unknown / unexpected error — log and return generic message</span>
+  console.<span class="fn">error</span>(<span class="str">'Unhandled error:'</span>, err);
+  res.<span class="fn">status</span>(<span class="num">500</span>).<span class="fn">json</span>({
+    success: <span class="kw">false</span>,
+    error:   <span class="str">'Internal server error'</span>,
+    code:    <span class="str">'INTERNAL_ERROR'</span>,
+  });
+}
+
+<span class="kw">export function</span> <span class="fn">notFoundHandler</span>(_req: <span class="ty">Request</span>, res: <span class="ty">Response</span>) {
+  res.<span class="fn">status</span>(<span class="num">404</span>).<span class="fn">json</span>({
+    success: <span class="kw">false</span>,
+    error:   <span class="str">'Route not found'</span>,
+    code:    <span class="str">'NOT_FOUND'</span>,
+  });
+}</pre>
+  </div>
+
+  <h2>Validation Middleware</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — middleware/validate.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { Request, Response, NextFunction } <span class="kw">from</span> <span class="str">'express'</span>;
+<span class="kw">import</span> { <span class="ty">ZodSchema</span> } <span class="kw">from</span> <span class="str">'zod'</span>;
+
+<span class="cm">// Validates req.body against a Zod schema. Calls next(err) on failure.</span>
+<span class="kw">export function</span> <span class="fn">validateBody</span>(schema: <span class="ty">ZodSchema</span>) {
+  <span class="kw">return</span> (req: <span class="ty">Request</span>, _res: <span class="ty">Response</span>, next: <span class="ty">NextFunction</span>) => {
+    <span class="kw">const</span> result = schema.<span class="fn">safeParse</span>(req.body);
+    <span class="kw">if</span> (!result.success) <span class="kw">return</span> <span class="fn">next</span>(result.error);
+    req.body = result.data;  <span class="cm">// replace with parsed/coerced data</span>
+    <span class="fn">next</span>();
+  };
+}
+
+<span class="cm">// Validates req.query</span>
+<span class="kw">export function</span> <span class="fn">validateQuery</span>(schema: <span class="ty">ZodSchema</span>) {
+  <span class="kw">return</span> (req: <span class="ty">Request</span>, _res: <span class="ty">Response</span>, next: <span class="ty">NextFunction</span>) => {
+    <span class="kw">const</span> result = schema.<span class="fn">safeParse</span>(req.query);
+    <span class="kw">if</span> (!result.success) <span class="kw">return</span> <span class="fn">next</span>(result.error);
+    (req <span class="kw">as</span> <span class="ty">any</span>).parsedQuery = result.data;
+    <span class="fn">next</span>();
+  };
+}
+
+<span class="cm">// Usage in routes:</span>
+<span class="cm">// router.post('/', validateBody(createCandidateSchema), controller.create)</span></pre>
+  </div>
+</div>
+
+<!-- ═══ AUTH & ADMIN ═══ -->
+<div class="page" id="page-auth">
+  <div class="eyebrow">Authentication</div>
+  <h1>Auth <em>& Admin</em></h1>
+  <p class="lead">The public API requires no authentication — all GET endpoints are open. Write operations (POST, PUT, DELETE) are restricted to admin users authenticated via JWT. There is a single admin account; this is an internal data-entry tool, not a multi-user system.</p>
+
+  <div class="note-box"><strong>Design Decision:</strong> A single admin JWT keeps the system simple. Only a small trusted team enters candidate data. If multiple coordinators are needed, extend the <code>admin_users</code> table with individual logins.</div>
+
+  <h2>Admin Login Flow</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — modules/auth/auth.service.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> bcrypt <span class="kw">from</span> <span class="str">'bcryptjs'</span>;
+<span class="kw">import</span> jwt <span class="kw">from</span> <span class="str">'jsonwebtoken'</span>;
+<span class="kw">import</span> { env } <span class="kw">from</span> <span class="str">'../../config/env'</span>;
+<span class="kw">import</span> { AppError } <span class="kw">from</span> <span class="str">'../../middleware/errorHandler'</span>;
+
+<span class="kw">export async function</span> <span class="fn">adminLogin</span>(password: <span class="ty">string</span>) {
+  <span class="kw">const</span> valid = <span class="kw">await</span> bcrypt.<span class="fn">compare</span>(password, env.ADMIN_PASSWORD_HASH);
+  <span class="kw">if</span> (!valid) {
+    <span class="kw">throw new</span> <span class="ty">AppError</span>(<span class="str">'Invalid credentials'</span>, <span class="num">401</span>, <span class="str">'UNAUTHORIZED'</span>);
+  }
+
+  <span class="kw">const</span> token = jwt.<span class="fn">sign</span>(
+    { role: <span class="str">'admin'</span>, iat: <span class="ty">Date</span>.<span class="fn">now</span>() },
+    env.ADMIN_JWT_SECRET,
+    { expiresIn: <span class="str">'12h'</span> }
+  );
+
+  <span class="kw">return</span> { token, expiresIn: <span class="str">'12h'</span> };
+}
+
+<span class="cm">// Generate the ADMIN_PASSWORD_HASH for your .env:</span>
+<span class="cm">// node -e "require('bcryptjs').hash('your_password', 12).then(console.log)"</span></pre>
+  </div>
+
+  <h2>JWT Auth Middleware</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — middleware/auth.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { Request, Response, NextFunction } <span class="kw">from</span> <span class="str">'express'</span>;
+<span class="kw">import</span> jwt <span class="kw">from</span> <span class="str">'jsonwebtoken'</span>;
+<span class="kw">import</span> { env } <span class="kw">from</span> <span class="str">'../config/env'</span>;
+<span class="kw">import</span> { AppError } <span class="kw">from</span> <span class="str">'./errorHandler'</span>;
+
+<span class="kw">export function</span> <span class="fn">requireAdmin</span>(
+  req: <span class="ty">Request</span>,
+  _res: <span class="ty">Response</span>,
+  next: <span class="ty">NextFunction</span>
+) {
+  <span class="kw">const</span> authHeader = req.headers.authorization;
+  <span class="kw">if</span> (!authHeader?.startsWith(<span class="str">'Bearer '</span>)) {
+    <span class="kw">throw new</span> <span class="ty">AppError</span>(<span class="str">'No token provided'</span>, <span class="num">401</span>, <span class="str">'UNAUTHORIZED'</span>);
+  }
+
+  <span class="kw">const</span> token = authHeader.<span class="fn">slice</span>(<span class="num">7</span>);
+  <span class="kw">try</span> {
+    <span class="kw">const</span> payload = jwt.<span class="fn">verify</span>(token, env.ADMIN_JWT_SECRET) <span class="kw">as</span> { role: <span class="ty">string</span> };
+    <span class="kw">if</span> (payload.role !== <span class="str">'admin'</span>) {
+      <span class="kw">throw new</span> <span class="ty">AppError</span>(<span class="str">'Forbidden'</span>, <span class="num">403</span>, <span class="str">'FORBIDDEN'</span>);
+    }
+    <span class="fn">next</span>();
+  } <span class="kw">catch</span> (e) {
+    <span class="kw">if</span> (e <span class="kw">instanceof</span> jwt.<span class="ty">TokenExpiredError</span>) {
+      <span class="kw">throw new</span> <span class="ty">AppError</span>(<span class="str">'Token expired'</span>, <span class="num">401</span>, <span class="str">'TOKEN_EXPIRED'</span>);
+    }
+    <span class="kw">if</span> (e <span class="kw">instanceof</span> <span class="ty">AppError</span>) <span class="kw">throw</span> e;
+    <span class="kw">throw new</span> <span class="ty">AppError</span>(<span class="str">'Invalid token'</span>, <span class="num">401</span>, <span class="str">'UNAUTHORIZED'</span>);
+  }
+}
+
+<span class="cm">// Usage in routes:</span>
+<span class="cm">// router.post('/', requireAdmin, validateBody(schema), controller.create)</span></pre>
+  </div>
+
+  <h2>Auth Routes</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Method</th><th>Path</th><th>Body</th><th>Response</th></tr></thead>
+      <tbody>
+        <tr><td><code>POST</code></td><td><code>/api/v1/auth/login</code></td><td><code>{ password }</code></td><td><code>{ token, expiresIn }</code></td></tr>
+        <tr><td><code>GET</code></td><td><code>/api/v1/auth/verify</code></td><td>Bearer JWT header</td><td><code>{ valid: true, role }</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ FILE UPLOADS ═══ -->
+<div class="page" id="page-upload">
+  <div class="eyebrow">Cloudflare R2 — Media Storage</div>
+  <h1>File <em>Uploads</em></h1>
+  <p class="lead">Candidate photos and party logos are stored in Cloudflare R2 — an S3-compatible object store with zero egress fees. Photos are automatically resized to 600×800px WebP on upload using the Sharp library. CDN-delivered globally via Cloudflare's edge network.</p>
+
+  <div class="success-box"><strong>Why Cloudflare R2?</strong> With 1000+ candidate photos at ~200KB each after compression, egress costs on AWS S3 would add up. R2's zero egress pricing makes it ideal for an open-source project at this scale.</div>
+
+  <h2>R2 Client Setup</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — config/r2.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { S3Client } <span class="kw">from</span> <span class="str">'@aws-sdk/client-s3'</span>;
+<span class="kw">import</span> { env } <span class="kw">from</span> <span class="str">'./env'</span>;
+
+<span class="cm">// R2 is S3-compatible — uses the AWS SDK with a custom endpoint</span>
+<span class="kw">export const</span> r2Client = <span class="kw">new</span> <span class="fn">S3Client</span>({
+  region: <span class="str">'auto'</span>,
+  endpoint: <span class="str">`https://</span><span class="at">${env.CF_ACCOUNT_ID}</span><span class="str">.r2.cloudflarestorage.com`</span>,
+  credentials: {
+    accessKeyId:     env.CF_R2_ACCESS_KEY,
+    secretAccessKey: env.CF_R2_SECRET_KEY,
+  },
+});</pre>
+  </div>
+
+  <h2>Photo Upload Service</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — modules/upload/upload.service.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> sharp <span class="kw">from</span> <span class="str">'sharp'</span>;
+<span class="kw">import</span> { PutObjectCommand } <span class="kw">from</span> <span class="str">'@aws-sdk/client-s3'</span>;
+<span class="kw">import</span> { randomUUID } <span class="kw">from</span> <span class="str">'crypto'</span>;
+<span class="kw">import</span> { r2Client } <span class="kw">from</span> <span class="str">'../../config/r2'</span>;
+<span class="kw">import</span> { env } <span class="kw">from</span> <span class="str">'../../config/env'</span>;
+
+<span class="kw">const</span> PHOTO_WIDTH  = <span class="num">600</span>;
+<span class="kw">const</span> PHOTO_HEIGHT = <span class="num">800</span>;
+<span class="kw">const</span> MAX_SIZE_BYTES = <span class="num">5</span> * <span class="num">1024</span> * <span class="num">1024</span>; <span class="cm">// 5MB input limit</span>
+
+<span class="kw">export async function</span> <span class="fn">uploadCandidatePhoto</span>(
+  buffer:       <span class="ty">Buffer</span>,
+  originalName: <span class="ty">string</span>,
+  candidateSlug: <span class="ty">string</span>
+): <span class="ty">Promise</span>&lt;<span class="ty">string</span>&gt; {
+  <span class="kw">if</span> (buffer.byteLength > MAX_SIZE_BYTES) {
+    <span class="kw">throw new</span> <span class="ty">Error</span>(<span class="str">'File too large. Max 5MB.'</span>);
+  }
+
+  <span class="cm">// Resize + convert to WebP using Sharp</span>
+  <span class="kw">const</span> optimised = <span class="kw">await</span> <span class="fn">sharp</span>(buffer)
+    .<span class="fn">resize</span>(PHOTO_WIDTH, PHOTO_HEIGHT, {
+      fit:      <span class="str">'cover'</span>,
+      position: <span class="str">'top'</span>,   <span class="cm">// keep face, crop bottom</span>
+    })
+    .<span class="fn">webp</span>({ quality: <span class="num">85</span> })
+    .<span class="fn">toBuffer</span>();
+
+  <span class="kw">const</span> key = <span class="str">`candidates/</span><span class="at">${candidateSlug}</span><span class="str">/photo-</span><span class="at">${randomUUID()}</span><span class="str">.webp`</span>;
+
+  <span class="kw">await</span> r2Client.<span class="fn">send</span>(<span class="kw">new</span> <span class="fn">PutObjectCommand</span>({
+    Bucket:      env.CF_R2_BUCKET,
+    Key:         key,
+    Body:        optimised,
+    ContentType: <span class="str">'image/webp'</span>,
+    CacheControl: <span class="str">'public, max-age=31536000, immutable'</span>,
+    Metadata: {
+      candidateSlug,
+      originalName,
+    },
+  }));
+
+  <span class="cm">// Return public CDN URL</span>
+  <span class="kw">return</span> <span class="str">`</span><span class="at">${env.CF_R2_PUBLIC_URL}</span><span class="str">/</span><span class="at">${key}</span><span class="str">`</span>;
+}
+
+<span class="kw">export async function</span> <span class="fn">uploadPartyLogo</span>(buffer: <span class="ty">Buffer</span>, partySlug: <span class="ty">string</span>) {
+  <span class="kw">const</span> optimised = <span class="kw">await</span> <span class="fn">sharp</span>(buffer)
+    .<span class="fn">resize</span>(<span class="num">200</span>, <span class="num">200</span>, { fit: <span class="str">'contain'</span>, background: { r: <span class="num">0</span>, g: <span class="num">0</span>, b: <span class="num">0</span>, alpha: <span class="num">0</span> } })
+    .<span class="fn">webp</span>({ quality: <span class="num">90</span> })
+    .<span class="fn">toBuffer</span>();
+
+  <span class="kw">const</span> key = <span class="str">`parties/</span><span class="at">${partySlug}</span><span class="str">/logo.webp`</span>;
+
+  <span class="kw">await</span> r2Client.<span class="fn">send</span>(<span class="kw">new</span> <span class="fn">PutObjectCommand</span>({
+    Bucket:      env.CF_R2_BUCKET,
+    Key:         key,
+    Body:        optimised,
+    ContentType: <span class="str">'image/webp'</span>,
+    CacheControl: <span class="str">'public, max-age=31536000, immutable'</span>,
+  }));
+
+  <span class="kw">return</span> <span class="str">`</span><span class="at">${env.CF_R2_PUBLIC_URL}</span><span class="str">/</span><span class="at">${key}</span><span class="str">`</span>;
+}</pre>
+  </div>
+
+  <h2>Upload Route</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — modules/upload/upload.routes.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { Router } <span class="kw">from</span> <span class="str">'express'</span>;
+<span class="kw">import</span> multer <span class="kw">from</span> <span class="str">'multer'</span>;
+<span class="kw">import</span> { requireAdmin } <span class="kw">from</span> <span class="str">'../../middleware/auth'</span>;
+<span class="kw">import</span> { uploadCandidatePhoto } <span class="kw">from</span> <span class="str">'./upload.service'</span>;
+
+<span class="kw">const</span> router = <span class="fn">Router</span>();
+
+<span class="cm">// Memory storage — file lives in RAM during processing</span>
+<span class="kw">const</span> upload = <span class="fn">multer</span>({
+  storage: multer.<span class="fn">memoryStorage</span>(),
+  limits:  { fileSize: <span class="num">5</span> * <span class="num">1024</span> * <span class="num">1024</span> },
+  fileFilter: (_req, file, cb) => {
+    <span class="kw">const</span> allowed = [<span class="str">'image/jpeg'</span>, <span class="str">'image/png'</span>, <span class="str">'image/webp'</span>];
+    <span class="fn">cb</span>(<span class="kw">null</span>, allowed.<span class="fn">includes</span>(file.mimetype));
+  },
+});
+
+router.<span class="fn">post</span>(
+  <span class="str">'/candidate-photo'</span>,
+  requireAdmin,
+  upload.<span class="fn">single</span>(<span class="str">'photo'</span>),
+  <span class="kw">async</span> (req, res, next) => {
+    <span class="kw">try</span> {
+      <span class="kw">if</span> (!req.file)  <span class="kw">throw new</span> <span class="ty">Error</span>(<span class="str">'No file uploaded'</span>);
+      <span class="kw">const</span> { candidateSlug } = req.body;
+      <span class="kw">const</span> url = <span class="kw">await</span> <span class="fn">uploadCandidatePhoto</span>(
+        req.file.buffer,
+        req.file.originalname,
+        candidateSlug
+      );
+      res.<span class="fn">json</span>({ success: <span class="kw">true</span>, data: { url } });
+    } <span class="kw">catch</span> (e) { <span class="fn">next</span>(e); }
+  }
+);
+
+<span class="kw">export default</span> router;</pre>
+  </div>
+</div>
+
+<!-- ═══ VALIDATION ═══ -->
+<div class="page" id="page-validation">
+  <div class="eyebrow">Request Validation</div>
+  <h1>Validation <em>Schemas</em></h1>
+  <p class="lead">All request bodies and query parameters are validated using Zod schemas before reaching the service layer. Invalid requests are rejected with descriptive 422 errors. This section shows the key Zod schemas used across the API.</p>
+
+  <h2>Candidate Schemas</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — modules/candidates/candidates.schema.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { z } <span class="kw">from</span> <span class="str">'zod'</span>;
+
+<span class="kw">export const</span> createCandidateSchema = z.<span class="fn">object</span>({
+  constituencyId:    z.<span class="fn">string</span>().<span class="fn">uuid</span>(),
+  partyId:           z.<span class="fn">string</span>().<span class="fn">uuid</span>().<span class="fn">optional</span>(),
+  nameEn:            z.<span class="fn">string</span>().<span class="fn">min</span>(<span class="num">2</span>).<span class="fn">max</span>(<span class="num">200</span>),
+  nameMl:            z.<span class="fn">string</span>().<span class="fn">max</span>(<span class="num">200</span>).<span class="fn">optional</span>(),
+  dateOfBirth:       z.<span class="fn">string</span>().<span class="fn">regex</span>(/^\d{4}-\d{2}-\d{2}$/).<span class="fn">optional</span>(),
+  gender:            z.<span class="fn">enum</span>([<span class="str">'male'</span>, <span class="str">'female'</span>, <span class="str">'other'</span>]).<span class="fn">optional</span>(),
+  religion:          z.<span class="fn">string</span>().<span class="fn">max</span>(<span class="num">50</span>).<span class="fn">optional</span>(),
+  education:         z.<span class="fn">string</span>().<span class="fn">max</span>(<span class="num">200</span>).<span class="fn">optional</span>(),
+  profession:        z.<span class="fn">string</span>().<span class="fn">max</span>(<span class="num">200</span>).<span class="fn">optional</span>(),
+  isIncumbent:       z.<span class="fn">boolean</span>().<span class="fn">default</span>(<span class="kw">false</span>),
+  termsServed:       z.<span class="fn">number</span>().<span class="fn">int</span>().<span class="fn">min</span>(<span class="num">0</span>).<span class="fn">default</span>(<span class="num">0</span>),
+  criminalCases:     z.<span class="fn">number</span>().<span class="fn">int</span>().<span class="fn">min</span>(<span class="num">0</span>).<span class="fn">default</span>(<span class="num">0</span>),
+  totalAssetsInr:    z.<span class="fn">number</span>().<span class="fn">int</span>().<span class="fn">min</span>(<span class="num">0</span>).<span class="fn">optional</span>(),
+  totalLiabilitiesInr: z.<span class="fn">number</span>().<span class="fn">int</span>().<span class="fn">min</span>(<span class="num">0</span>).<span class="fn">optional</span>(),
+  affidavitUrl:      z.<span class="fn">string</span>().<span class="fn">url</span>().<span class="fn">optional</span>(),
+  bio:               z.<span class="fn">string</span>().<span class="fn">max</span>(<span class="num">5000</span>).<span class="fn">optional</span>(),
+  electionYear:      z.<span class="fn">number</span>().<span class="fn">int</span>().<span class="fn">default</span>(<span class="num">2026</span>),
+  nominationStatus:  z.<span class="fn">enum</span>([<span class="str">'filed'</span>, <span class="str">'accepted'</span>, <span class="str">'withdrawn'</span>, <span class="str">'rejected'</span>]).<span class="fn">default</span>(<span class="str">'filed'</span>),
+  socialFacebook:    z.<span class="fn">string</span>().<span class="fn">url</span>().<span class="fn">optional</span>(),
+  socialTwitter:     z.<span class="fn">string</span>().<span class="fn">url</span>().<span class="fn">optional</span>(),
+  socialInstagram:   z.<span class="fn">string</span>().<span class="fn">url</span>().<span class="fn">optional</span>(),
+});
+
+<span class="kw">export const</span> updateCandidateSchema = createCandidateSchema.<span class="fn">partial</span>();
+
+<span class="kw">export const</span> listCandidatesQuerySchema = z.<span class="fn">object</span>({
+  page:          z.<span class="fn">coerce</span>.<span class="fn">number</span>().<span class="fn">int</span>().<span class="fn">min</span>(<span class="num">1</span>).<span class="fn">default</span>(<span class="num">1</span>),
+  limit:         z.<span class="fn">coerce</span>.<span class="fn">number</span>().<span class="fn">int</span>().<span class="fn">min</span>(<span class="num">1</span>).<span class="fn">max</span>(<span class="num">100</span>).<span class="fn">default</span>(<span class="num">20</span>),
+  q:             z.<span class="fn">string</span>().<span class="fn">optional</span>(),
+  party:         z.<span class="fn">string</span>().<span class="fn">optional</span>(),
+  district:      z.<span class="fn">string</span>().<span class="fn">optional</span>(),
+  gender:        z.<span class="fn">enum</span>([<span class="str">'male'</span>, <span class="str">'female'</span>, <span class="str">'other'</span>]).<span class="fn">optional</span>(),
+  isIncumbent:   z.<span class="fn">enum</span>([<span class="str">'true'</span>, <span class="str">'false'</span>]).<span class="fn">optional</span>(),
+  hasCriminalCases: z.<span class="fn">enum</span>([<span class="str">'true'</span>, <span class="str">'false'</span>]).<span class="fn">optional</span>(),
+  sort:          z.<span class="fn">enum</span>([<span class="str">'name'</span>, <span class="str">'assets'</span>, <span class="str">'terms'</span>]).<span class="fn">default</span>(<span class="str">'name'</span>),
+});
+
+<span class="kw">export type</span> <span class="ty">CreateCandidateInput</span> = z.<span class="fn">infer</span>&lt;<span class="kw">typeof</span> createCandidateSchema&gt;;
+<span class="kw">export type</span> <span class="ty">ListCandidatesQuery</span>  = z.<span class="fn">infer</span>&lt;<span class="kw">typeof</span> listCandidatesQuerySchema&gt;;</pre>
+  </div>
+
+  <h2>Constituency & Party Schemas</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — modules/constituencies/constituencies.schema.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { z } <span class="kw">from</span> <span class="str">'zod'</span>;
+
+<span class="kw">export const</span> updateConstituencySchema = z.<span class="fn">object</span>({
+  description:       z.<span class="fn">string</span>().<span class="fn">max</span>(<span class="num">2000</span>).<span class="fn">optional</span>(),
+  totalVoters2026:   z.<span class="fn">number</span>().<span class="fn">int</span>().<span class="fn">min</span>(<span class="num">0</span>).<span class="fn">optional</span>(),
+  maleVoters:        z.<span class="fn">number</span>().<span class="fn">int</span>().<span class="fn">min</span>(<span class="num">0</span>).<span class="fn">optional</span>(),
+  femaleVoters:      z.<span class="fn">number</span>().<span class="fn">int</span>().<span class="fn">min</span>(<span class="num">0</span>).<span class="fn">optional</span>(),
+  geojson:           z.<span class="fn">any</span>().<span class="fn">optional</span>(),    <span class="cm">// GeoJSON validated separately</span>
+}).strict();
+
+<span class="kw">export const</span> createPartySchema = z.<span class="fn">object</span>({
+  nameEn:       z.<span class="fn">string</span>().<span class="fn">min</span>(<span class="num">2</span>).<span class="fn">max</span>(<span class="num">200</span>),
+  nameMl:       z.<span class="fn">string</span>().<span class="fn">max</span>(<span class="num">200</span>).<span class="fn">optional</span>(),
+  abbreviation: z.<span class="fn">string</span>().<span class="fn">max</span>(<span class="num">20</span>),
+  coalition:    z.<span class="fn">enum</span>([<span class="str">'LDF'</span>, <span class="str">'UDF'</span>, <span class="str">'NDA'</span>, <span class="str">'IND'</span>]),
+  colorHex:     z.<span class="fn">string</span>().<span class="fn">regex</span>(/^#[0-9A-Fa-f]{6}$/).<span class="fn">optional</span>(),
+  foundedYear:  z.<span class="fn">number</span>().<span class="fn">int</span>().<span class="fn">min</span>(<span class="num">1900</span>).<span class="fn">max</span>(<span class="num">2026</span>).<span class="fn">optional</span>(),
+  ideology:     z.<span class="fn">string</span>().<span class="fn">max</span>(<span class="num">500</span>).<span class="fn">optional</span>(),
+  websiteUrl:   z.<span class="fn">string</span>().<span class="fn">url</span>().<span class="fn">optional</span>(),
+});</pre>
+  </div>
+</div>
+
+<!-- ═══ DRIZZLE ORM ═══ -->
+<div class="page" id="page-drizzle">
+  <div class="eyebrow">Database — PostgreSQL (Neon) + Drizzle ORM</div>
+  <h1>Drizzle <em>ORM</em></h1>
+  <p class="lead">Kerala 2026 uses Drizzle ORM for all database access. Drizzle is a lightweight, fully type-safe SQL toolkit that feels like writing SQL but with TypeScript autocompletion. It is the only ORM that works seamlessly in both Node.js and edge runtimes, which matters for Next.js API routes.</p>
+
+  <div class="info-box"><strong>Drizzle vs Prisma:</strong> We chose Drizzle because it produces a smaller bundle, has better TypeScript inference, works natively in Next.js edge runtimes, and gives direct SQL-like control without "magic". The trade-off is slightly more verbose queries for complex joins.</div>
+
+  <h2>Complete Schema — All Tables</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — packages/db/schema/index.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">export</span> * <span class="kw">from</span> <span class="str">'./districts'</span>;
+<span class="kw">export</span> * <span class="kw">from</span> <span class="str">'./constituencies'</span>;
+<span class="kw">export</span> * <span class="kw">from</span> <span class="str">'./parties'</span>;
+<span class="kw">export</span> * <span class="kw">from</span> <span class="str">'./candidates'</span>;
+<span class="kw">export</span> * <span class="kw">from</span> <span class="str">'./election_results'</span>;
+<span class="kw">export</span> * <span class="kw">from</span> <span class="str">'./candidate_assets'</span>;
+<span class="kw">export</span> * <span class="kw">from</span> <span class="str">'./criminal_cases'</span>;
+<span class="kw">export</span> * <span class="kw">from</span> <span class="str">'./live_results'</span>;</pre>
+  </div>
+
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — packages/db/schema/constituencies.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { pgTable, uuid, varchar, integer, text,
+         jsonb, timestamp, pgEnum, isNull } <span class="kw">from</span> <span class="str">'drizzle-orm/pg-core'</span>;
+<span class="kw">import</span> { districts } <span class="kw">from</span> <span class="str">'./districts'</span>;
+
+<span class="kw">export const</span> categoryEnum = <span class="fn">pgEnum</span>(<span class="str">'category'</span>, [<span class="str">'general'</span>, <span class="str">'sc'</span>, <span class="str">'st'</span>]);
+
+<span class="kw">export const</span> constituencies = <span class="fn">pgTable</span>(<span class="str">'constituencies'</span>, {
+  id:              <span class="fn">uuid</span>(<span class="str">'id'</span>).<span class="fn">defaultRandom</span>().<span class="fn">primaryKey</span>(),
+  districtId:      <span class="fn">uuid</span>(<span class="str">'district_id'</span>).<span class="fn">notNull</span>().<span class="fn">references</span>(() => districts.id),
+  number:          <span class="fn">integer</span>(<span class="str">'number'</span>).<span class="fn">notNull</span>().<span class="fn">unique</span>(),
+  nameEn:          <span class="fn">varchar</span>(<span class="str">'name_en'</span>, { length: <span class="num">100</span> }).<span class="fn">notNull</span>(),
+  nameMl:          <span class="fn">varchar</span>(<span class="str">'name_ml'</span>, { length: <span class="num">100</span> }),
+  slug:            <span class="fn">varchar</span>(<span class="str">'slug'</span>, { length: <span class="num">50</span> }).<span class="fn">notNull</span>().<span class="fn">unique</span>(),
+  category:        <span class="fn">categoryEnum</span>(<span class="str">'category'</span>).<span class="fn">default</span>(<span class="str">'general'</span>),
+  totalVoters2021: <span class="fn">integer</span>(<span class="str">'total_voters_2021'</span>),
+  totalVoters2026: <span class="fn">integer</span>(<span class="str">'total_voters_2026'</span>),
+  maleVoters:      <span class="fn">integer</span>(<span class="str">'male_voters'</span>),
+  femaleVoters:    <span class="fn">integer</span>(<span class="str">'female_voters'</span>),
+  geojson:         <span class="fn">jsonb</span>(<span class="str">'geojson'</span>),
+  description:     <span class="ty">text</span>(<span class="str">'description'</span>),
+  createdAt:       <span class="fn">timestamp</span>(<span class="str">'created_at'</span>, { withTimezone: <span class="kw">true</span> }).<span class="fn">defaultNow</span>(),
+  updatedAt:       <span class="fn">timestamp</span>(<span class="str">'updated_at'</span>, { withTimezone: <span class="kw">true</span> }).<span class="fn">defaultNow</span>(),
+  deletedAt:       <span class="fn">timestamp</span>(<span class="str">'deleted_at'</span>, { withTimezone: <span class="kw">true</span> }),
+});
+
+<span class="kw">export type</span> <span class="ty">Constituency</span>    = <span class="kw">typeof</span> constituencies.$inferSelect;
+<span class="kw">export type</span> <span class="ty">NewConstituency</span> = <span class="kw">typeof</span> constituencies.$inferInsert;</pre>
+  </div>
+
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — packages/db/schema/election_results.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { pgTable, uuid, integer, boolean, decimal, timestamp } <span class="kw">from</span> <span class="str">'drizzle-orm/pg-core'</span>;
+<span class="kw">import</span> { constituencies } <span class="kw">from</span> <span class="str">'./constituencies'</span>;
+<span class="kw">import</span> { candidates }     <span class="kw">from</span> <span class="str">'./candidates'</span>;
+<span class="kw">import</span> { parties }        <span class="kw">from</span> <span class="str">'./parties'</span>;
+
+<span class="kw">export const</span> electionResults = <span class="fn">pgTable</span>(<span class="str">'election_results'</span>, {
+  id:               <span class="fn">uuid</span>(<span class="str">'id'</span>).<span class="fn">defaultRandom</span>().<span class="fn">primaryKey</span>(),
+  constituencyId:   <span class="fn">uuid</span>(<span class="str">'constituency_id'</span>).<span class="fn">notNull</span>().<span class="fn">references</span>(() => constituencies.id),
+  candidateId:      <span class="fn">uuid</span>(<span class="str">'candidate_id'</span>).<span class="fn">references</span>(() => candidates.id),
+  partyId:          <span class="fn">uuid</span>(<span class="str">'party_id'</span>).<span class="fn">references</span>(() => parties.id),
+  electionYear:     <span class="fn">integer</span>(<span class="str">'election_year'</span>).<span class="fn">notNull</span>(),
+  candidateName:    <span class="fn">varchar</span>(<span class="str">'candidate_name'</span>, { length: <span class="num">200</span> }).<span class="fn">notNull</span>(),
+  votesReceived:    <span class="fn">integer</span>(<span class="str">'votes_received'</span>).<span class="fn">notNull</span>(),
+  votePercentage:   <span class="fn">decimal</span>(<span class="str">'vote_percentage'</span>, { precision: <span class="num">5</span>, scale: <span class="num">2</span> }),
+  position:         <span class="fn">integer</span>(<span class="str">'position'</span>),
+  isWinner:         <span class="fn">boolean</span>(<span class="str">'is_winner'</span>).<span class="fn">default</span>(<span class="kw">false</span>),
+  winningMargin:    <span class="fn">integer</span>(<span class="str">'winning_margin'</span>),
+  totalVotesPolled: <span class="fn">integer</span>(<span class="str">'total_votes_polled'</span>),
+  voterTurnoutPct:  <span class="fn">decimal</span>(<span class="str">'voter_turnout_pct'</span>, { precision: <span class="num">5</span>, scale: <span class="num">2</span> }),
+  notaVotes:        <span class="fn">integer</span>(<span class="str">'nota_votes'</span>),
+  createdAt:        <span class="fn">timestamp</span>(<span class="str">'created_at'</span>, { withTimezone: <span class="kw">true</span> }).<span class="fn">defaultNow</span>(),
+});
+
+<span class="kw">export type</span> <span class="ty">ElectionResult</span>    = <span class="kw">typeof</span> electionResults.$inferSelect;
+<span class="kw">export type</span> <span class="ty">NewElectionResult</span> = <span class="kw">typeof</span> electionResults.$inferInsert;</pre>
+  </div>
+</div>
+
+<!-- ═══ MIGRATIONS & SEED ═══ -->
+<div class="page" id="page-migrations">
+  <div class="eyebrow">Database Lifecycle</div>
+  <h1>Migrations <em>& Seed</em></h1>
+  <p class="lead">Drizzle Kit manages schema migrations. Every schema change generates a SQL migration file committed to git. The seed script populates all 14 districts and all 140 constituencies with official names (English and Malayalam) and numbers.</p>
+
+  <h2>Drizzle Config</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — packages/db/drizzle.config.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> <span class="kw">type</span> { <span class="ty">Config</span> } <span class="kw">from</span> <span class="str">'drizzle-kit'</span>;
+<span class="kw">import</span> <span class="str">'dotenv/config'</span>;
+
+<span class="kw">export default</span> {
+  schema:     <span class="str">'./schema/index.ts'</span>,
+  out:        <span class="str">'./migrations'</span>,
+  dialect:    <span class="str">'postgresql'</span>,
+  dbCredentials: {
+    url: process.env.DATABASE_URL!,
+  },
+  verbose: <span class="kw">true</span>,
+  strict:  <span class="kw">true</span>,
+} <span class="kw">satisfies</span> <span class="ty">Config</span>;</pre>
+  </div>
+
+  <h2>Migration Commands</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><code>pnpm --filter @kerala2026/db db:generate</code></td><td>Generates new SQL migration files from schema changes. Run after every schema edit.</td></tr>
+        <tr><td><code>pnpm --filter @kerala2026/db db:migrate</code></td><td>Applies all pending migrations to the database. Run on fresh setup and after pulling new migrations.</td></tr>
+        <tr><td><code>pnpm --filter @kerala2026/db db:studio</code></td><td>Opens Drizzle Studio — a visual database browser at localhost:4983</td></tr>
+        <tr><td><code>pnpm --filter @kerala2026/db db:seed</code></td><td>Seeds 14 districts, 140 constituencies with official data, sample parties</td></tr>
+        <tr><td><code>pnpm --filter @kerala2026/db db:drop</code></td><td>Drops all tables. Use only in dev. Never in production.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Seed Script — Districts & Constituencies</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — packages/db/seed/seed.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { db } <span class="kw">from</span> <span class="str">'../config/db'</span>;
+<span class="kw">import</span> { districts, constituencies, parties } <span class="kw">from</span> <span class="str">'../schema'</span>;
+<span class="kw">import</span> { DISTRICTS_DATA } <span class="kw">from</span> <span class="str">'./data/districts'</span>;
+<span class="kw">import</span> { CONSTITUENCIES_DATA } <span class="kw">from</span> <span class="str">'./data/constituencies'</span>;
+<span class="kw">import</span> { PARTIES_DATA } <span class="kw">from</span> <span class="str">'./data/parties'</span>;
+
+<span class="kw">async function</span> <span class="fn">seed</span>() {
+  console.<span class="fn">log</span>(<span class="str">'🌱 Seeding Kerala 2026 database...'</span>);
+
+  <span class="cm">// 1. Insert 14 districts</span>
+  console.<span class="fn">log</span>(<span class="str">'  → Seeding districts...'</span>);
+  <span class="kw">const</span> insertedDistricts = <span class="kw">await</span> db
+    .<span class="fn">insert</span>(districts)
+    .<span class="fn">values</span>(DISTRICTS_DATA)
+    .<span class="fn">onConflictDoNothing</span>()
+    .<span class="fn">returning</span>();
+
+  <span class="cm">// Build slug → id map for FK references</span>
+  <span class="kw">const</span> districtMap = <span class="kw">new</span> <span class="ty">Map</span>(insertedDistricts.<span class="fn">map</span>(d => [d.slug, d.id]));
+
+  <span class="cm">// 2. Insert 140 constituencies with correct district FK</span>
+  console.<span class="fn">log</span>(<span class="str">'  → Seeding 140 constituencies...'</span>);
+  <span class="kw">await</span> db
+    .<span class="fn">insert</span>(constituencies)
+    .<span class="fn">values</span>(CONSTITUENCIES_DATA.<span class="fn">map</span>(c => ({
+      ...c,
+      districtId: districtMap.<span class="fn">get</span>(c.districtSlug)!,
+    })))
+    .<span class="fn">onConflictDoNothing</span>();
+
+  <span class="cm">// 3. Insert parties (LDF/UDF/NDA components)</span>
+  console.<span class="fn">log</span>(<span class="str">'  → Seeding parties...'</span>);
+  <span class="kw">await</span> db
+    .<span class="fn">insert</span>(parties)
+    .<span class="fn">values</span>(PARTIES_DATA)
+    .<span class="fn">onConflictDoNothing</span>();
+
+  console.<span class="fn">log</span>(<span class="str">'✅ Seed complete!'</span>);
+  console.<span class="fn">log</span>(<span class="str">`   Districts:     </span><span class="at">${DISTRICTS_DATA.length}</span><span class="str">`</span>);
+  console.<span class="fn">log</span>(<span class="str">`   Constituencies: </span><span class="at">${CONSTITUENCIES_DATA.length}</span><span class="str">`</span>);
+  console.<span class="fn">log</span>(<span class="str">`   Parties:        </span><span class="at">${PARTIES_DATA.length}</span><span class="str">`</span>);
+  process.<span class="fn">exit</span>(<span class="num">0</span>);
+}
+
+<span class="fn">seed</span>().<span class="fn">catch</span>(e => { console.<span class="fn">error</span>(e); process.<span class="fn">exit</span>(<span class="num">1</span>); });</pre>
+  </div>
+
+  <h2>Sample Seed Data — Districts</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — seed/data/districts.ts (excerpt)</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">export const</span> DISTRICTS_DATA = [
+  { nameEn: <span class="str">'Thiruvananthapuram'</span>, nameMl: <span class="str">'തിരുവനന്തപുരം'</span>, slug: <span class="str">'thiruvananthapuram'</span>, headquarters: <span class="str">'Thiruvananthapuram'</span>, constituencyCount: <span class="num">11</span> },
+  { nameEn: <span class="str">'Kollam'</span>,             nameMl: <span class="str">'കൊല്ലം'</span>,            slug: <span class="str">'kollam'</span>,             headquarters: <span class="str">'Kollam'</span>,             constituencyCount: <span class="num">10</span> },
+  { nameEn: <span class="str">'Pathanamthitta'</span>,    nameMl: <span class="str">'പത്തനംതിട്ട'</span>,      slug: <span class="str">'pathanamthitta'</span>,    headquarters: <span class="str">'Pathanamthitta'</span>,    constituencyCount: <span class="num">5</span>  },
+  { nameEn: <span class="str">'Alappuzha'</span>,        nameMl: <span class="str">'ആലപ്പുഴ'</span>,           slug: <span class="str">'alappuzha'</span>,         headquarters: <span class="str">'Alappuzha'</span>,          constituencyCount: <span class="num">9</span>  },
+  { nameEn: <span class="str">'Kottayam'</span>,         nameMl: <span class="str">'കോട്ടയം'</span>,           slug: <span class="str">'kottayam'</span>,          headquarters: <span class="str">'Kottayam'</span>,           constituencyCount: <span class="num">9</span>  },
+  { nameEn: <span class="str">'Idukki'</span>,           nameMl: <span class="str">'ഇടുക്കി'</span>,           slug: <span class="str">'idukki'</span>,            headquarters: <span class="str">'Painavu'</span>,            constituencyCount: <span class="num">5</span>  },
+  { nameEn: <span class="str">'Ernakulam'</span>,        nameMl: <span class="str">'എറണാകുളം'</span>,         slug: <span class="str">'ernakulam'</span>,         headquarters: <span class="str">'Kakkanad'</span>,           constituencyCount: <span class="num">14</span> },
+  { nameEn: <span class="str">'Thrissur'</span>,         nameMl: <span class="str">'തൃശ്ശൂർ'</span>,           slug: <span class="str">'thrissur'</span>,          headquarters: <span class="str">'Thrissur'</span>,           constituencyCount: <span class="num">13</span> },
+  { nameEn: <span class="str">'Palakkad'</span>,         nameMl: <span class="str">'പാലക്കാട്'</span>,         slug: <span class="str">'palakkad'</span>,          headquarters: <span class="str">'Palakkad'</span>,           constituencyCount: <span class="num">12</span> },
+  { nameEn: <span class="str">'Malappuram'</span>,       nameMl: <span class="str">'മലപ്പുറം'</span>,          slug: <span class="str">'malappuram'</span>,        headquarters: <span class="str">'Malappuram'</span>,         constituencyCount: <span class="num">13</span> },
+  { nameEn: <span class="str">'Kozhikode'</span>,        nameMl: <span class="str">'കോഴിക്കോട്'</span>,        slug: <span class="str">'kozhikode'</span>,         headquarters: <span class="str">'Kozhikode'</span>,          constituencyCount: <span class="num">12</span> },
+  { nameEn: <span class="str">'Wayanad'</span>,          nameMl: <span class="str">'വയനാട്'</span>,            slug: <span class="str">'wayanad'</span>,           headquarters: <span class="str">'Kalpetta'</span>,           constituencyCount: <span class="num">3</span>  },
+  { nameEn: <span class="str">'Kannur'</span>,           nameMl: <span class="str">'കണ്ണൂർ'</span>,            slug: <span class="str">'kannur'</span>,            headquarters: <span class="str">'Kannur'</span>,             constituencyCount: <span class="num">11</span> },
+  { nameEn: <span class="str">'Kasaragod'</span>,        nameMl: <span class="str">'കാസർഗോഡ്'</span>,         slug: <span class="str">'kasaragod'</span>,         headquarters: <span class="str">'Kasaragod'</span>,          constituencyCount: <span class="num">5</span>  },
+];</pre>
+  </div>
+</div>
+
+<!-- ═══ QUERY PATTERNS ═══ -->
+<div class="page" id="page-queries">
+  <div class="eyebrow">Drizzle ORM — Advanced Queries</div>
+  <h1>Query <em>Patterns</em></h1>
+  <p class="lead">Common Drizzle ORM query patterns used throughout the Kerala 2026 codebase. These cover pagination, filtering, full-text search with pg_trgm, and complex multi-table joins for constituency and candidate data.</p>
+
+  <h2>Paginated List with Filters</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — modules/candidates/candidates.service.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { eq, and, ilike, gt, isNull, desc, asc, sql } <span class="kw">from</span> <span class="str">'drizzle-orm'</span>;
+<span class="kw">import</span> { db } <span class="kw">from</span> <span class="str">'../../config/db'</span>;
+<span class="kw">import</span> { candidates, parties, constituencies, districts } <span class="kw">from</span> <span class="str">'@kerala2026/db'</span>;
+<span class="kw">import</span> <span class="kw">type</span> { <span class="ty">ListCandidatesQuery</span> } <span class="kw">from</span> <span class="str">'./candidates.schema'</span>;
+
+<span class="kw">export async function</span> <span class="fn">listCandidates</span>(query: <span class="ty">ListCandidatesQuery</span>) {
+  <span class="kw">const</span> { page, limit, q, party, district, gender, isIncumbent, hasCriminalCases, sort } = query;
+  <span class="kw">const</span> offset = (page - <span class="num">1</span>) * limit;
+
+  <span class="cm">// Build dynamic WHERE conditions</span>
+  <span class="kw">const</span> conditions = [<span class="fn">isNull</span>(candidates.deletedAt), <span class="fn">eq</span>(candidates.electionYear, <span class="num">2026</span>)];
+
+  <span class="kw">if</span> (q)             conditions.<span class="fn">push</span>(<span class="fn">ilike</span>(candidates.nameEn, <span class="str">`%</span><span class="at">${q}</span><span class="str">%`</span>));
+  <span class="kw">if</span> (gender)        conditions.<span class="fn">push</span>(<span class="fn">eq</span>(candidates.gender, gender));
+  <span class="kw">if</span> (isIncumbent)   conditions.<span class="fn">push</span>(<span class="fn">eq</span>(candidates.isIncumbent, isIncumbent === <span class="str">'true'</span>));
+  <span class="kw">if</span> (hasCriminalCases === <span class="str">'true'</span>) conditions.<span class="fn">push</span>(<span class="fn">gt</span>(candidates.criminalCases, <span class="num">0</span>));
+
+  <span class="cm">// Sort mapping</span>
+  <span class="kw">const</span> sortMap = {
+    name:   <span class="fn">asc</span>(candidates.nameEn),
+    assets: <span class="fn">desc</span>(candidates.totalAssetsInr),
+    terms:  <span class="fn">desc</span>(candidates.termsServed),
+  };
+
+  <span class="kw">const</span> [rows, countResult] = <span class="kw">await</span> <span class="ty">Promise</span>.<span class="fn">all</span>([
+    db.<span class="fn">select</span>({
+      id:           candidates.id,
+      slug:         candidates.slug,
+      nameEn:       candidates.nameEn,
+      nameMl:       candidates.nameMl,
+      photoUrl:     candidates.photoUrl,
+      isIncumbent:  candidates.isIncumbent,
+      termsServed:  candidates.termsServed,
+      criminalCases: candidates.criminalCases,
+      totalAssetsInr: candidates.totalAssetsInr,
+      gender:       candidates.gender,
+      nominationStatus: candidates.nominationStatus,
+      party: {
+        id:           parties.id,
+        slug:         parties.slug,
+        nameEn:       parties.nameEn,
+        abbreviation: parties.abbreviation,
+        coalition:    parties.coalition,
+        colorHex:     parties.colorHex,
+      },
+      constituency: {
+        id:     constituencies.id,
+        slug:   constituencies.slug,
+        nameEn: constituencies.nameEn,
+        nameMl: constituencies.nameMl,
+        number: constituencies.number,
+      },
+    })
+    .<span class="fn">from</span>(candidates)
+    .<span class="fn">leftJoin</span>(parties, <span class="fn">eq</span>(candidates.partyId, parties.id))
+    .<span class="fn">leftJoin</span>(constituencies, <span class="fn">eq</span>(candidates.constituencyId, constituencies.id))
+    .<span class="fn">leftJoin</span>(districts, <span class="fn">eq</span>(constituencies.districtId, districts.id))
+    .<span class="fn">where</span>(<span class="fn">and</span>(...conditions))
+    .<span class="fn">orderBy</span>(sortMap[sort])
+    .<span class="fn">limit</span>(limit)
+    .<span class="fn">offset</span>(offset),
+
+    db.<span class="fn">select</span>({ count: sql`count(*)` })
+    .<span class="fn">from</span>(candidates)
+    .<span class="fn">leftJoin</span>(constituencies, <span class="fn">eq</span>(candidates.constituencyId, constituencies.id))
+    .<span class="fn">leftJoin</span>(districts, <span class="fn">eq</span>(constituencies.districtId, districts.id))
+    .<span class="fn">where</span>(<span class="fn">and</span>(...conditions)),
+  ]);
+
+  <span class="kw">const</span> total      = <span class="ty">Number</span>(countResult[<span class="num">0</span>]?.count ?? <span class="num">0</span>);
+  <span class="kw">const</span> totalPages = <span class="ty">Math</span>.<span class="fn">ceil</span>(total / limit);
+
+  <span class="kw">return</span> { data: rows, pagination: { page, limit, total, totalPages } };
+}</pre>
+  </div>
+
+  <h2>Full Candidate Detail (with all relations)</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — modules/candidates/candidates.service.ts (continued)</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { candidateAssets, criminalCases, electionResults } <span class="kw">from</span> <span class="str">'@kerala2026/db'</span>;
+
+<span class="kw">export async function</span> <span class="fn">getCandidateBySlug</span>(slug: <span class="ty">string</span>) {
+  <span class="cm">// Base candidate with party + constituency</span>
+  <span class="kw">const</span> [row] = <span class="kw">await</span> db
+    .<span class="fn">select</span>()
+    .<span class="fn">from</span>(candidates)
+    .<span class="fn">leftJoin</span>(parties, <span class="fn">eq</span>(candidates.partyId, parties.id))
+    .<span class="fn">leftJoin</span>(constituencies, <span class="fn">eq</span>(candidates.constituencyId, constituencies.id))
+    .<span class="fn">leftJoin</span>(districts, <span class="fn">eq</span>(constituencies.districtId, districts.id))
+    .<span class="fn">where</span>(<span class="fn">and</span>(
+      <span class="fn">eq</span>(candidates.slug, slug),
+      <span class="fn">isNull</span>(candidates.deletedAt)
+    ))
+    .<span class="fn">limit</span>(<span class="num">1</span>);
+
+  <span class="kw">if</span> (!row) <span class="kw">return null</span>;
+
+  <span class="kw">const</span> candidateId = row.candidates.id;
+
+  <span class="cm">// Parallel fetch: assets + criminal cases + election history</span>
+  <span class="kw">const</span> [assets, cases, history] = <span class="kw">await</span> <span class="ty">Promise</span>.<span class="fn">all</span>([
+    db.<span class="fn">select</span>().<span class="fn">from</span>(candidateAssets)
+      .<span class="fn">where</span>(<span class="fn">eq</span>(candidateAssets.candidateId, candidateId)),
+
+    db.<span class="fn">select</span>().<span class="fn">from</span>(criminalCases)
+      .<span class="fn">where</span>(<span class="fn">eq</span>(criminalCases.candidateId, candidateId)),
+
+    db.<span class="fn">select</span>({
+        year:          electionResults.electionYear,
+        constituencyName: constituencies.nameEn,
+        partyName:     parties.nameEn,
+        votesReceived: electionResults.votesReceived,
+        position:      electionResults.position,
+        isWinner:      electionResults.isWinner,
+        winningMargin: electionResults.winningMargin,
+      })
+      .<span class="fn">from</span>(electionResults)
+      .<span class="fn">leftJoin</span>(constituencies, <span class="fn">eq</span>(electionResults.constituencyId, constituencies.id))
+      .<span class="fn">leftJoin</span>(parties, <span class="fn">eq</span>(electionResults.partyId, parties.id))
+      .<span class="fn">where</span>(<span class="fn">eq</span>(electionResults.candidateId, candidateId))
+      .<span class="fn">orderBy</span>(<span class="fn">desc</span>(electionResults.electionYear)),
+  ]);
+
+  <span class="kw">return</span> {
+    ...row.candidates,
+    party:        row.parties,
+    constituency: { ...row.constituencies, district: row.districts },
+    assets,
+    criminalCases: cases,
+    electionHistory: history,
+  };
+}</pre>
+  </div>
+</div>
+
+<!-- ═══ DEPLOYMENT ═══ -->
+<div class="page" id="page-deploy">
+  <div class="eyebrow">Infrastructure</div>
+  <h1><em>Deployment</em></h1>
+  <p class="lead">Kerala 2026 deploys the frontend on Vercel and the backend API on Railway. Both platforms support automatic deployments from the main branch on GitHub. Static assets (candidate photos, party logos) are served from Cloudflare R2 via CDN.</p>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-label">Frontend</div><div class="stat-val">Vercel</div><div class="stat-sub">Edge Network, auto-deploy</div></div>
+    <div class="stat-card"><div class="stat-label">Backend</div><div class="stat-val">Railway</div><div class="stat-sub">Node.js, auto-scaling</div></div>
+    <div class="stat-card"><div class="stat-label">Database</div><div class="stat-val">Neon</div><div class="stat-sub">Serverless PostgreSQL</div></div>
+    <div class="stat-card"><div class="stat-label">Media</div><div class="stat-val">CF R2</div><div class="stat-sub">Zero egress CDN</div></div>
+    <div class="stat-card"><div class="stat-label">Search</div><div class="stat-val">Railway</div><div class="stat-sub">Self-hosted Meilisearch</div></div>
+  </div>
+
+  <h2>Architecture Diagram</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Layer</th><th>Service</th><th>URL</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Frontend</td><td>Vercel</td><td>kerala2026.in</td><td>Next.js 14, SSG+ISR, Edge CDN</td></tr>
+        <tr><td>Admin Panel</td><td>Vercel</td><td>admin.kerala2026.in</td><td>Next.js, restricted by auth header</td></tr>
+        <tr><td>Backend API</td><td>Railway</td><td>api.kerala2026.in</td><td>Express, Node.js 20, auto-scaling</td></tr>
+        <tr><td>Scraper (Ph2)</td><td>Railway</td><td>Internal only</td><td>Separate Railway service, disabled by default</td></tr>
+        <tr><td>PostgreSQL</td><td>Neon</td><td>Internal DSN</td><td>Serverless, ap-south-1 (Mumbai)</td></tr>
+        <tr><td>Search</td><td>Railway</td><td>search.kerala2026.in</td><td>Self-hosted Meilisearch 1.x</td></tr>
+        <tr><td>Media CDN</td><td>Cloudflare R2</td><td>media.kerala2026.in</td><td>Candidate photos, party logos</td></tr>
+        <tr><td>Analytics</td><td>Plausible Cloud</td><td>plausible.io</td><td>Privacy-friendly, cookie-free</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Vercel Configuration</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">JSON — apps/web/vercel.json</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+{
+  <span class="str">"buildCommand"</span>: <span class="str">"pnpm --filter @kerala2026/web build"</span>,
+  <span class="str">"outputDirectory"</span>: <span class="str">"apps/web/.next"</span>,
+  <span class="str">"framework"</span>: <span class="str">"nextjs"</span>,
+  <span class="str">"regions"</span>: [<span class="str">"bom1"</span>],
+  <span class="str">"headers"</span>: [
+    {
+      <span class="str">"source"</span>: <span class="str">"/(.*)"</span>,
+      <span class="str">"headers"</span>: [
+        { <span class="str">"key"</span>: <span class="str">"X-Content-Type-Options"</span>,  <span class="str">"value"</span>: <span class="str">"nosniff"</span> },
+        { <span class="str">"key"</span>: <span class="str">"X-Frame-Options"</span>,         <span class="str">"value"</span>: <span class="str">"DENY"</span> },
+        { <span class="str">"key"</span>: <span class="str">"Referrer-Policy"</span>,         <span class="str">"value"</span>: <span class="str">"strict-origin-when-cross-origin"</span> }
+      ]
+    },
+    {
+      <span class="str">"source"</span>: <span class="str">"/api/(.*)"</span>,
+      <span class="str">"headers"</span>: [
+        { <span class="str">"key"</span>: <span class="str">"Cache-Control"</span>, <span class="str">"value"</span>: <span class="str">"s-maxage=0"</span> }
+      ]
+    }
+  ],
+  <span class="str">"rewrites"</span>: [
+    {
+      <span class="str">"source"</span>: <span class="str">"/api/v1/(.*)"</span>,
+      <span class="str">"destination"</span>: <span class="str">"https://api.kerala2026.in/api/v1/$1"</span>
+    }
+  ]
+}</pre>
+  </div>
+
+  <h2>Railway Setup — Backend API</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">JSON — apps/api/railway.json</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+{
+  <span class="str">"$schema"</span>: <span class="str">"https://railway.app/railway.schema.json"</span>,
+  <span class="str">"build"</span>: {
+    <span class="str">"builder"</span>: <span class="str">"NIXPACKS"</span>,
+    <span class="str">"buildCommand"</span>: <span class="str">"pnpm --filter @kerala2026/api build"</span>
+  },
+  <span class="str">"deploy"</span>: {
+    <span class="str">"startCommand"</span>: <span class="str">"pnpm --filter @kerala2026/api start"</span>,
+    <span class="str">"healthcheckPath"</span>: <span class="str">"/health"</span>,
+    <span class="str">"healthcheckTimeout"</span>: <span class="num">30</span>,
+    <span class="str">"restartPolicyType"</span>: <span class="str">"ON_FAILURE"</span>,
+    <span class="str">"restartPolicyMaxRetries"</span>: <span class="num">3</span>
+  }
+}</pre>
+  </div>
+
+  <h2>Meilisearch on Railway (Docker)</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">Shell — Deploy Meilisearch on Railway</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="cm"># In Railway dashboard: New Service → Deploy from Docker Image</span>
+<span class="cm"># Image: getmeili/meilisearch:v1.7</span>
+<span class="cm"># Set environment variables:</span>
+MEILI_MASTER_KEY=your_master_key_min_16_chars
+MEILI_ENV=production
+MEILI_DB_PATH=/meili_data
+MEILI_HTTP_ADDR=0.0.0.0:7700
+
+<span class="cm"># Volume mount: /meili_data → persistent Railway volume</span>
+<span class="cm"># Expose on Railway private network, NOT publicly (API proxies it)</span>
+
+<span class="cm"># After first deploy, configure indices via the API:</span>
+pnpm --filter @kerala2026/api search:configure
+<span class="cm"># This runs configureCandidatesIndex(), configureConstituenciesIndex(), etc.</span>
+
+<span class="cm"># Sync all data to Meilisearch:</span>
+pnpm --filter @kerala2026/api search:sync</pre>
+  </div>
+
+  <h2>Production Environment Variables Checklist</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Variable</th><th>Where to set</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>DATABASE_URL</code></td><td>Railway + Vercel</td><td>Neon connection string with <code>?sslmode=require</code></td></tr>
+        <tr><td><code>ADMIN_JWT_SECRET</code></td><td>Railway only</td><td>Min 32 chars, use <code>openssl rand -hex 32</code></td></tr>
+        <tr><td><code>ADMIN_PASSWORD_HASH</code></td><td>Railway only</td><td>bcrypt hash of admin password</td></tr>
+        <tr><td><code>CF_R2_ACCESS_KEY</code></td><td>Railway only</td><td>Cloudflare R2 API token (write access)</td></tr>
+        <tr><td><code>CF_R2_SECRET_KEY</code></td><td>Railway only</td><td>Cloudflare R2 secret</td></tr>
+        <tr><td><code>MEILISEARCH_MASTER_KEY</code></td><td>Railway (both services)</td><td>Must match Meilisearch container env</td></tr>
+        <tr><td><code>NEXT_PUBLIC_API_URL</code></td><td>Vercel</td><td><code>https://api.kerala2026.in/api/v1</code></td></tr>
+        <tr><td><code>NEXT_PUBLIC_MAPBOX_TOKEN</code></td><td>Vercel</td><td>Public token — safe to expose</td></tr>
+        <tr><td><code>RESEND_API_KEY</code></td><td>Railway only</td><td>Email notifications for contributors</td></tr>
+        <tr><td><code>SCRAPER_ENABLED</code></td><td>Railway (scraper service)</td><td>Keep <code>false</code> until election result day</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ CI/CD ═══ -->
+<div class="page" id="page-cicd">
+  <div class="eyebrow">GitHub Actions</div>
+  <h1>CI/CD <em>Pipeline</em></h1>
+  <p class="lead">Kerala 2026 uses GitHub Actions for continuous integration. Every pull request triggers lint, type-check, and test runs. Merges to <code>main</code> auto-deploy to Vercel (frontend) and Railway (backend) via their native GitHub integrations.</p>
+
+  <h2>CI Workflow — Pull Requests</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">YAML — .github/workflows/ci.yml</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+
+jobs:
+  lint-and-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript type check
+        run: pnpm typecheck
+
+      - name: ESLint
+        run: pnpm lint
+
+  test:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: kerala2026_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    env:
+      DATABASE_URL: postgresql://test:test@localhost:5432/kerala2026_test
+      NODE_ENV: test
+      ADMIN_JWT_SECRET: test_secret_at_least_32_characters_long
+      ADMIN_PASSWORD_HASH: $2b$12$placeholder
+      CF_ACCOUNT_ID: test
+      CF_R2_ACCESS_KEY: test
+      CF_R2_SECRET_KEY: test
+      CF_R2_BUCKET: test
+      CF_R2_PUBLIC_URL: http://localhost:9000
+      MEILISEARCH_HOST: http://localhost:7700
+      MEILISEARCH_MASTER_KEY: test_key
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run migrations on test DB
+        run: pnpm --filter @kerala2026/db db:migrate
+
+      - name: Run tests
+        run: pnpm test --reporter=verbose
+
+  build:
+    name: Build Check
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build all apps
+        run: pnpm build
+        env:
+          NEXT_PUBLIC_API_URL: https://api.kerala2026.in/api/v1
+          NEXT_PUBLIC_MAPBOX_TOKEN: pk.placeholder</pre>
+  </div>
+
+  <h2>Deploy Pipeline</h2>
+  <div class="pipeline-step">
+    <div class="pipeline-num">1</div>
+    <div class="pipeline-body">
+      <div class="pipeline-title">PR Opened / Updated</div>
+      <div class="pipeline-desc">GitHub Actions triggers CI: lint, type-check, unit tests, integration tests against ephemeral Postgres. Vercel creates a preview deployment URL for the PR for visual review.</div>
+    </div>
+  </div>
+  <div class="pipeline-step">
+    <div class="pipeline-num">2</div>
+    <div class="pipeline-body">
+      <div class="pipeline-title">PR Review & Approval</div>
+      <div class="pipeline-desc">At least one maintainer approval required. All CI checks must pass. For data PRs (candidate information), a second data reviewer verifies accuracy against official sources.</div>
+    </div>
+  </div>
+  <div class="pipeline-step">
+    <div class="pipeline-num">3</div>
+    <div class="pipeline-body">
+      <div class="pipeline-title">Merge to main</div>
+      <div class="pipeline-desc">Squash-and-merge to main. Railway auto-detects the push and begins building and deploying the backend API. Takes approximately 2 minutes.</div>
+    </div>
+  </div>
+  <div class="pipeline-step">
+    <div class="pipeline-num">4</div>
+    <div class="pipeline-body">
+      <div class="pipeline-title">Vercel Production Deploy</div>
+      <div class="pipeline-desc">Vercel detects the push, rebuilds the Next.js app with <code>pnpm build</code>, generates all 140+ static constituency pages and 1000+ candidate pages, and deploys to Edge Network globally.</div>
+    </div>
+  </div>
+  <div class="pipeline-step">
+    <div class="pipeline-num">5</div>
+    <div class="pipeline-body">
+      <div class="pipeline-title">Post-Deploy: Search Sync</div>
+      <div class="pipeline-desc">After data changes, the Meilisearch index is re-synced manually by running <code>pnpm --filter @kerala2026/api search:sync</code>. This will be automated in a future release via webhooks.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MONITORING ═══ -->
+<div class="page" id="page-monitoring">
+  <div class="eyebrow">Observability</div>
+  <h1>Monitoring <em>& Logs</em></h1>
+  <p class="lead">Kerala 2026 uses lightweight, open-source-friendly monitoring tools. Railway provides built-in log streaming and basic metrics. Plausible handles privacy-friendly analytics. Uptime monitoring via a free tier of Better Uptime.</p>
+
+  <h2>Logging Strategy</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Layer</th><th>Tool</th><th>What's logged</th></tr></thead>
+      <tbody>
+        <tr><td>HTTP Requests</td><td>Morgan (Express)</td><td>Method, URL, status, response time. Combined format in production.</td></tr>
+        <tr><td>Application Errors</td><td>Console.error → Railway Logs</td><td>Unhandled errors, scraper failures, DB connection issues.</td></tr>
+        <tr><td>DB Queries</td><td>Drizzle logger (dev only)</td><td>Raw SQL queries. Disabled in production to avoid log noise.</td></tr>
+        <tr><td>Scraper Activity (Ph2)</td><td>Console.log → Railway Logs</td><td>Scrape start/end, constituencies updated count, any parsing errors.</td></tr>
+        <tr><td>Page Analytics</td><td>Plausible</td><td>Page views, top constituencies viewed, search terms, referrers. No PII.</td></tr>
+        <tr><td>Uptime</td><td>Better Uptime (free)</td><td>Pings /health every 3 min. Alerts via email if down. Critical on election day.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Health Check Endpoint</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — Extended health check</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { sql } <span class="kw">from</span> <span class="str">'drizzle-orm'</span>;
+<span class="kw">import</span> { db } <span class="kw">from</span> <span class="str">'../config/db'</span>;
+
+app.<span class="fn">get</span>(<span class="str">'/health'</span>, <span class="kw">async</span> (_req, res) => {
+  <span class="kw">const</span> checks: <span class="ty">Record</span>&lt;<span class="ty">string</span>, <span class="ty">string</span>&gt; = {};
+
+  <span class="cm">// Database connectivity</span>
+  <span class="kw">try</span> {
+    <span class="kw">await</span> db.<span class="fn">execute</span>(sql`SELECT 1`);
+    checks.database = <span class="str">'ok'</span>;
+  } <span class="kw">catch</span> {
+    checks.database = <span class="str">'error'</span>;
+  }
+
+  <span class="cm">// Meilisearch connectivity</span>
+  <span class="kw">try</span> {
+    <span class="kw">await</span> meilisearch.<span class="fn">health</span>();
+    checks.search = <span class="str">'ok'</span>;
+  } <span class="kw">catch</span> {
+    checks.search = <span class="str">'degraded'</span>;  <span class="cm">// non-fatal</span>
+  }
+
+  <span class="kw">const</span> allOk = <span class="ty">Object</span>.<span class="fn">values</span>(checks).<span class="fn">every</span>(v => v === <span class="str">'ok'</span>);
+
+  res.<span class="fn">status</span>(allOk ? <span class="num">200</span> : <span class="num">503</span>).<span class="fn">json</span>({
+    status:  allOk ? <span class="str">'ok'</span> : <span class="str">'degraded'</span>,
+    version: <span class="str">'1.0.0'</span>,
+    uptime:  process.<span class="fn">uptime</span>(),
+    checks,
+    scraperEnabled: process.env.SCRAPER_ENABLED === <span class="str">'true'</span>,
+    timestamp: <span class="kw">new</span> <span class="ty">Date</span>().<span class="fn">toISOString</span>(),
+  });
+});</pre>
+  </div>
+
+  <h2>Election Day Runbook</h2>
+  <div class="route-list">
+    <div class="route-item">
+      <div class="route-method STEP">D-1</div>
+      <div>
+        <div class="route-path">Day Before Result Day</div>
+        <div class="route-desc">Verify all 140 constituency data is complete and accurate. Run full test suite. Check Railway and Vercel service health. Confirm Meilisearch index is up to date. Increase Railway replicas to 2 for redundancy.</div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method STEP">6AM</div>
+      <div>
+        <div class="route-path">Counting Day Morning — Activate Phase 2</div>
+        <div class="route-desc">Set <code>SCRAPER_ENABLED=true</code> in Railway scraper service environment variables. Redeploy the scraper service. Verify WebSocket connections work on the /results page. Counting typically begins at 8 AM.</div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method STEP">8AM</div>
+      <div>
+        <div class="route-path">Monitor Live Scraper</div>
+        <div class="route-desc">Watch Railway logs for scraper activity. Should see "Scraped X constituency updates" every 60 seconds. Monitor the /results page on the live site. Have backup static HTML page ready if scraper fails.</div>
+      </div>
+    </div>
+    <div class="route-item">
+      <div class="route-method STEP">Post</div>
+      <div>
+        <div class="route-path">After Final Results</div>
+        <div class="route-desc">Set <code>SCRAPER_ENABLED=false</code>. Final results are now in the <code>live_results</code> table. Copy them to <code>election_results</code> for the permanent record. Begin Phase 3 archive mode planning.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SECURITY ═══ -->
+<div class="page" id="page-security">
+  <div class="eyebrow">Security Practices</div>
+  <h1><em>Security</em></h1>
+  <p class="lead">Kerala 2026 handles public data, but security is still critical — to protect admin credentials, prevent abuse, and ensure the site stays available during high-traffic election periods. Here is a complete overview of security measures implemented.</p>
+
+  <div class="warn-box"><strong>Responsible Disclosure:</strong> If you find a security vulnerability in Kerala 2026, please report it privately to <code>security@kerala2026.in</code> before public disclosure. Do not open public GitHub issues for security vulnerabilities.</div>
+
+  <h2>Security Checklist</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Area</th><th>Measure</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td><strong>HTTP Headers</strong></td><td>Helmet.js — X-Frame-Options, CSP, HSTS, X-Content-Type-Options</td><td>✅ Implemented</td></tr>
+        <tr><td><strong>Rate Limiting</strong></td><td>100 req/15min per IP on all /api/* routes</td><td>✅ Implemented</td></tr>
+        <tr><td><strong>CORS</strong></td><td>Strict allowlist: only kerala2026.in and admin.kerala2026.in</td><td>✅ Implemented</td></tr>
+        <tr><td><strong>Authentication</strong></td><td>JWT with bcrypt-hashed password. Tokens expire in 12h.</td><td>✅ Implemented</td></tr>
+        <tr><td><strong>Input Validation</strong></td><td>All request bodies and query params validated with Zod before processing</td><td>✅ Implemented</td></tr>
+        <tr><td><strong>SQL Injection</strong></td><td>Drizzle ORM uses parameterized queries — no raw SQL string concatenation</td><td>✅ Implemented</td></tr>
+        <tr><td><strong>File Upload</strong></td><td>Multer validates MIME type. Sharp re-encodes image — strips EXIF metadata</td><td>✅ Implemented</td></tr>
+        <tr><td><strong>Secrets Management</strong></td><td>All secrets in environment variables. No secrets in code or git history.</td><td>✅ Implemented</td></tr>
+        <tr><td><strong>Database</strong></td><td>Neon connections require SSL. Credentials never exposed publicly.</td><td>✅ Implemented</td></tr>
+        <tr><td><strong>Dependencies</strong></td><td>Dependabot enabled for automatic security patch PRs</td><td>✅ Configured</td></tr>
+        <tr><td><strong>DDoS</strong></td><td>Cloudflare proxy on all domains. Railway auto-scales under load.</td><td>✅ Implemented</td></tr>
+        <tr><td><strong>Admin Panel</strong></td><td>Deployed on separate subdomain. JWT required for all routes.</td><td>✅ Implemented</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Content Security Policy</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — Helmet CSP configuration</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+app.<span class="fn">use</span>(<span class="fn">helmet</span>({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc:  [<span class="str">"'self'"</span>],
+      scriptSrc:   [<span class="str">"'self'"</span>, <span class="str">"'unsafe-inline'"</span>],  <span class="cm">// needed for Next.js inline scripts</span>
+      styleSrc:    [<span class="str">"'self'"</span>, <span class="str">"'unsafe-inline'"</span>, <span class="str">"fonts.googleapis.com"</span>],
+      fontSrc:     [<span class="str">"'self'"</span>, <span class="str">"fonts.gstatic.com"</span>],
+      imgSrc:      [<span class="str">"'self'"</span>, <span class="str">"data:"</span>, <span class="str">"media.kerala2026.in"</span>, <span class="str">"*.mapbox.com"</span>],
+      connectSrc:  [<span class="str">"'self'"</span>, <span class="str">"api.kerala2026.in"</span>, <span class="str">"*.mapbox.com"</span>, <span class="str">"*.neon.tech"</span>],
+      frameSrc:    [<span class="str">"'none'"</span>],
+      objectSrc:   [<span class="str">"'none'"</span>],
+      upgradeInsecureRequests: [],
+    },
+  },
+  hsts: {
+    maxAge: <span class="num">63072000</span>,    <span class="cm">// 2 years</span>
+    includeSubDomains: <span class="kw">true</span>,
+    preload: <span class="kw">true</span>,
+  },
+  frameguard:       { action: <span class="str">'deny'</span> },
+  xContentTypeOptions: <span class="kw">true</span>,
+  referrerPolicy:   { policy: <span class="str">'strict-origin-when-cross-origin'</span> },
+}));</pre>
+  </div>
+</div>
+
+<!-- ═══ ADMIN PANEL ═══ -->
+<div class="page" id="page-admin">
+  <div class="eyebrow">Internal Tool</div>
+  <h1>Admin <em>Panel</em></h1>
+  <p class="lead">The admin panel is an internal Next.js application deployed at <code>admin.kerala2026.in</code>. It is used by constituency coordinators to add and verify candidate data before it goes live. It is not a public-facing app — access requires the admin JWT token.</p>
+
+  <div class="info-box"><strong>Access Control:</strong> The admin panel is protected at the middleware level. Any request without a valid Bearer JWT returns a 401 redirect to the login page. The JWT is shared with trusted coordinators via a secure channel.</div>
+
+  <h2>Admin Panel Pages</h2>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Dashboard</div>
+      <div class="card-title">/admin</div>
+      <div class="card-desc">Overview: data completeness per district, total candidates entered vs expected, recently updated records, quick links to incomplete constituencies.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Candidates</div>
+      <div class="card-title">/admin/candidates</div>
+      <div class="card-desc">Table of all entered candidates. Filter by constituency, district, party, completeness. Quick-edit inline. Click to open full edit form.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Add Candidate</div>
+      <div class="card-title">/admin/candidates/new</div>
+      <div class="card-desc">Full form to add a new candidate. Constituency select, party select, photo upload (drag-and-drop), all bio fields, asset entry, criminal case entry.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Edit Candidate</div>
+      <div class="card-title">/admin/candidates/[id]/edit</div>
+      <div class="card-desc">Pre-populated edit form. Shows current photo with replace button. Tracks who last edited and when via audit log. Nomination status management.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Constituencies</div>
+      <div class="card-title">/admin/constituencies</div>
+      <div class="card-desc">Table of all 140 constituencies with candidate count, data completeness indicator, last updated timestamp. Edit voter counts and descriptions.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Bulk Import</div>
+      <div class="card-title">/admin/import</div>
+      <div class="card-desc">CSV import tool. Upload a spreadsheet of candidate data, preview parsed results, validate errors, confirm and insert. See CSV format section below.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Parties</div>
+      <div class="card-title">/admin/parties</div>
+      <div class="card-desc">Manage party records, upload logos, set coalition assignment, update colors and website URLs. Add new minor parties as nominations come in.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Historical Data</div>
+      <div class="card-title">/admin/historical</div>
+      <div class="card-desc">Import historical election results via CSV for years 1957–2021. Preview and validate before inserting. Critical for the vote share charts.</div>
+    </div>
+  </div>
+
+  <h2>Admin Middleware (Next.js)</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — apps/admin/middleware.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { NextRequest, NextResponse } <span class="kw">from</span> <span class="str">'next/server'</span>;
+<span class="kw">import</span> { jwtVerify } <span class="kw">from</span> <span class="str">'jose'</span>;
+
+<span class="kw">const</span> PUBLIC_PATHS = [<span class="str">'/login'</span>, <span class="str">'/api/auth/login'</span>];
+
+<span class="kw">export async function</span> <span class="fn">middleware</span>(req: <span class="ty">NextRequest</span>) {
+  <span class="kw">const</span> { pathname } = req.nextUrl;
+
+  <span class="kw">if</span> (PUBLIC_PATHS.<span class="fn">some</span>(p => pathname.<span class="fn">startsWith</span>(p))) {
+    <span class="kw">return</span> <span class="fn">NextResponse</span>.<span class="fn">next</span>();
+  }
+
+  <span class="kw">const</span> token = req.cookies.<span class="fn">get</span>(<span class="str">'admin_token'</span>)?.value;
+  <span class="kw">if</span> (!token) {
+    <span class="kw">return</span> <span class="fn">NextResponse</span>.<span class="fn">redirect</span>(<span class="kw">new</span> <span class="ty">URL</span>(<span class="str">'/login'</span>, req.url));
+  }
+
+  <span class="kw">try</span> {
+    <span class="kw">const</span> secret = <span class="kw">new</span> <span class="ty">TextEncoder</span>().<span class="fn">encode</span>(process.env.ADMIN_JWT_SECRET);
+    <span class="kw">await</span> <span class="fn">jwtVerify</span>(token, secret);
+    <span class="kw">return</span> <span class="fn">NextResponse</span>.<span class="fn">next</span>();
+  } <span class="kw">catch</span> {
+    <span class="kw">const</span> res = <span class="fn">NextResponse</span>.<span class="fn">redirect</span>(<span class="kw">new</span> <span class="ty">URL</span>(<span class="str">'/login'</span>, req.url));
+    res.cookies.<span class="fn">delete</span>(<span class="str">'admin_token'</span>);
+    <span class="kw">return</span> res;
+  }
+}
+
+<span class="kw">export const</span> config = {
+  matcher: [<span class="str">'/((?!_next/static|_next/image|favicon.ico).*)'</span>],
+};</pre>
+  </div>
+</div>
+
+<!-- ═══ CSV IMPORT ═══ -->
+<div class="page" id="page-csvimport">
+  <div class="eyebrow">Bulk Data Entry</div>
+  <h1>CSV Data <em>Import</em></h1>
+  <p class="lead">The fastest way to enter candidate data in bulk is via CSV import. Constituency coordinators can prepare a spreadsheet and upload it through the admin panel. The importer validates each row, shows errors, and only inserts valid records.</p>
+
+  <h2>CSV Format — Candidates</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Column</th><th>Required</th><th>Format</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><code>name_en</code></td><td>Yes</td><td>String (max 200)</td><td>Pinarayi Vijayan</td></tr>
+        <tr><td><code>name_ml</code></td><td>Recommended</td><td>Malayalam Unicode</td><td>പിണറായി വിജയൻ</td></tr>
+        <tr><td><code>constituency_slug</code></td><td>Yes</td><td>kebab-case slug</td><td>dharmadom</td></tr>
+        <tr><td><code>party_slug</code></td><td>Yes</td><td>kebab-case slug</td><td>cpim</td></tr>
+        <tr><td><code>dob</code></td><td>No</td><td>YYYY-MM-DD</td><td>1945-03-24</td></tr>
+        <tr><td><code>gender</code></td><td>No</td><td>male / female / other</td><td>male</td></tr>
+        <tr><td><code>education</code></td><td>No</td><td>String</td><td>B.Sc. Physics</td></tr>
+        <tr><td><code>profession</code></td><td>No</td><td>String</td><td>Politician</td></tr>
+        <tr><td><code>is_incumbent</code></td><td>No</td><td>true / false</td><td>true</td></tr>
+        <tr><td><code>terms_served</code></td><td>No</td><td>Integer</td><td>5</td></tr>
+        <tr><td><code>criminal_cases</code></td><td>No</td><td>Integer</td><td>0</td></tr>
+        <tr><td><code>total_assets_inr</code></td><td>No</td><td>Integer (paise or rupees)</td><td>50000000</td></tr>
+        <tr><td><code>total_liabilities_inr</code></td><td>No</td><td>Integer</td><td>0</td></tr>
+        <tr><td><code>affidavit_url</code></td><td>No</td><td>Full HTTPS URL</td><td>https://affidavit.eci.gov.in/...</td></tr>
+        <tr><td><code>nomination_status</code></td><td>No</td><td>filed / accepted / withdrawn / rejected</td><td>accepted</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>CSV Import Service</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — modules/candidates/candidates.import.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> Papa <span class="kw">from</span> <span class="str">'papaparse'</span>;
+<span class="kw">import</span> { z } <span class="kw">from</span> <span class="str">'zod'</span>;
+<span class="kw">import</span> { db } <span class="kw">from</span> <span class="str">'../../config/db'</span>;
+<span class="kw">import</span> { candidates, constituencies, parties } <span class="kw">from</span> <span class="str">'@kerala2026/db'</span>;
+<span class="kw">import</span> { eq } <span class="kw">from</span> <span class="str">'drizzle-orm'</span>;
+
+<span class="kw">const</span> csvRowSchema = z.<span class="fn">object</span>({
+  name_en:            z.<span class="fn">string</span>().<span class="fn">min</span>(<span class="num">2</span>),
+  name_ml:            z.<span class="fn">string</span>().<span class="fn">optional</span>(),
+  constituency_slug:  z.<span class="fn">string</span>(),
+  party_slug:         z.<span class="fn">string</span>(),
+  dob:                z.<span class="fn">string</span>().<span class="fn">regex</span>(/^\d{4}-\d{2}-\d{2}$/).<span class="fn">optional</span>(),
+  gender:             z.<span class="fn">enum</span>([<span class="str">'male'</span>,<span class="str">'female'</span>,<span class="str">'other'</span>]).<span class="fn">optional</span>(),
+  education:          z.<span class="fn">string</span>().<span class="fn">optional</span>(),
+  profession:         z.<span class="fn">string</span>().<span class="fn">optional</span>(),
+  is_incumbent:       z.<span class="fn">enum</span>([<span class="str">'true'</span>,<span class="str">'false'</span>]).<span class="fn">default</span>(<span class="str">'false'</span>),
+  terms_served:       z.<span class="fn">coerce</span>.<span class="fn">number</span>().<span class="fn">int</span>().<span class="fn">min</span>(<span class="num">0</span>).<span class="fn">default</span>(<span class="num">0</span>),
+  criminal_cases:     z.<span class="fn">coerce</span>.<span class="fn">number</span>().<span class="fn">int</span>().<span class="fn">min</span>(<span class="num">0</span>).<span class="fn">default</span>(<span class="num">0</span>),
+  total_assets_inr:   z.<span class="fn">coerce</span>.<span class="fn">number</span>().<span class="fn">int</span>().<span class="fn">optional</span>(),
+  total_liabilities_inr: z.<span class="fn">coerce</span>.<span class="fn">number</span>().<span class="fn">int</span>().<span class="fn">optional</span>(),
+  affidavit_url:      z.<span class="fn">string</span>().<span class="fn">url</span>().<span class="fn">optional</span>().<span class="fn">or</span>(z.<span class="fn">literal</span>(<span class="str">''</span>)),
+  nomination_status:  z.<span class="fn">enum</span>([<span class="str">'filed'</span>,<span class="str">'accepted'</span>,<span class="str">'withdrawn'</span>,<span class="str">'rejected'</span>]).<span class="fn">default</span>(<span class="str">'filed'</span>),
+});
+
+<span class="kw">export async function</span> <span class="fn">importCandidatesFromCSV</span>(csvText: <span class="ty">string</span>) {
+  <span class="kw">const</span> { data } = Papa.<span class="fn">parse</span>(csvText, { header: <span class="kw">true</span>, skipEmptyLines: <span class="kw">true</span> });
+
+  <span class="cm">// Pre-load lookup maps</span>
+  <span class="kw">const</span> [allConstituencies, allParties] = <span class="kw">await</span> <span class="ty">Promise</span>.<span class="fn">all</span>([
+    db.<span class="fn">select</span>({ id: constituencies.id, slug: constituencies.slug }).<span class="fn">from</span>(constituencies),
+    db.<span class="fn">select</span>({ id: parties.id, slug: parties.slug }).<span class="fn">from</span>(parties),
+  ]);
+
+  <span class="kw">const</span> constMap  = <span class="kw">new</span> <span class="ty">Map</span>(allConstituencies.<span class="fn">map</span>(c => [c.slug, c.id]));
+  <span class="kw">const</span> partyMap  = <span class="kw">new</span> <span class="ty">Map</span>(allParties.<span class="fn">map</span>(p => [p.slug, p.id]));
+
+  <span class="kw">const</span> errors:  <span class="ty">Array</span>&lt;{ row: <span class="ty">number</span>, issues: <span class="ty">any</span> }&gt; = [];
+  <span class="kw">const</span> toInsert: <span class="ty">any</span>[] = [];
+
+  (data <span class="kw">as</span> <span class="ty">any</span>[]).<span class="fn">forEach</span>((row, i) => {
+    <span class="kw">const</span> parsed = csvRowSchema.<span class="fn">safeParse</span>(row);
+    <span class="kw">if</span> (!parsed.success) {
+      errors.<span class="fn">push</span>({ row: i + <span class="num">2</span>, issues: parsed.error.<span class="fn">flatten</span>().fieldErrors });
+      <span class="kw">return</span>;
+    }
+
+    <span class="kw">const</span> r = parsed.data;
+    <span class="kw">const</span> constituencyId = constMap.<span class="fn">get</span>(r.constituency_slug);
+    <span class="kw">const</span> partyId        = partyMap.<span class="fn">get</span>(r.party_slug);
+
+    <span class="kw">if</span> (!constituencyId) {
+      errors.<span class="fn">push</span>({ row: i + <span class="num">2</span>, issues: { constituency_slug: <span class="str">'Unknown constituency slug'</span> } });
+      <span class="kw">return</span>;
+    }
+
+    toInsert.<span class="fn">push</span>({
+      constituencyId,
+      partyId: partyId || <span class="kw">null</span>,
+      nameEn:   r.name_en,
+      nameMl:   r.name_ml,
+      slug:     <span class="fn">generateSlug</span>(r.name_en, r.constituency_slug),
+      dateOfBirth: r.dob || <span class="kw">null</span>,
+      gender:      r.gender,
+      education:   r.education,
+      profession:  r.profession,
+      isIncumbent: r.is_incumbent === <span class="str">'true'</span>,
+      termsServed: r.terms_served,
+      criminalCases: r.criminal_cases,
+      totalAssetsInr:     r.total_assets_inr || <span class="kw">null</span>,
+      totalLiabilitiesInr: r.total_liabilities_inr || <span class="kw">null</span>,
+      affidavitUrl: r.affidavit_url || <span class="kw">null</span>,
+      nominationStatus: r.nomination_status,
+      electionYear: <span class="num">2026</span>,
+    });
+  });
+
+  <span class="cm">// Only insert if zero errors</span>
+  <span class="kw">if</span> (errors.length > <span class="num">0</span>) {
+    <span class="kw">return</span> { success: <span class="kw">false</span>, errors, inserted: <span class="num">0</span> };
+  }
+
+  <span class="kw">await</span> db.<span class="fn">insert</span>(candidates).<span class="fn">values</span>(toInsert).<span class="fn">onConflictDoNothing</span>();
+
+  <span class="kw">return</span> { success: <span class="kw">true</span>, errors: [], inserted: toInsert.length };
+}
+
+<span class="kw">function</span> <span class="fn">generateSlug</span>(nameEn: <span class="ty">string</span>, constituencySlug: <span class="ty">string</span>): <span class="ty">string</span> {
+  <span class="kw">const</span> namePart = nameEn.<span class="fn">toLowerCase</span>().<span class="fn">replace</span>(/[^a-z0-9]+/g, <span class="str">'-'</span>).<span class="fn">replace</span>(/(^-|-$)/g, <span class="str">''</span>);
+  <span class="kw">return</span> <span class="str">`</span><span class="at">${namePart}</span><span class="str">-</span><span class="at">${constituencySlug}</span><span class="str">`</span>;
+}</pre>
+  </div>
+</div>
+
+<!-- ═══ TESTING ═══ -->
+<div class="page" id="page-testing">
+  <div class="eyebrow">Quality Assurance</div>
+  <h1>Testing <em>Guide</em></h1>
+  <p class="lead">Kerala 2026 uses Vitest for unit and integration tests, and Playwright for end-to-end tests. The goal is 80%+ coverage on all utility functions and API service layer, with E2E tests for the most critical user journeys.</p>
+
+  <h2>Test Stack</h2>
+  <div class="stack-grid">
+    <div class="stack-item"><div class="stack-layer">Unit & Integration</div><div class="stack-tech">Vitest</div><div class="stack-detail">Fast, ESM-native test runner. Compatible with TypeScript out of the box. Used for utility functions, Zod schemas, API service layer tests.</div></div>
+    <div class="stack-item"><div class="stack-layer">End-to-End</div><div class="stack-tech">Playwright</div><div class="stack-detail">Cross-browser E2E testing. Tests critical flows: constituency page load, candidate search, party filtering, comparison tool.</div></div>
+    <div class="stack-item"><div class="stack-layer">API Testing</div><div class="stack-tech">Supertest</div><div class="stack-detail">HTTP assertion library for Express endpoints. Tests request/response pairs, auth flows, validation rejection.</div></div>
+    <div class="stack-item"><div class="stack-layer">Coverage</div><div class="stack-tech">V8 Coverage</div><div class="stack-detail">Built into Vitest. Coverage report generated on every CI run. Minimum 80% threshold enforced.</div></div>
+  </div>
+
+  <h2>Unit Test Example — Utility Functions</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — packages/utils/src/__tests__/formatters.test.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { describe, it, expect } <span class="kw">from</span> <span class="str">'vitest'</span>;
+<span class="kw">import</span> { <span class="fn">formatCrores</span>, <span class="fn">calculateAge</span>, <span class="fn">generateSlug</span> } <span class="kw">from</span> <span class="str">'../formatters'</span>;
+
+<span class="fn">describe</span>(<span class="str">'formatCrores'</span>, () => {
+  it(<span class="str">'formats values over 1 crore correctly'</span>, () => {
+    <span class="fn">expect</span>(<span class="fn">formatCrores</span>(<span class="num">50000000</span>)).<span class="fn">toBe</span>(<span class="str">'5 Cr'</span>);
+    <span class="fn">expect</span>(<span class="fn">formatCrores</span>(<span class="num">125000000</span>)).<span class="fn">toBe</span>(<span class="str">'12.5 Cr'</span>);
+  });
+
+  it(<span class="str">'formats values under 1 crore as lakhs'</span>, () => {
+    <span class="fn">expect</span>(<span class="fn">formatCrores</span>(<span class="num">500000</span>)).<span class="fn">toBe</span>(<span class="str">'5 L'</span>);
+    <span class="fn">expect</span>(<span class="fn">formatCrores</span>(<span class="num">1500000</span>)).<span class="fn">toBe</span>(<span class="str">'15 L'</span>);
+  });
+
+  it(<span class="str">'handles zero and undefined'</span>, () => {
+    <span class="fn">expect</span>(<span class="fn">formatCrores</span>(<span class="num">0</span>)).<span class="fn">toBe</span>(<span class="str">'₹0'</span>);
+    <span class="fn">expect</span>(<span class="fn">formatCrores</span>(<span class="kw">undefined</span>)).<span class="fn">toBe</span>(<span class="str">'Not declared'</span>);
+  });
+});
+
+<span class="fn">describe</span>(<span class="str">'calculateAge'</span>, () => {
+  it(<span class="str">'calculates age correctly'</span>, () => {
+    <span class="kw">const</span> dob = <span class="str">'1960-01-01'</span>;
+    <span class="kw">const</span> age = <span class="fn">calculateAge</span>(dob);
+    <span class="fn">expect</span>(age).<span class="fn">toBeGreaterThan</span>(<span class="num">60</span>);
+    <span class="fn">expect</span>(age).<span class="fn">toBeLessThan</span>(<span class="num">70</span>);
+  });
+
+  it(<span class="str">'returns null for missing date'</span>, () => {
+    <span class="fn">expect</span>(<span class="fn">calculateAge</span>(<span class="kw">undefined</span>)).<span class="fn">toBeNull</span>();
+  });
+});
+
+<span class="fn">describe</span>(<span class="str">'generateSlug'</span>, () => {
+  it(<span class="str">'generates valid slugs'</span>, () => {
+    <span class="fn">expect</span>(<span class="fn">generateSlug</span>(<span class="str">'Pinarayi Vijayan'</span>, <span class="str">'dharmadom'</span>)).<span class="fn">toBe</span>(<span class="str">'pinarayi-vijayan-dharmadom'</span>);
+    <span class="fn">expect</span>(<span class="fn">generateSlug</span>(<span class="str">"K. Muraleedharan"</span>, <span class="str">'thrissur'</span>)).<span class="fn">toBe</span>(<span class="str">'k-muraleedharan-thrissur'</span>);
+  });
+});</pre>
+  </div>
+
+  <h2>API Integration Test Example</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — apps/api/src/__tests__/candidates.test.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { describe, it, expect, beforeAll, afterAll } <span class="kw">from</span> <span class="str">'vitest'</span>;
+<span class="kw">import</span> request <span class="kw">from</span> <span class="str">'supertest'</span>;
+<span class="kw">import</span> app <span class="kw">from</span> <span class="str">'../index'</span>;
+<span class="kw">import</span> { db } <span class="kw">from</span> <span class="str">'../config/db'</span>;
+<span class="kw">import</span> { <span class="fn">seedTestData</span>, <span class="fn">clearTestData</span> } <span class="kw">from</span> <span class="str">'./helpers/seed'</span>;
+
+<span class="fn">describe</span>(<span class="str">'GET /api/v1/candidates'</span>, () => {
+  <span class="fn">beforeAll</span>(<span class="kw">async</span> () => <span class="kw">await</span> <span class="fn">seedTestData</span>());
+  <span class="fn">afterAll</span>(<span class="kw">async</span> () => <span class="kw">await</span> <span class="fn">clearTestData</span>());
+
+  it(<span class="str">'returns paginated list of candidates'</span>, <span class="kw">async</span> () => {
+    <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">request</span>(app)
+      .<span class="fn">get</span>(<span class="str">'/api/v1/candidates'</span>)
+      .<span class="fn">expect</span>(<span class="num">200</span>);
+
+    <span class="fn">expect</span>(res.body.success).<span class="fn">toBe</span>(<span class="kw">true</span>);
+    <span class="fn">expect</span>(res.body.data).<span class="fn">toBeInstanceOf</span>(<span class="ty">Array</span>);
+    <span class="fn">expect</span>(res.body.pagination).<span class="fn">toBeDefined</span>();
+    <span class="fn">expect</span>(res.body.pagination.total).<span class="fn">toBeGreaterThan</span>(<span class="num">0</span>);
+  });
+
+  it(<span class="str">'filters by gender correctly'</span>, <span class="kw">async</span> () => {
+    <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">request</span>(app)
+      .<span class="fn">get</span>(<span class="str">'/api/v1/candidates?gender=female'</span>)
+      .<span class="fn">expect</span>(<span class="num">200</span>);
+
+    res.body.data.<span class="fn">forEach</span>((c: <span class="ty">any</span>) => {
+      <span class="fn">expect</span>(c.gender).<span class="fn">toBe</span>(<span class="str">'female'</span>);
+    });
+  });
+
+  it(<span class="str">'returns 422 for invalid query params'</span>, <span class="kw">async</span> () => {
+    <span class="kw">await</span> <span class="fn">request</span>(app)
+      .<span class="fn">get</span>(<span class="str">'/api/v1/candidates?gender=invalid'</span>)
+      .<span class="fn">expect</span>(<span class="num">422</span>);
+  });
+});
+
+<span class="fn">describe</span>(<span class="str">'POST /api/v1/candidates (admin)'</span>, () => {
+  it(<span class="str">'rejects without admin token'</span>, <span class="kw">async</span> () => {
+    <span class="kw">await</span> <span class="fn">request</span>(app)
+      .<span class="fn">post</span>(<span class="str">'/api/v1/candidates'</span>)
+      .<span class="fn">send</span>({ nameEn: <span class="str">'Test Candidate'</span> })
+      .<span class="fn">expect</span>(<span class="num">401</span>);
+  });
+
+  it(<span class="str">'creates candidate with valid admin token'</span>, <span class="kw">async</span> () => {
+    <span class="kw">const</span> token = <span class="fn">getTestAdminToken</span>();
+    <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">request</span>(app)
+      .<span class="fn">post</span>(<span class="str">'/api/v1/candidates'</span>)
+      .<span class="fn">set</span>(<span class="str">'Authorization'</span>, <span class="str">`Bearer </span><span class="at">${token}</span><span class="str">`</span>)
+      .<span class="fn">send</span>({
+        nameEn:         <span class="str">'Test Candidate'</span>,
+        constituencyId: TEST_CONSTITUENCY_ID,
+        electionYear:   <span class="num">2026</span>,
+      })
+      .<span class="fn">expect</span>(<span class="num">201</span>);
+
+    <span class="fn">expect</span>(res.body.data.slug).<span class="fn">toBeDefined</span>();
+  });
+});</pre>
+  </div>
+
+  <h2>E2E Test — Constituency Page</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — e2e/constituency.spec.ts (Playwright)</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { test, expect } <span class="kw">from</span> <span class="str">'@playwright/test'</span>;
+
+test.<span class="fn">describe</span>(<span class="str">'Constituency Page'</span>, () => {
+  test(<span class="str">'loads Thiruvananthapuram constituency correctly'</span>, <span class="kw">async</span> ({ page }) => {
+    <span class="kw">await</span> page.<span class="fn">goto</span>(<span class="str">'/constituencies/thiruvananthapuram'</span>);
+
+    <span class="kw">await</span> <span class="fn">expect</span>(page.<span class="fn">locator</span>(<span class="str">'h1'</span>)).<span class="fn">toContainText</span>(<span class="str">'Thiruvananthapuram'</span>);
+    <span class="kw">await</span> <span class="fn">expect</span>(page.<span class="fn">locator</span>(<span class="str">'[data-testid="candidate-grid"]'</span>)).<span class="fn">toBeVisible</span>();
+    <span class="kw">await</span> <span class="fn">expect</span>(page.<span class="fn">locator</span>(<span class="str">'[data-testid="vote-share-chart"]'</span>)).<span class="fn">toBeVisible</span>();
+  });
+
+  test(<span class="str">'search opens with Ctrl+K'</span>, <span class="kw">async</span> ({ page }) => {
+    <span class="kw">await</span> page.<span class="fn">goto</span>(<span class="str">'/'</span>);
+    <span class="kw">await</span> page.<span class="fn">keyboard</span>.<span class="fn">press</span>(<span class="str">'Control+k'</span>);
+    <span class="kw">await</span> <span class="fn">expect</span>(page.<span class="fn">locator</span>(<span class="str">'[data-testid="search-modal"]'</span>)).<span class="fn">toBeVisible</span>();
+  });
+
+  test(<span class="str">'search returns candidate results'</span>, <span class="kw">async</span> ({ page }) => {
+    <span class="kw">await</span> page.<span class="fn">goto</span>(<span class="str">'/'</span>);
+    <span class="kw">await</span> page.<span class="fn">keyboard</span>.<span class="fn">press</span>(<span class="str">'Control+k'</span>);
+    <span class="kw">await</span> page.<span class="fn">fill</span>(<span class="str">'[data-testid="search-input"]'</span>, <span class="str">'Pinarayi'</span>);
+    <span class="kw">await</span> <span class="fn">expect</span>(page.<span class="fn">locator</span>(<span class="str">'[data-testid="search-results"]'</span>)).<span class="fn">toBeVisible</span>();
+    <span class="kw">await</span> <span class="fn">expect</span>(page.<span class="fn">locator</span>(<span class="str">'[data-testid="search-results"]'</span>)).<span class="fn">toContainText</span>(<span class="str">'Pinarayi'</span>);
+  });
+
+  test(<span class="str">'candidate card links to profile page'</span>, <span class="kw">async</span> ({ page }) => {
+    <span class="kw">await</span> page.<span class="fn">goto</span>(<span class="str">'/constituencies/dharmadom'</span>);
+    <span class="kw">const</span> firstCard = page.<span class="fn">locator</span>(<span class="str">'[data-testid="candidate-card"]'</span>).<span class="fn">first</span>();
+    <span class="kw">await</span> firstCard.<span class="fn">click</span>();
+    <span class="kw">await</span> <span class="fn">expect</span>(page).<span class="fn">toHaveURL</span>(/\/candidates\/.+/);
+  });
+});</pre>
+  </div>
+
+  <h2>Running Tests</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Command</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>pnpm test</code></td><td>Run all unit + integration tests with Vitest</td></tr>
+        <tr><td><code>pnpm test:watch</code></td><td>Watch mode — re-runs on file changes during development</td></tr>
+        <tr><td><code>pnpm test:coverage</code></td><td>Run tests and generate V8 coverage report in /coverage</td></tr>
+        <tr><td><code>pnpm test:e2e</code></td><td>Run Playwright E2E tests (requires dev server running)</td></tr>
+        <tr><td><code>pnpm test:e2e --ui</code></td><td>Open Playwright UI for interactive debugging</td></tr>
+        <tr><td><code>pnpm --filter @kerala2026/api test</code></td><td>Run API tests only</td></tr>
+        <tr><td><code>pnpm --filter @kerala2026/utils test</code></td><td>Run utility function tests only</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ PERFORMANCE ═══ -->
+<div class="page" id="page-performance">
+  <div class="eyebrow">Optimization</div>
+  <h1><em>Performance</em></h1>
+  <p class="lead">Kerala 2026 is designed to handle election day traffic spikes. The static-first architecture means most pages are served from Vercel's CDN with no backend involvement. The API handles only dynamic requests. Here are the key performance optimizations across the stack.</p>
+
+  <div class="success-box"><strong>Target:</strong> All constituency and candidate pages should achieve Lighthouse scores above 90 on Performance, Accessibility, Best Practices, and SEO. The static CDN delivery makes this achievable even on mobile connections in Kerala.</div>
+
+  <h2>Frontend Performance</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Optimization</th><th>How</th><th>Impact</th></tr></thead>
+      <tbody>
+        <tr><td><strong>SSG for all constituency + candidate pages</strong></td><td><code>generateStaticParams()</code> at build time</td><td>Zero server load on page views — served from CDN</td></tr>
+        <tr><td><strong>Next.js Image Optimization</strong></td><td><code>&lt;Image&gt;</code> with <code>sizes</code> prop, WebP auto-format</td><td>Candidate photos served at correct size for device, ~60% smaller</td></tr>
+        <tr><td><strong>Font Subsetting</strong></td><td>Google Fonts with <code>display=swap</code></td><td>No layout shift, only loads glyphs needed for English + Malayalam</td></tr>
+        <tr><td><strong>Route Prefetching</strong></td><td>Next.js Link auto-prefetch on hover</td><td>Instant navigation between constituency and candidate pages</td></tr>
+        <tr><td><strong>GeoJSON Compression</strong></td><td>GeoJSON stored simplified (0.001 tolerance) + gzip from API</td><td>Map boundary files ~80% smaller without visible loss</td></tr>
+        <tr><td><strong>Chart lazy loading</strong></td><td><code>dynamic(() =&gt; import('recharts'), { ssr: false })</code></td><td>Charts don't block initial page render — load after above-fold content</td></tr>
+        <tr><td><strong>Candidate Photo CDN</strong></td><td>Cloudflare R2 + CDN with immutable cache headers</td><td>Photos cached indefinitely at Cloudflare PoPs globally</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>API Performance</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Optimization</th><th>How</th><th>Impact</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Response compression</strong></td><td>compression() middleware, gzip all JSON &gt;1KB</td><td>Large list responses ~70% smaller over the wire</td></tr>
+        <tr><td><strong>Database connection pooling</strong></td><td>Neon serverless handles pooling automatically</td><td>No cold connection overhead on serverless Railway replicas</td></tr>
+        <tr><td><strong>Select only needed columns</strong></td><td>Drizzle explicit <code>.select({ ... })</code> instead of <code>select()</code></td><td>Avoids transferring large columns (bio, geojson) on list endpoints</td></tr>
+        <tr><td><strong>Parallel DB queries</strong></td><td><code>Promise.all()</code> for independent queries (e.g. assets + cases + history)</td><td>Full candidate profile loads 3× faster than sequential queries</td></tr>
+        <tr><td><strong>pg_trgm index for ILIKE</strong></td><td>Create GIN index on <code>name_en</code>, <code>name_ml</code></td><td>Name search queries drop from 50ms to &lt;5ms on 1000+ candidates</td></tr>
+        <tr><td><strong>Rate limiting</strong></td><td>In-memory rate limit counters</td><td>Protects against scraping abuse and traffic spikes during elections</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Recommended Database Indexes</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">SQL — packages/db/migrations/indexes.sql</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="cm">-- Trigram indexes for fast name search (requires pg_trgm extension)</span>
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+CREATE INDEX CONCURRENTLY idx_candidates_name_en_trgm
+  ON candidates USING GIN (name_en gin_trgm_ops);
+
+CREATE INDEX CONCURRENTLY idx_candidates_name_ml_trgm
+  ON candidates USING GIN (name_ml gin_trgm_ops);
+
+<span class="cm">-- Constituency lookups</span>
+CREATE INDEX idx_candidates_constituency_year
+  ON candidates (constituency_id, election_year)
+  WHERE deleted_at IS NULL;
+
+CREATE INDEX idx_candidates_party
+  ON candidates (party_id)
+  WHERE deleted_at IS NULL;
+
+CREATE INDEX idx_candidates_incumbent
+  ON candidates (is_incumbent, election_year)
+  WHERE deleted_at IS NULL;
+
+<span class="cm">-- Historical results queries</span>
+CREATE INDEX idx_election_results_constituency_year
+  ON election_results (constituency_id, election_year);
+
+CREATE INDEX idx_election_results_candidate
+  ON election_results (candidate_id);
+
+<span class="cm">-- Constituency slug lookup (most frequent query)</span>
+<span class="cm">-- Already covered by UNIQUE constraint, but verify:</span>
+CREATE UNIQUE INDEX IF NOT EXISTS idx_constituencies_slug
+  ON constituencies (slug) WHERE deleted_at IS NULL;
+
+<span class="cm">-- Live results (Phase 2) — updated every 60s, fast reads needed</span>
+CREATE INDEX idx_live_results_constituency
+  ON live_results (constituency_id, last_updated DESC);
+
+<span class="cm">-- Apply in development:</span>
+<span class="cm">-- psql $DATABASE_URL -f packages/db/migrations/indexes.sql</span></pre>
+  </div>
+
+  <h2>ISR Cache Strategy</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Page</th><th>Revalidate</th><th>Rationale</th></tr></thead>
+      <tbody>
+        <tr><td>Home Page (<code>/</code>)</td><td>1 hour</td><td>Countdown timer and featured constituencies update periodically</td></tr>
+        <tr><td>Constituency List (<code>/constituencies</code>)</td><td>6 hours</td><td>Candidate counts change as nominations are accepted</td></tr>
+        <tr><td>Constituency Detail (<code>/constituencies/[slug]</code>)</td><td>24 hours</td><td>Candidate data changes infrequently; admin triggers manual revalidation after edits</td></tr>
+        <tr><td>Candidate Profile (<code>/candidates/[slug]</code>)</td><td>24 hours</td><td>Same — manual revalidation via <code>revalidatePath()</code> after admin edits</td></tr>
+        <tr><td>Party Pages</td><td>24 hours</td><td>Party candidate lists stable after nomination deadline</td></tr>
+        <tr><td>Historical Data</td><td>7 days</td><td>Historical data never changes; long cache valid</td></tr>
+        <tr><td>Live Results (Phase 2)</td><td>no-store</td><td>CSR via WebSocket — bypasses ISR entirely</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>On-Demand Revalidation After Admin Edits</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — apps/web/app/api/revalidate/route.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { revalidatePath, revalidateTag } <span class="kw">from</span> <span class="str">'next/cache'</span>;
+<span class="kw">import</span> { NextRequest, NextResponse } <span class="kw">from</span> <span class="str">'next/server'</span>;
+
+<span class="cm">// Called by the API after admin updates a candidate or constituency</span>
+<span class="kw">export async function</span> <span class="fn">POST</span>(req: <span class="ty">NextRequest</span>) {
+  <span class="kw">const</span> secret = req.nextUrl.searchParams.<span class="fn">get</span>(<span class="str">'secret'</span>);
+
+  <span class="kw">if</span> (secret !== process.env.REVALIDATION_SECRET) {
+    <span class="kw">return</span> <span class="fn">NextResponse</span>.<span class="fn">json</span>({ error: <span class="str">'Invalid secret'</span> }, { status: <span class="num">401</span> });
+  }
+
+  <span class="kw">const</span> { type, slug } = <span class="kw">await</span> req.<span class="fn">json</span>();
+
+  <span class="kw">switch</span> (type) {
+    <span class="kw">case</span> <span class="str">'candidate'</span>:
+      <span class="fn">revalidatePath</span>(<span class="str">`/candidates/</span><span class="at">${slug}</span><span class="str">`</span>);
+      <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="str">'constituency'</span>:
+      <span class="fn">revalidatePath</span>(<span class="str">`/constituencies/</span><span class="at">${slug}</span><span class="str">`</span>);
+      <span class="fn">revalidatePath</span>(<span class="str">`/constituencies`</span>);
+      <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="str">'party'</span>:
+      <span class="fn">revalidatePath</span>(<span class="str">`/parties/</span><span class="at">${slug}</span><span class="str">`</span>);
+      <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="str">'all'</span>:
+      <span class="fn">revalidatePath</span>(<span class="str">'/'</span>, <span class="str">'layout'</span>);
+      <span class="kw">break</span>;
+    <span class="kw">default</span>:
+      <span class="kw">return</span> <span class="fn">NextResponse</span>.<span class="fn">json</span>({ error: <span class="str">'Unknown type'</span> }, { status: <span class="num">400</span> });
+  }
+
+  <span class="kw">return</span> <span class="fn">NextResponse</span>.<span class="fn">json</span>({ revalidated: <span class="kw">true</span>, type, slug });
+}
+
+<span class="cm">// In the API server, after saving a candidate update:</span>
+<span class="cm">// await fetch(`${NEXT_PUBLIC_SITE_URL}/api/revalidate?secret=${REVALIDATION_SECRET}`,</span>
+<span class="cm">//   { method: 'POST', body: JSON.stringify({ type: 'candidate', slug }) })</span></pre>
+  </div>
+</div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<script>
+const CRUMBS = {
+  express:'Express Server',middleware:'Middleware',auth:'Auth & Admin',upload:'File Uploads (R2)',
+  validation:'Validation Schemas',drizzle:'Drizzle ORM',migrations:'Migrations & Seed',
+  queries:'Query Patterns',deploy:'Deployment',cicd:'CI/CD Pipeline',
+  monitoring:'Monitoring & Logs',security:'Security',admin:'Admin Panel',
+  csvimport:'CSV Data Import',testing:'Testing Guide',performance:'Performance'
+};
+
+function go(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sb-link').forEach(l => l.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  document.getElementById('crumb').textContent = CRUMBS[id] || id;
+  window.scrollTo(0, 0);
+  closeSB();
+}
+
+function toggleSB() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('visible');
+}
+function closeSB() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('visible');
+}
+
+function copyBlock(btn) {
+  const pre = btn.closest('.cb').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent.trim()).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'copied!';
+    setTimeout(() => { btn.textContent = orig; }, 1800);
+  });
+}
+</script>
+</body>
+</html>

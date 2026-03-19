@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kerala 2026 — Documentation Part 1: Overview & Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --saffron: #FF6B35;
+  --saffron-dim: rgba(255,107,53,0.12);
+  --green: #138808;
+  --green-dim: rgba(19,136,8,0.12);
+  --blue: #000080;
+  --blue-dim: rgba(0,0,128,0.10);
+  --gold: #F4A500;
+  --gold-dim: rgba(244,165,0,0.12);
+  --bg: #FAFAF8;
+  --bg2: #F4F3EF;
+  --bg3: #ECEAE3;
+  --surface: #FFFFFF;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.15);
+  --text: #1A1A1A;
+  --text2: #4A4A4A;
+  --text3: #8A8A8A;
+  --fd: 'Playfair Display', serif;
+  --fb: 'DM Sans', sans-serif;
+  --fm: 'JetBrains Mono', monospace;
+  --r: 4px; --rl: 8px; --rxl: 14px;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--saffron);border-radius:3px}
+
+/* LAYOUT */
+.shell{display:flex;min-height:100vh}
+.sidebar{width:260px;min-width:260px;background:var(--surface);border-right:1px solid var(--border2);position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:50;display:flex;flex-direction:column}
+.main{margin-left:260px;flex:1}
+
+/* SIDEBAR */
+.sb-brand{padding:24px 20px 18px;border-bottom:2px solid var(--border2)}
+.sb-name{font-family:var(--fd);font-size:17px;font-weight:900;color:var(--text);line-height:1.2}
+.sb-sub{font-size:10px;color:var(--text3);font-family:var(--fm);letter-spacing:0.06em;text-transform:uppercase;margin-top:4px}
+.sb-nav{padding:12px 10px;flex:1}
+.sb-group{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;padding:0 10px;margin:14px 0 5px}
+.sb-link{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r);cursor:pointer;color:var(--text2);font-size:12.5px;font-weight:500;transition:all 0.15s;text-decoration:none;border-left:3px solid transparent}
+.sb-link:hover{background:var(--bg2);color:var(--text);border-left-color:var(--saffron)}
+.sb-link.active{background:var(--saffron-dim);color:var(--saffron);border-left-color:var(--saffron);font-weight:600}
+.sb-link svg{width:14px;height:14px;flex-shrink:0}
+.sb-footer{padding:14px 20px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--fm)}
+
+/* TOPBAR */
+.topbar{background:rgba(250,250,248,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;position:sticky;top:0;z-index:20}
+.tb-crumb{font-size:12px;color:var(--text3);font-family:var(--fm);display:flex;align-items:center;gap:6px}
+.tb-sep{opacity:0.3}
+.tb-cur{color:var(--text2)}
+.tb-right{display:flex;gap:8px;align-items:center}
+.chip{font-size:10px;font-family:var(--fm);padding:3px 9px;border-radius:20px;border:1px solid}
+.chip-saffron{background:var(--saffron-dim);border-color:rgba(255,107,53,0.3);color:var(--saffron)}
+.chip-green{background:var(--green-dim);border-color:rgba(19,136,8,0.3);color:var(--green)}
+.chip-blue{background:var(--blue-dim);border-color:rgba(0,0,128,0.3);color:var(--blue)}
+
+/* CONTENT */
+.content{padding:40px 48px 80px;max-width:900px}
+.page{display:none;animation:fadeUp 0.2s ease}
+.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* TYPOGRAPHY */
+.eyebrow{font-family:var(--fm);font-size:10px;color:var(--saffron);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.eyebrow::before{content:'';display:inline-block;width:24px;height:2px;background:var(--saffron)}
+h1{font-family:var(--fd);font-size:40px;font-weight:900;line-height:1.1;letter-spacing:-0.02em;margin-bottom:14px;color:var(--text)}
+h1 em{font-style:normal;color:var(--saffron)}
+.lead{font-size:15px;color:var(--text2);line-height:1.75;max-width:680px;margin-bottom:32px}
+h2{font-family:var(--fd);font-size:24px;font-weight:800;letter-spacing:-0.01em;margin:36px 0 12px;color:var(--text);display:flex;align-items:center;gap:10px}
+h2::after{content:'';flex:1;height:1px;background:var(--border2);margin-left:8px}
+h3{font-size:15px;font-weight:700;margin:24px 0 10px;color:var(--text)}
+p{font-size:13.5px;color:var(--text2);line-height:1.75;margin-bottom:12px}
+code{font-family:var(--fm);font-size:0.87em;background:var(--bg3);color:var(--saffron);padding:1px 6px;border-radius:3px;border:1px solid var(--border)}
+.divider{height:1px;background:var(--border);margin:32px 0}
+
+/* INFO BOXES */
+.info-box,.warn-box,.success-box,.note-box{border-radius:var(--rl);padding:14px 18px;font-size:13px;line-height:1.65;margin:14px 0 20px;border-left:4px solid}
+.info-box{background:var(--blue-dim);border-color:var(--blue);color:#000060}
+.warn-box{background:var(--gold-dim);border-color:var(--gold);color:#7A5200}
+.success-box{background:var(--green-dim);border-color:var(--green);color:#0A5A04}
+.note-box{background:var(--saffron-dim);border-color:var(--saffron);color:#8B3A1A}
+
+/* STAT CARDS */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:32px}
+.stat-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rxl);padding:20px;position:relative;overflow:hidden;transition:border-color 0.2s,transform 0.2s}
+.stat-card:hover{border-color:var(--saffron);transform:translateY(-2px)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--saffron),var(--gold))}
+.stat-label{font-size:10px;font-family:var(--fm);color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px}
+.stat-val{font-family:var(--fd);font-size:28px;font-weight:900;color:var(--text);margin-bottom:4px}
+.stat-sub{font-size:11px;color:var(--text3)}
+
+/* CODE BLOCK */
+.cb{background:#1A1A2E;border-radius:var(--rxl);overflow:hidden;margin:14px 0 24px;border:1px solid rgba(255,255,255,0.08)}
+.cb-head{display:flex;align-items:center;padding:10px 16px;background:#16213E;border-bottom:1px solid rgba(255,255,255,0.06)}
+.cb-dots{display:flex;gap:5px}
+.cd{width:10px;height:10px;border-radius:50%}
+.cd.r{background:#ff5f57}.cd.y{background:#ffbd2e}.cd.g{background:#28c840}
+.cb-lang{flex:1;text-align:right;font-family:var(--fm);font-size:10px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.05em}
+.cb-copy{font-size:10px;font-family:var(--fm);padding:2px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:4px;color:rgba(255,255,255,0.5);cursor:pointer;margin-left:8px;transition:all 0.15s}
+.cb-copy:hover{background:rgba(255,255,255,0.15);color:#fff}
+.cb pre{padding:18px 20px;font-family:var(--fm);font-size:12px;line-height:1.75;color:#B8C5D6;overflow-x:auto;white-space:pre}
+.kw{color:#FF79C6}.str{color:#F1FA8C}.cm{color:#6272A4}.fn{color:#50FA7B}.num{color:#BD93F9}.ty{color:#8BE9FD}
+
+/* FOLDER TREE */
+.tree{background:#1A1A2E;border-radius:var(--rxl);overflow:hidden;margin:14px 0 24px;border:1px solid rgba(255,255,255,0.08)}
+.tree-head{display:flex;align-items:center;padding:10px 16px;background:#16213E;border-bottom:1px solid rgba(255,255,255,0.06)}
+.tree-dots{display:flex;gap:5px}
+.tree pre{padding:18px 20px;font-family:var(--fm);font-size:12px;line-height:1.7;color:#B8C5D6;overflow-x:auto;white-space:pre}
+.tr-dir{color:#8BE9FD}.tr-file{color:#F1FA8C}.tr-cm{color:#6272A4}
+
+/* DB SCHEMA */
+.db-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-bottom:28px}
+.db-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rxl);overflow:hidden;transition:border-color 0.2s}
+.db-card:hover{border-color:var(--saffron)}
+.db-head{padding:10px 14px;font-family:var(--fm);font-size:12px;font-weight:600;border-bottom:1px solid var(--border)}
+.db-row{display:flex;justify-content:space-between;align-items:center;padding:7px 14px;border-bottom:1px solid var(--border);font-size:11.5px;transition:background 0.15s}
+.db-row:last-child{border-bottom:none}
+.db-row:hover{background:var(--bg2)}
+.db-col{font-family:var(--fm);color:var(--text2)}
+.db-type{font-family:var(--fm);font-size:10.5px;color:var(--text3)}
+.pk{font-size:9px;padding:1px 5px;background:var(--gold-dim);color:#7A5200;border-radius:3px;margin-left:4px;font-weight:700;font-family:var(--fm);border:1px solid rgba(244,165,0,0.3)}
+.fk{font-size:9px;padding:1px 5px;background:var(--blue-dim);color:var(--blue);border-radius:3px;margin-left:4px;font-weight:700;font-family:var(--fm);border:1px solid rgba(0,0,128,0.2)}
+
+/* PHASE CARDS */
+.phase-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:28px}
+.phase-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rxl);padding:22px;display:flex;gap:18px;transition:all 0.2s}
+.phase-card:hover{border-color:var(--saffron);transform:translateX(4px)}
+.phase-num{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:16px;font-weight:900;flex-shrink:0}
+.phase-body{flex:1}
+.phase-title{font-size:15px;font-weight:700;margin-bottom:5px;color:var(--text)}
+.phase-desc{font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:8px}
+.phase-tags{display:flex;flex-wrap:wrap;gap:5px}
+.ptag{font-size:10px;font-family:var(--fm);padding:2px 8px;border-radius:20px;border:1px solid}
+
+/* STACK GRID */
+.stack-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:28px}
+.stack-item{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rxl);padding:16px;transition:all 0.2s}
+.stack-item:hover{border-color:var(--saffron);transform:translateY(-2px)}
+.stack-layer{font-family:var(--fm);font-size:9px;color:var(--saffron);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px}
+.stack-tech{font-family:var(--fd);font-size:14px;font-weight:700;margin-bottom:5px}
+.stack-detail{font-size:11.5px;color:var(--text2);line-height:1.5}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border-radius:var(--rxl);border:1px solid var(--border2);margin-bottom:28px}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{padding:10px 14px;text-align:left;font-family:var(--fm);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;background:var(--bg2);border-bottom:1px solid var(--border2)}
+.tbl td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text2)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--bg2)}
+
+/* CARDS */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:28px}
+.card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rxl);padding:18px;transition:all 0.2s}
+.card:hover{border-color:var(--saffron);transform:translateY(-2px)}
+.card-label{font-size:9px;font-family:var(--fm);color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px}
+.card-title{font-size:14px;font-weight:600;margin-bottom:6px}
+.card-desc{font-size:12px;color:var(--text2);line-height:1.6}
+
+/* MOBILE */
+.mob-btn{display:none;position:fixed;bottom:20px;right:20px;width:44px;height:44px;background:var(--saffron);border:none;border-radius:50%;cursor:pointer;z-index:200;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(255,107,53,0.4)}
+.mob-btn svg{width:20px;height:20px;color:#fff}
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:49}
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);transition:transform 0.2s ease}
+  .sidebar.open{transform:translateX(0)}
+  .sb-overlay.visible{display:block}
+  .main{margin-left:0}
+  .content{padding:24px 18px 60px}
+  h1{font-size:30px}
+  .mob-btn{display:flex}
+}
+</style>
+</head>
+<body>
+
+<div class="sb-overlay" id="overlay" onclick="closeSB()"></div>
+<button class="mob-btn" onclick="toggleSB()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-name">Kerala2026-2031</div>
+    <div class="sb-sub">Legislative Assembly Docs · Part 1</div>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-group">Documentation Parts</div>
+    <a href="main.html" class="sb-link" style="color:var(--saffron);background:var(--saffron-dim);border-left-color:var(--saffron);font-weight:600">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+      Part 1: Overview
+    </a>
+    <a href="second.html" class="sb-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+      Part 2: Frontend & API
+    </a>
+    <a href="third.html" class="sb-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+      Part 3: Backend & Deploy
+    </a>
+    <a href="fourth.html" class="sb-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Part 4: Module Tracker
+    </a>
+
+    <div class="sb-group">Getting Started</div>
+    <div class="sb-link active" onclick="go('overview',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Project Overview
+    </div>
+    <div class="sb-link" onclick="go('phases',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Project Phases
+    </div>
+    <div class="sb-link" onclick="go('techstack',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+      Tech Stack
+    </div>
+    <div class="sb-group">Architecture</div>
+    <div class="sb-link" onclick="go('structure',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      Project Structure
+    </div>
+    <div class="sb-link" onclick="go('database',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+      Database Schema
+    </div>
+    <div class="sb-link" onclick="go('design',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
+      Design System
+    </div>
+    <div class="sb-group">Open Source</div>
+    <div class="sb-link" onclick="go('contrib',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Contributing Guide
+    </div>
+    <div class="sb-link" onclick="go('env',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Environment Setup
+    </div>
+  </nav>
+
+  <div class="sb-footer">
+    Kerala 2026 · Open Source<br>
+    Part 1 of 3 · Overview & Architecture
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-crumb">
+      <span>Kerala2026</span>
+      <span class="tb-sep">/</span>
+      <span class="tb-cur" id="crumb">Project Overview</span>
+    </div>
+    <div class="tb-right">
+      <span class="chip chip-saffron">Open Source</span>
+      <span class="chip chip-green">Phase 1</span>
+      <span class="chip chip-blue">v1.0</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+<!-- ═══ PAGE: OVERVIEW ═══ -->
+<div class="page active" id="page-overview">
+  <div class="eyebrow">Open Source Project Documentation</div>
+  <h1>Kerala <em>2026</em> — Legislative Assembly Election Platform</h1>
+  <p class="lead">A comprehensive, open-source web platform dedicated to the 2026 Kerala Legislative Assembly elections. Built to provide voters, journalists, researchers, and political enthusiasts with beautiful, data-rich profiles of all 140 constituencies, their candidates, historical voting patterns, and real-time election results.</p>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-label">Constituencies</div><div class="stat-val">140</div><div class="stat-sub">Kerala Legislative Assembly seats</div></div>
+    <div class="stat-card"><div class="stat-label">Districts</div><div class="stat-val">14</div><div class="stat-sub">Administrative districts</div></div>
+    <div class="stat-card"><div class="stat-label">Phase 1 Focus</div><div class="stat-val">Candidates</div><div class="stat-sub">Profiles, history, voting records</div></div>
+    <div class="stat-card"><div class="stat-label">Phase 2</div><div class="stat-val">Live Results</div><div class="stat-sub">Real-time data scraping</div></div>
+    <div class="stat-card"><div class="stat-label">License</div><div class="stat-val">MIT</div><div class="stat-sub">Free and open source</div></div>
+    <div class="stat-card"><div class="stat-label">Election Year</div><div class="stat-val">2026</div><div class="stat-sub">5-year cycle from 2021</div></div>
+  </div>
+
+  <h2>Mission & Vision</h2>
+  <p>Kerala 2026 is built on the belief that <strong>transparent, accessible election information strengthens democracy</strong>. Every voter in Kerala deserves to know exactly who is standing for election in their constituency, what their track record looks like, and how they have voted or acted in the past. This platform makes that information beautiful, searchable, and shareable.</p>
+  <p>As an open-source project, Kerala 2026 invites developers, data journalists, designers, and civic technologists to contribute. The code is publicly available, the data is openly licensed where possible, and the platform is free to use for anyone.</p>
+
+  <div class="success-box"><strong>Why this matters:</strong> The 2021 Kerala elections saw a voter turnout of 74.06%. With better access to candidate information, we aim to help voters make more informed choices in 2026 — and to hold elected representatives accountable with publicly accessible historical data.</div>
+
+  <h2>What This Platform Does</h2>
+  <div class="card-grid">
+    <div class="card"><div class="card-label">Candidate Profiles</div><div class="card-title">Rich Candidate Cards</div><div class="card-desc">High-quality candidate photos, party affiliation, age, education, criminal records (if any), asset declarations, and full biographical information for every candidate.</div></div>
+    <div class="card"><div class="card-label">Constituency Data</div><div class="card-title">Constituency Explorer</div><div class="card-desc">All 140 constituencies with maps, demographics, historical winners, voter turnout trends, and current candidate lineup for 2026.</div></div>
+    <div class="card"><div class="card-label">Historical Records</div><div class="card-title">Past Election Data</div><div class="card-desc">Election results going back to 1957, party-wise vote share trends, swing analysis, and head-to-head candidate comparisons across elections.</div></div>
+    <div class="card"><div class="card-label">Party Analysis</div><div class="card-title">Party Dashboards</div><div class="card-desc">LDF, UDF, NDA and independent party performance metrics, seat count history, vote share trends, and 2026 candidate slates by party.</div></div>
+    <div class="card"><div class="card-label">Search & Filter</div><div class="card-title">Smart Discovery</div><div class="card-desc">Full-text search across all candidates and constituencies. Filter by district, party, religion, gender, age group, and criminal records status.</div></div>
+    <div class="card"><div class="card-label">Phase 2</div><div class="card-title">Live Results (Phase 2)</div><div class="card-desc">On election result day, live scraping from the official Kerala CEO website to display real-time counting updates, leads, and final results.</div></div>
+  </div>
+
+  <h2>Kerala Election Context</h2>
+  <p>The Kerala Legislative Assembly (Niyamasabha) consists of <strong>140 elected members</strong> from 140 single-member constituencies. Elections are held every 5 years. The 2021 election saw LDF (Left Democratic Front) win 99 seats, making history by being the first ruling coalition to win back-to-back in Kerala in 40 years.</p>
+
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Coalition / Party</th><th>2021 Seats</th><th>2016 Seats</th><th>Vote Share 2021</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td><strong>LDF (Left Democratic Front)</strong></td><td>99</td><td>47</td><td>45.35%</td><td><span class="chip chip-green">Ruling</span></td></tr>
+        <tr><td>UDF (United Democratic Front)</td><td>41</td><td>47</td><td>40.30%</td><td><span class="chip chip-blue">Opposition</span></td></tr>
+        <tr><td>NDA (National Democratic Alliance)</td><td>0</td><td>1</td><td>12.43%</td><td><span class="chip chip-saffron">3rd Front</span></td></tr>
+        <tr><td>Others / Independents</td><td>0</td><td>0</td><td>1.92%</td><td>—</td></tr>
+        <tr><td><strong>Total</strong></td><td><strong>140</strong></td><td><strong>140</strong></td><td><strong>100%</strong></td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-box"><strong>Data Note:</strong> All candidate data in Phase 1 will be sourced from official Election Commission of India (ECI) affidavits, Kerala CEO website (ceo.kerala.gov.in), and Assembly of Kerala official records. Community contributions to data accuracy are welcomed and encouraged.</div>
+</div>
+
+<!-- ═══ PAGE: PHASES ═══ -->
+<div class="page" id="page-phases">
+  <div class="eyebrow">Project Roadmap</div>
+  <h1>Project <em>Phases</em></h1>
+  <p class="lead">Kerala 2026 is built in two distinct phases, each with clear deliverables and timelines. Phase 1 launches before the election with comprehensive candidate information. Phase 2 activates on result day with live data.</p>
+
+  <div class="phase-grid">
+    <div class="phase-card">
+      <div class="phase-num" style="background:var(--saffron-dim);color:var(--saffron)">1</div>
+      <div class="phase-body">
+        <div class="phase-title">Phase 1 — Pre-Election Platform (Current)</div>
+        <div class="phase-desc">Build the complete candidate and constituency information platform. This phase focuses on creating beautiful, data-rich profiles for all candidates, comprehensive constituency pages, historical election data visualization, and party analysis dashboards. The platform should be live at least 60 days before election day to give voters maximum time to research candidates.</div>
+        <div class="phase-tags">
+          <span class="ptag" style="background:var(--saffron-dim);color:var(--saffron);border-color:rgba(255,107,53,0.3)">Candidate Profiles</span>
+          <span class="ptag" style="background:var(--blue-dim);color:var(--blue);border-color:rgba(0,0,128,0.2)">Constituency Pages</span>
+          <span class="ptag" style="background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.2)">Historical Data</span>
+          <span class="ptag" style="background:var(--gold-dim);color:#7A5200;border-color:rgba(244,165,0,0.3)">Party Dashboards</span>
+          <span class="ptag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">Search & Filter</span>
+          <span class="ptag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">Static Site</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-num" style="background:var(--green-dim);color:var(--green)">2</div>
+      <div class="phase-body">
+        <div class="phase-title">Phase 2 — Live Election Results (Result Day)</div>
+        <div class="phase-desc">On election result day, activate a live data pipeline that scrapes official results from the Kerala CEO website (ceo.kerala.gov.in) and Election Commission of India portal. Results update in real-time, showing leads, vote counts, round-by-round updates, and trend analysis. The scraper runs every 60 seconds during counting. A WebSocket layer pushes updates to all connected browsers without page refresh.</div>
+        <div class="phase-tags">
+          <span class="ptag" style="background:var(--green-dim);color:var(--green);border-color:rgba(19,136,8,0.2)">Live Scraping</span>
+          <span class="ptag" style="background:var(--blue-dim);color:var(--blue);border-color:rgba(0,0,128,0.2)">WebSocket Updates</span>
+          <span class="ptag" style="background:var(--saffron-dim);color:var(--saffron);border-color:rgba(255,107,53,0.3)">Real-time Results</span>
+          <span class="ptag" style="background:var(--gold-dim);color:#7A5200;border-color:rgba(244,165,0,0.3)">Lead Tracker</span>
+          <span class="ptag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">Auto-refresh</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-num" style="background:var(--blue-dim);color:var(--blue)">3</div>
+      <div class="phase-body">
+        <div class="phase-title">Phase 3 — Post-Election Archive (Future)</div>
+        <div class="phase-desc">After results are declared, the platform transitions to a permanent archive — the definitive source for 2026 Kerala election data. Includes winner profiles, margin analysis, swing analysis, constituency-level breakdowns, and integration of 2026 data into the historical trend visualizations. This phase sets the foundation for future election cycles.</div>
+        <div class="phase-tags">
+          <span class="ptag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">Archive Mode</span>
+          <span class="ptag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">Winner Profiles</span>
+          <span class="ptag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">Swing Analysis</span>
+          <span class="ptag" style="background:var(--bg3);color:var(--text2);border-color:var(--border2)">Future Planning</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Phase 1 — Detailed Feature List</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Feature</th><th>Description</th><th>Priority</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Home Page</strong></td><td>Hero with election countdown, featured constituencies, quick search</td><td>P0</td><td>🔴 To Do</td></tr>
+        <tr><td><strong>Constituency List</strong></td><td>All 140 constituencies with district grouping, search, filter by party</td><td>P0</td><td>🔴 To Do</td></tr>
+        <tr><td><strong>Constituency Detail</strong></td><td>Full page per constituency with map, candidates, history, demographics</td><td>P0</td><td>🔴 To Do</td></tr>
+        <tr><td><strong>Candidate Profile</strong></td><td>Individual candidate page with photo, bio, assets, criminal records, history</td><td>P0</td><td>🔴 To Do</td></tr>
+        <tr><td><strong>Party Pages</strong></td><td>Per-party page: candidates list, historical performance, manifesto link</td><td>P1</td><td>🔴 To Do</td></tr>
+        <tr><td><strong>District Pages</strong></td><td>District-level overview: all constituencies, party distribution, key candidates</td><td>P1</td><td>🔴 To Do</td></tr>
+        <tr><td><strong>Search</strong></td><td>Full-text search: candidates, constituencies, parties</td><td>P0</td><td>🔴 To Do</td></tr>
+        <tr><td><strong>Historical Results</strong></td><td>Past election results per constituency going back to 1957</td><td>P1</td><td>🔴 To Do</td></tr>
+        <tr><td><strong>Comparison Tool</strong></td><td>Side-by-side candidate comparison within a constituency</td><td>P2</td><td>🔴 To Do</td></tr>
+        <tr><td><strong>Vote Share Charts</strong></td><td>Interactive charts: party vote share trends over elections</td><td>P1</td><td>🔴 To Do</td></tr>
+        <tr><td><strong>Admin Panel</strong></td><td>Internal tool for data entry and verification (not public)</td><td>P0</td><td>🔴 To Do</td></tr>
+        <tr><td><strong>API</strong></td><td>Public REST API for third-party use (data journalism)</td><td>P2</td><td>🔴 To Do</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ PAGE: TECH STACK ═══ -->
+<div class="page" id="page-techstack">
+  <div class="eyebrow">Technical Decisions</div>
+  <h1>Tech <em>Stack</em></h1>
+  <p class="lead">Kerala 2026 uses a carefully chosen set of modern, open-source technologies optimized for performance, developer experience, and long-term maintainability. Every choice is justified by the project's specific needs.</p>
+
+  <h2>Full Stack Overview</h2>
+  <div class="stack-grid">
+    <div class="stack-item"><div class="stack-layer">Frontend Framework</div><div class="stack-tech">Next.js 14</div><div class="stack-detail">App Router with SSG for constituency pages. ISR for data updates. SEO-optimized static generation for all 140+ pages.</div></div>
+    <div class="stack-item"><div class="stack-layer">Styling</div><div class="stack-tech">Tailwind CSS</div><div class="stack-detail">Custom design system with Kerala-inspired color palette. Fully responsive, mobile-first approach.</div></div>
+    <div class="stack-item"><div class="stack-layer">Language</div><div class="stack-tech">TypeScript</div><div class="stack-detail">Full type safety across frontend and backend. Critical for data integrity with complex election datasets.</div></div>
+    <div class="stack-item"><div class="stack-layer">Backend</div><div class="stack-tech">Node.js + Express</div><div class="stack-detail">REST API for candidate/constituency data. WebSocket server for Phase 2 live results streaming.</div></div>
+    <div class="stack-item"><div class="stack-layer">Database</div><div class="stack-tech">PostgreSQL (Neon)</div><div class="stack-detail">Serverless PostgreSQL for all structured data. Drizzle ORM for type-safe queries. Full-text search with pg_trgm.</div></div>
+    <div class="stack-item"><div class="stack-layer">ORM</div><div class="stack-tech">Drizzle ORM</div><div class="stack-detail">Lightweight, type-safe SQL. Schema migrations. Perfect for complex relational election data.</div></div>
+    <div class="stack-item"><div class="stack-layer">Image Storage</div><div class="stack-tech">Cloudflare R2</div><div class="stack-detail">Candidate photos stored in R2. CDN delivery globally. Zero egress fees for open-source scale.</div></div>
+    <div class="stack-item"><div class="stack-layer">Search</div><div class="stack-tech">Meilisearch</div><div class="stack-detail">Fast full-text search across 1000+ candidates, constituencies, and parties. Malayalam + English support.</div></div>
+    <div class="stack-item"><div class="stack-layer">Charts</div><div class="stack-tech">Recharts + D3.js</div><div class="stack-detail">Interactive vote share charts, historical trends, constituency maps. SVG-based, fully accessible.</div></div>
+    <div class="stack-item"><div class="stack-layer">Maps</div><div class="stack-tech">Mapbox GL JS</div><div class="stack-detail">Kerala constituency map with clickable regions. Color-coded by party, turnout, and winning margin.</div></div>
+    <div class="stack-item"><div class="stack-layer">Scraping (Phase 2)</div><div class="stack-tech">Puppeteer + Cheerio</div><div class="stack-detail">Puppeteer for JavaScript-rendered pages. Cheerio for static HTML parsing. Handles Kerala CEO website structure.</div></div>
+    <div class="stack-item"><div class="stack-layer">Real-time (Phase 2)</div><div class="stack-tech">Socket.io</div><div class="stack-detail">WebSocket connections for live result updates. Broadcasts new data to all connected clients every 60 seconds.</div></div>
+    <div class="stack-item"><div class="stack-layer">Deployment</div><div class="stack-tech">Vercel + Railway</div><div class="stack-detail">Frontend on Vercel Edge Network. Backend on Railway with auto-scaling. Global CDN for static assets.</div></div>
+    <div class="stack-item"><div class="stack-layer">Analytics</div><div class="stack-tech">Plausible</div><div class="stack-detail">Privacy-friendly analytics. No cookies. Open source. Understand visitor patterns without compromising user privacy.</div></div>
+    <div class="stack-item"><div class="stack-layer">CMS / Admin</div><div class="stack-tech">Custom Admin UI</div><div class="stack-detail">Internal data entry tool for constituency coordinators to add and verify candidate data before publication.</div></div>
+    <div class="stack-item"><div class="stack-layer">Email</div><div class="stack-tech">Resend</div><div class="stack-detail">Contributor notifications, data correction alerts, and election day result digest emails.</div></div>
+  </div>
+
+  <h2>Why These Choices?</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Technology</th><th>Alternative Considered</th><th>Why We Chose This</th></tr></thead>
+      <tbody>
+        <tr><td>Next.js 14</td><td>Remix, Astro</td><td>SSG + ISR combo is perfect for mostly-static constituency pages that update occasionally. SEO is critical for election search traffic.</td></tr>
+        <tr><td>PostgreSQL (Neon)</td><td>Supabase, MongoDB</td><td>Relational data is perfect for election datasets. Complex joins needed (candidate → constituency → party → results). Neon serverless scales to zero.</td></tr>
+        <tr><td>Drizzle ORM</td><td>Prisma</td><td>Lighter bundle, better TypeScript inference, runs in edge environments. Important for Next.js API routes.</td></tr>
+        <tr><td>Meilisearch</td><td>Algolia, Elasticsearch</td><td>Open source, self-hostable, excellent multilingual support. Malayalam search is critical. No per-search pricing.</td></tr>
+        <tr><td>Mapbox GL JS</td><td>Google Maps, Leaflet</td><td>Excellent Kerala constituency GeoJSON support. Custom styling to match design. Reasonable free tier for open-source.</td></tr>
+        <tr><td>Cloudflare R2</td><td>AWS S3, Supabase Storage</td><td>Zero egress fees is critical for open-source scale. 140+ constituency images, 1000+ candidate photos adds up.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ PAGE: STRUCTURE ═══ -->
+<div class="page" id="page-structure">
+  <div class="eyebrow">Project Layout</div>
+  <h1>Project <em>Structure</em></h1>
+  <p class="lead">Kerala 2026 is organized as a Turborepo monorepo with separate apps for the public website, backend API, admin panel, and the Phase 2 scraper. Shared packages ensure consistent types and utilities across all apps.</p>
+
+  <div class="tree">
+    <div class="tree-head"><div class="tree-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div></div>
+    <pre>
+<span class="tr-dir">kerala-2026/</span>
+├── <span class="tr-file">turbo.json</span>                    <span class="tr-cm"># Turborepo pipeline config</span>
+├── <span class="tr-file">package.json</span>                  <span class="tr-cm"># pnpm workspaces root</span>
+├── <span class="tr-file">pnpm-workspace.yaml</span>
+├── <span class="tr-file">README.md</span>
+├── <span class="tr-file">CONTRIBUTING.md</span>
+├── <span class="tr-file">CODE_OF_CONDUCT.md</span>
+│
+├── <span class="tr-dir">apps/</span>
+│   ├── <span class="tr-dir">web/</span>                        <span class="tr-cm"># Main public website (Next.js 14)</span>
+│   │   ├── <span class="tr-dir">app/</span>
+│   │   │   ├── <span class="tr-file">(home)/page.tsx</span>       <span class="tr-cm"># Landing page</span>
+│   │   │   ├── <span class="tr-dir">constituencies/</span>
+│   │   │   │   ├── <span class="tr-file">page.tsx</span>           <span class="tr-cm"># All 140 constituencies</span>
+│   │   │   │   └── <span class="tr-file">[slug]/page.tsx</span>    <span class="tr-cm"># Single constituency (SSG)</span>
+│   │   │   ├── <span class="tr-dir">candidates/</span>
+│   │   │   │   └── <span class="tr-file">[slug]/page.tsx</span>    <span class="tr-cm"># Candidate profile page (SSG)</span>
+│   │   │   ├── <span class="tr-dir">parties/</span>
+│   │   │   │   ├── <span class="tr-file">page.tsx</span>           <span class="tr-cm"># All parties overview</span>
+│   │   │   │   └── <span class="tr-file">[slug]/page.tsx</span>    <span class="tr-cm"># Party detail page</span>
+│   │   │   ├── <span class="tr-dir">districts/</span>
+│   │   │   │   └── <span class="tr-file">[slug]/page.tsx</span>    <span class="tr-cm"># District overview</span>
+│   │   │   ├── <span class="tr-dir">results/</span>               <span class="tr-cm"># Phase 2: live results</span>
+│   │   │   │   └── <span class="tr-file">page.tsx</span>
+│   │   │   ├── <span class="tr-dir">compare/</span>               <span class="tr-cm"># Candidate comparison tool</span>
+│   │   │   │   └── <span class="tr-file">page.tsx</span>
+│   │   │   └── <span class="tr-dir">api/</span>
+│   │   │       ├── <span class="tr-dir">constituencies/</span>
+│   │   │       ├── <span class="tr-dir">candidates/</span>
+│   │   │       └── <span class="tr-dir">search/</span>
+│   │   ├── <span class="tr-dir">components/</span>
+│   │   │   ├── <span class="tr-dir">candidate/</span>             <span class="tr-cm"># CandidateCard, CandidateProfile</span>
+│   │   │   ├── <span class="tr-dir">constituency/</span>          <span class="tr-cm"># ConstituencyCard, ConstituencyMap</span>
+│   │   │   ├── <span class="tr-dir">charts/</span>                <span class="tr-cm"># VoteShareChart, TrendChart</span>
+│   │   │   ├── <span class="tr-dir">map/</span>                   <span class="tr-cm"># KeralaMap, ConstituencyMap</span>
+│   │   │   ├── <span class="tr-dir">search/</span>                <span class="tr-cm"># SearchBar, SearchResults</span>
+│   │   │   ├── <span class="tr-dir">results/</span>               <span class="tr-cm"># Phase 2: LiveResults, CountingCard</span>
+│   │   │   ├── <span class="tr-dir">layout/</span>                <span class="tr-cm"># Header, Footer, Nav</span>
+│   │   │   └── <span class="tr-dir">ui/</span>                    <span class="tr-cm"># Button, Badge, Card, Tabs</span>
+│   │   ├── <span class="tr-file">next.config.mjs</span>
+│   │   └── <span class="tr-file">tailwind.config.ts</span>
+│   │
+│   ├── <span class="tr-dir">api/</span>                        <span class="tr-cm"># Backend Express API</span>
+│   │   └── <span class="tr-dir">src/</span>
+│   │       ├── <span class="tr-dir">modules/</span>
+│   │       │   ├── <span class="tr-dir">constituencies/</span>    <span class="tr-cm"># routes, controller, service, model</span>
+│   │       │   ├── <span class="tr-dir">candidates/</span>
+│   │       │   ├── <span class="tr-dir">parties/</span>
+│   │       │   ├── <span class="tr-dir">results/</span>           <span class="tr-cm"># Phase 2</span>
+│   │       │   └── <span class="tr-dir">search/</span>
+│   │       ├── <span class="tr-dir">db/</span>
+│   │       │   ├── <span class="tr-dir">schema/</span>
+│   │       │   └── <span class="tr-dir">migrations/</span>
+│   │       ├── <span class="tr-dir">middleware/</span>
+│   │       └── <span class="tr-file">index.ts</span>
+│   │
+│   ├── <span class="tr-dir">admin/</span>                      <span class="tr-cm"># Internal admin panel (Next.js)</span>
+│   │   └── <span class="tr-dir">app/</span>
+│   │       ├── <span class="tr-dir">candidates/</span>            <span class="tr-cm"># Add/edit candidate data</span>
+│   │       ├── <span class="tr-dir">constituencies/</span>        <span class="tr-cm"># Constituency management</span>
+│   │       └── <span class="tr-dir">import/</span>                <span class="tr-cm"># Bulk CSV import</span>
+│   │
+│   └── <span class="tr-dir">scraper/</span>                    <span class="tr-cm"># Phase 2: Live results scraper</span>
+│       └── <span class="tr-dir">src/</span>
+│           ├── <span class="tr-file">scraper.ts</span>             <span class="tr-cm"># Puppeteer + Cheerio scraper</span>
+│           ├── <span class="tr-file">websocket.ts</span>           <span class="tr-cm"># Socket.io broadcaster</span>
+│           └── <span class="tr-file">scheduler.ts</span>           <span class="tr-cm"># 60-second interval runner</span>
+│
+└── <span class="tr-dir">packages/</span>
+    ├── <span class="tr-dir">db/</span>                         <span class="tr-cm"># Drizzle schema + migrations</span>
+    ├── <span class="tr-dir">types/</span>                      <span class="tr-cm"># Shared TypeScript types</span>
+    ├── <span class="tr-dir">utils/</span>                      <span class="tr-cm"># Shared utilities</span>
+    └── <span class="tr-dir">data/</span>                       <span class="tr-cm"># Static data: GeoJSON, constituency list</span></pre>
+  </div>
+</div>
+
+<!-- ═══ PAGE: DATABASE ═══ -->
+<div class="page" id="page-database">
+  <div class="eyebrow">PostgreSQL (Neon)</div>
+  <h1>Database <em>Schema</em></h1>
+  <p class="lead">The database is designed around three core entities: constituencies, candidates, and election results. All tables use UUID primary keys. The schema supports both Phase 1 (static data) and Phase 2 (live results) requirements.</p>
+
+  <div class="warn-box"><strong>Schema Note:</strong> All tables include <code>created_at</code> and <code>updated_at</code> timestamps. Soft deletes via <code>deleted_at</code>. The schema is versioned and managed via Drizzle Kit migrations.</div>
+
+  <h2>Core Tables</h2>
+  <div class="db-grid">
+
+    <div class="db-card">
+      <div class="db-head" style="background:var(--saffron-dim);color:var(--saffron)">districts</div>
+      <div class="db-row"><span class="db-col">id<span class="pk">PK</span></span><span class="db-type">uuid</span></div>
+      <div class="db-row"><span class="db-col">name_en</span><span class="db-type">varchar(100)</span></div>
+      <div class="db-row"><span class="db-col">name_ml</span><span class="db-type">varchar(100)</span></div>
+      <div class="db-row"><span class="db-col">slug</span><span class="db-type">varchar(50) unique</span></div>
+      <div class="db-row"><span class="db-col">headquarters</span><span class="db-type">varchar(100)</span></div>
+      <div class="db-row"><span class="db-col">constituency_count</span><span class="db-type">int default 10</span></div>
+      <div class="db-row"><span class="db-col">geojson_url</span><span class="db-type">text</span></div>
+    </div>
+
+    <div class="db-card">
+      <div class="db-head" style="background:var(--blue-dim);color:var(--blue)">constituencies</div>
+      <div class="db-row"><span class="db-col">id<span class="pk">PK</span></span><span class="db-type">uuid</span></div>
+      <div class="db-row"><span class="db-col">district_id<span class="fk">FK</span></span><span class="db-type">uuid → districts</span></div>
+      <div class="db-row"><span class="db-col">number</span><span class="db-type">int unique (1-140)</span></div>
+      <div class="db-row"><span class="db-col">name_en</span><span class="db-type">varchar(100)</span></div>
+      <div class="db-row"><span class="db-col">name_ml</span><span class="db-type">varchar(100)</span></div>
+      <div class="db-row"><span class="db-col">slug</span><span class="db-type">varchar(50) unique</span></div>
+      <div class="db-row"><span class="db-col">category</span><span class="db-type">enum: general|sc|st</span></div>
+      <div class="db-row"><span class="db-col">total_voters_2021</span><span class="db-type">int</span></div>
+      <div class="db-row"><span class="db-col">total_voters_2026</span><span class="db-type">int</span></div>
+      <div class="db-row"><span class="db-col">male_voters</span><span class="db-type">int</span></div>
+      <div class="db-row"><span class="db-col">female_voters</span><span class="db-type">int</span></div>
+      <div class="db-row"><span class="db-col">geojson</span><span class="db-type">jsonb</span></div>
+      <div class="db-row"><span class="db-col">description</span><span class="db-type">text</span></div>
+    </div>
+
+    <div class="db-card">
+      <div class="db-head" style="background:var(--green-dim);color:var(--green)">parties</div>
+      <div class="db-row"><span class="db-col">id<span class="pk">PK</span></span><span class="db-type">uuid</span></div>
+      <div class="db-row"><span class="db-col">name_en</span><span class="db-type">varchar(200)</span></div>
+      <div class="db-row"><span class="db-col">name_ml</span><span class="db-type">varchar(200)</span></div>
+      <div class="db-row"><span class="db-col">abbreviation</span><span class="db-type">varchar(20)</span></div>
+      <div class="db-row"><span class="db-col">slug</span><span class="db-type">varchar(50) unique</span></div>
+      <div class="db-row"><span class="db-col">coalition</span><span class="db-type">enum: LDF|UDF|NDA|IND</span></div>
+      <div class="db-row"><span class="db-col">color_hex</span><span class="db-type">varchar(7)</span></div>
+      <div class="db-row"><span class="db-col">logo_url</span><span class="db-type">text</span></div>
+      <div class="db-row"><span class="db-col">founded_year</span><span class="db-type">int</span></div>
+      <div class="db-row"><span class="db-col">ideology</span><span class="db-type">text</span></div>
+      <div class="db-row"><span class="db-col">website_url</span><span class="db-type">text</span></div>
+    </div>
+
+    <div class="db-card">
+      <div class="db-head" style="background:var(--gold-dim);color:#7A5200">candidates</div>
+      <div class="db-row"><span class="db-col">id<span class="pk">PK</span></span><span class="db-type">uuid</span></div>
+      <div class="db-row"><span class="db-col">constituency_id<span class="fk">FK</span></span><span class="db-type">uuid</span></div>
+      <div class="db-row"><span class="db-col">party_id<span class="fk">FK</span></span><span class="db-type">uuid nullable</span></div>
+      <div class="db-row"><span class="db-col">name_en</span><span class="db-type">varchar(200)</span></div>
+      <div class="db-row"><span class="db-col">name_ml</span><span class="db-type">varchar(200)</span></div>
+      <div class="db-row"><span class="db-col">slug</span><span class="db-type">varchar(100) unique</span></div>
+      <div class="db-row"><span class="db-col">photo_url</span><span class="db-type">text</span></div>
+      <div class="db-row"><span class="db-col">date_of_birth</span><span class="db-type">date</span></div>
+      <div class="db-row"><span class="db-col">gender</span><span class="db-type">enum: male|female|other</span></div>
+      <div class="db-row"><span class="db-col">religion</span><span class="db-type">varchar(50)</span></div>
+      <div class="db-row"><span class="db-col">caste</span><span class="db-type">varchar(50)</span></div>
+      <div class="db-row"><span class="db-col">education</span><span class="db-type">varchar(200)</span></div>
+      <div class="db-row"><span class="db-col">profession</span><span class="db-type">varchar(200)</span></div>
+      <div class="db-row"><span class="db-col">is_incumbent</span><span class="db-type">boolean</span></div>
+      <div class="db-row"><span class="db-col">terms_served</span><span class="db-type">int default 0</span></div>
+      <div class="db-row"><span class="db-col">criminal_cases</span><span class="db-type">int default 0</span></div>
+      <div class="db-row"><span class="db-col">total_assets_inr</span><span class="db-type">bigint</span></div>
+      <div class="db-row"><span class="db-col">total_liabilities_inr</span><span class="db-type">bigint</span></div>
+      <div class="db-row"><span class="db-col">affidavit_url</span><span class="db-type">text</span></div>
+      <div class="db-row"><span class="db-col">bio</span><span class="db-type">text</span></div>
+      <div class="db-row"><span class="db-col">social_facebook</span><span class="db-type">text</span></div>
+      <div class="db-row"><span class="db-col">social_twitter</span><span class="db-type">text</span></div>
+      <div class="db-row"><span class="db-col">social_instagram</span><span class="db-type">text</span></div>
+      <div class="db-row"><span class="db-col">election_year</span><span class="db-type">int default 2026</span></div>
+      <div class="db-row"><span class="db-col">nomination_status</span><span class="db-type">enum: filed|accepted|withdrawn|rejected</span></div>
+    </div>
+
+    <div class="db-card">
+      <div class="db-head">election_results</div>
+      <div class="db-row"><span class="db-col">id<span class="pk">PK</span></span><span class="db-type">uuid</span></div>
+      <div class="db-row"><span class="db-col">constituency_id<span class="fk">FK</span></span><span class="db-type">uuid</span></div>
+      <div class="db-row"><span class="db-col">candidate_id<span class="fk">FK</span></span><span class="db-type">uuid nullable</span></div>
+      <div class="db-row"><span class="db-col">party_id<span class="fk">FK</span></span><span class="db-type">uuid nullable</span></div>
+      <div class="db-row"><span class="db-col">election_year</span><span class="db-type">int</span></div>
+      <div class="db-row"><span class="db-col">votes_received</span><span class="db-type">int</span></div>
+      <div class="db-row"><span class="db-col">vote_percentage</span><span class="db-type">decimal(5,2)</span></div>
+      <div class="db-row"><span class="db-col">position</span><span class="db-type">int</span></div>
+      <div class="db-row"><span class="db-col">is_winner</span><span class="db-type">boolean</span></div>
+      <div class="db-row"><span class="db-col">winning_margin</span><span class="db-type">int</span></div>
+      <div class="db-row"><span class="db-col">total_votes_polled</span><span class="db-type">int</span></div>
+      <div class="db-row"><span class="db-col">voter_turnout_pct</span><span class="db-type">decimal(5,2)</span></div>
+      <div class="db-row"><span class="db-col">nota_votes</span><span class="db-type">int</span></div>
+    </div>
+
+    <div class="db-card">
+      <div class="db-head">candidate_assets</div>
+      <div class="db-row"><span class="db-col">id<span class="pk">PK</span></span><span class="db-type">uuid</span></div>
+      <div class="db-row"><span class="db-col">candidate_id<span class="fk">FK</span></span><span class="db-type">uuid</span></div>
+      <div class="db-row"><span class="db-col">asset_type</span><span class="db-type">enum: movable|immovable</span></div>
+      <div class="db-row"><span class="db-col">description</span><span class="db-type">text</span></div>
+      <div class="db-row"><span class="db-col">value_inr</span><span class="db-type">bigint</span></div>
+      <div class="db-row"><span class="db-col">source</span><span class="db-type">varchar(100)</span></div>
+    </div>
+
+    <div class="db-card">
+      <div class="db-head">criminal_cases</div>
+      <div class="db-row"><span class="db-col">id<span class="pk">PK</span></span><span class="db-type">uuid</span></div>
+      <div class="db-row"><span class="db-col">candidate_id<span class="fk">FK</span></span><span class="db-type">uuid</span></div>
+      <div class="db-row"><span class="db-col">case_number</span><span class="db-type">varchar(100)</span></div>
+      <div class="db-row"><span class="db-col">section</span><span class="db-type">text</span></div>
+      <div class="db-row"><span class="db-col">court</span><span class="db-type">varchar(200)</span></div>
+      <div class="db-row"><span class="db-col">status</span><span class="db-type">varchar(50)</span></div>
+      <div class="db-row"><span class="db-col">is_serious</span><span class="db-type">boolean</span></div>
+      <div class="db-row"><span class="db-col">year</span><span class="db-type">int</span></div>
+    </div>
+
+    <div class="db-card">
+      <div class="db-head">live_results <span style="font-size:9px;color:var(--saffron)">(Phase 2)</span></div>
+      <div class="db-row"><span class="db-col">id<span class="pk">PK</span></span><span class="db-type">uuid</span></div>
+      <div class="db-row"><span class="db-col">constituency_id<span class="fk">FK</span></span><span class="db-type">uuid</span></div>
+      <div class="db-row"><span class="db-col">candidate_id<span class="fk">FK</span></span><span class="db-type">uuid</span></div>
+      <div class="db-row"><span class="db-col">votes_so_far</span><span class="db-type">int</span></div>
+      <div class="db-row"><span class="db-col">rounds_counted</span><span class="db-type">int</span></div>
+      <div class="db-row"><span class="db-col">total_rounds</span><span class="db-type">int</span></div>
+      <div class="db-row"><span class="db-col">is_leading</span><span class="db-type">boolean</span></div>
+      <div class="db-row"><span class="db-col">lead_margin</span><span class="db-type">int</span></div>
+      <div class="db-row"><span class="db-col">status</span><span class="db-type">enum: counting|declared|leading</span></div>
+      <div class="db-row"><span class="db-col">last_updated</span><span class="db-type">timestamptz</span></div>
+    </div>
+
+  </div>
+
+  <h2>Drizzle Schema Example</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">TypeScript — packages/db/schema/candidates.ts</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="kw">import</span> { pgTable, uuid, varchar, text, date, boolean, integer, bigint,
+         timestamp, pgEnum } <span class="kw">from</span> <span class="str">'drizzle-orm/pg-core'</span>;
+<span class="kw">import</span> { constituencies } <span class="kw">from</span> <span class="str">'./constituencies'</span>;
+<span class="kw">import</span> { parties } <span class="kw">from</span> <span class="str">'./parties'</span>;
+
+<span class="kw">export const</span> <span class="fn">genderEnum</span> = pgEnum(<span class="str">'gender'</span>, [<span class="str">'male'</span>, <span class="str">'female'</span>, <span class="str">'other'</span>]);
+<span class="kw">export const</span> <span class="fn">nominationEnum</span> = pgEnum(<span class="str">'nomination_status'</span>, [<span class="str">'filed'</span>, <span class="str">'accepted'</span>, <span class="str">'withdrawn'</span>, <span class="str">'rejected'</span>]);
+
+<span class="kw">export const</span> candidates = <span class="fn">pgTable</span>(<span class="str">'candidates'</span>, {
+  id:                   <span class="fn">uuid</span>(<span class="str">'id'</span>).defaultRandom().primaryKey(),
+  constituencyId:       <span class="fn">uuid</span>(<span class="str">'constituency_id'</span>).notNull().<span class="fn">references</span>(() => constituencies.id),
+  partyId:              <span class="fn">uuid</span>(<span class="str">'party_id'</span>).<span class="fn">references</span>(() => parties.id),
+  nameEn:               <span class="fn">varchar</span>(<span class="str">'name_en'</span>, { length: <span class="num">200</span> }).notNull(),
+  nameMl:               <span class="fn">varchar</span>(<span class="str">'name_ml'</span>, { length: <span class="num">200</span> }),
+  slug:                 <span class="fn">varchar</span>(<span class="str">'slug'</span>, { length: <span class="num">100</span> }).notNull().unique(),
+  photoUrl:             <span class="ty">text</span>(<span class="str">'photo_url'</span>),
+  dateOfBirth:          <span class="fn">date</span>(<span class="str">'date_of_birth'</span>),
+  gender:               <span class="fn">genderEnum</span>(<span class="str">'gender'</span>),
+  religion:             <span class="fn">varchar</span>(<span class="str">'religion'</span>, { length: <span class="num">50</span> }),
+  education:            <span class="fn">varchar</span>(<span class="str">'education'</span>, { length: <span class="num">200</span> }),
+  profession:           <span class="fn">varchar</span>(<span class="str">'profession'</span>, { length: <span class="num">200</span> }),
+  isIncumbent:          <span class="fn">boolean</span>(<span class="str">'is_incumbent'</span>).default(<span class="kw">false</span>),
+  termsServed:          <span class="fn">integer</span>(<span class="str">'terms_served'</span>).default(<span class="num">0</span>),
+  criminalCases:        <span class="fn">integer</span>(<span class="str">'criminal_cases'</span>).default(<span class="num">0</span>),
+  totalAssetsInr:       <span class="fn">bigint</span>(<span class="str">'total_assets_inr'</span>, { mode: <span class="str">'number'</span> }),
+  totalLiabilitiesInr:  <span class="fn">bigint</span>(<span class="str">'total_liabilities_inr'</span>, { mode: <span class="str">'number'</span> }),
+  affidavitUrl:         <span class="ty">text</span>(<span class="str">'affidavit_url'</span>),
+  bio:                  <span class="ty">text</span>(<span class="str">'bio'</span>),
+  electionYear:         <span class="fn">integer</span>(<span class="str">'election_year'</span>).default(<span class="num">2026</span>),
+  nominationStatus:     <span class="fn">nominationEnum</span>(<span class="str">'nomination_status'</span>).default(<span class="str">'filed'</span>),
+  createdAt:            <span class="fn">timestamp</span>(<span class="str">'created_at'</span>, { withTimezone: <span class="kw">true</span> }).defaultNow(),
+  updatedAt:            <span class="fn">timestamp</span>(<span class="str">'updated_at'</span>, { withTimezone: <span class="kw">true</span> }).defaultNow(),
+});
+
+<span class="kw">export type</span> <span class="ty">Candidate</span> = <span class="kw">typeof</span> candidates.$inferSelect;
+<span class="kw">export type</span> <span class="ty">NewCandidate</span> = <span class="kw">typeof</span> candidates.$inferInsert;</pre>
+  </div>
+</div>
+
+<!-- ═══ PAGE: DESIGN ═══ -->
+<div class="page" id="page-design">
+  <div class="eyebrow">Visual Identity</div>
+  <h1>Design <em>System</em></h1>
+  <p class="lead">Kerala 2026 uses a design language inspired by Kerala's cultural richness — warm saffron tones from the Indian flag, the lush green of Kerala's landscape, and the dignified navy of the national emblem. Clean, editorial typography with excellent Malayalam font support.</p>
+
+  <h2>Color Palette</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:28px">
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--rxl);overflow:hidden">
+      <div style="height:60px;background:#FF6B35"></div>
+      <div style="padding:10px 12px"><div style="font-size:11px;font-weight:700;font-family:var(--fm)">--saffron</div><div style="font-size:10px;color:var(--text3);font-family:var(--fm)">#FF6B35</div><div style="font-size:11px;color:var(--text2);margin-top:3px">Primary brand</div></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--rxl);overflow:hidden">
+      <div style="height:60px;background:#138808"></div>
+      <div style="padding:10px 12px"><div style="font-size:11px;font-weight:700;font-family:var(--fm)">--green</div><div style="font-size:10px;color:var(--text3);font-family:var(--fm)">#138808</div><div style="font-size:11px;color:var(--text2);margin-top:3px">Kerala green</div></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--rxl);overflow:hidden">
+      <div style="height:60px;background:#000080"></div>
+      <div style="padding:10px 12px"><div style="font-size:11px;font-weight:700;font-family:var(--fm)">--blue</div><div style="font-size:10px;color:var(--text3);font-family:var(--fm)">#000080</div><div style="font-size:11px;color:var(--text2);margin-top:3px">National blue</div></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--rxl);overflow:hidden">
+      <div style="height:60px;background:#F4A500"></div>
+      <div style="padding:10px 12px"><div style="font-size:11px;font-weight:700;font-family:var(--fm)">--gold</div><div style="font-size:10px;color:var(--text3);font-family:var(--fm)">#F4A500</div><div style="font-size:11px;color:var(--text2);margin-top:3px">Accent gold</div></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--rxl);overflow:hidden">
+      <div style="height:60px;background:#FAFAF8;border-bottom:1px solid var(--border)"></div>
+      <div style="padding:10px 12px"><div style="font-size:11px;font-weight:700;font-family:var(--fm)">--bg</div><div style="font-size:10px;color:var(--text3);font-family:var(--fm)">#FAFAF8</div><div style="font-size:11px;color:var(--text2);margin-top:3px">Page background</div></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--rxl);overflow:hidden">
+      <div style="height:60px;background:#1A1A1A"></div>
+      <div style="padding:10px 12px"><div style="font-size:11px;font-weight:700;font-family:var(--fm)">--text</div><div style="font-size:10px;color:var(--text3);font-family:var(--fm)">#1A1A1A</div><div style="font-size:11px;color:var(--text2);margin-top:3px">Primary text</div></div>
+    </div>
+  </div>
+
+  <h2>Party Color Mapping</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Party / Alliance</th><th>Primary Color</th><th>Hex</th><th>Usage</th></tr></thead>
+      <tbody>
+        <tr><td><strong>LDF (CPM)</strong></td><td><span style="display:inline-block;width:14px;height:14px;background:#E31E24;border-radius:2px;vertical-align:middle;margin-right:6px"></span>Red</td><td><code>#E31E24</code></td><td>Charts, party badges, map fills</td></tr>
+        <tr><td><strong>UDF (Congress)</strong></td><td><span style="display:inline-block;width:14px;height:14px;background:#00BFFF;border-radius:2px;vertical-align:middle;margin-right:6px"></span>Sky Blue</td><td><code>#00BFFF</code></td><td>Charts, party badges, map fills</td></tr>
+        <tr><td><strong>NDA (BJP)</strong></td><td><span style="display:inline-block;width:14px;height:14px;background:#FF6B35;border-radius:2px;vertical-align:middle;margin-right:6px"></span>Saffron</td><td><code>#FF6B35</code></td><td>Charts, party badges, map fills</td></tr>
+        <tr><td><strong>Indian Union Muslim League</strong></td><td><span style="display:inline-block;width:14px;height:14px;background:#00A550;border-radius:2px;vertical-align:middle;margin-right:6px"></span>Green</td><td><code>#00A550</code></td><td>Within UDF coalition</td></tr>
+        <tr><td><strong>Independent</strong></td><td><span style="display:inline-block;width:14px;height:14px;background:#888888;border-radius:2px;vertical-align:middle;margin-right:6px"></span>Gray</td><td><code>#888888</code></td><td>Candidate cards, charts</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Typography</h2>
+  <div class="stack-grid">
+    <div class="stack-item"><div class="stack-layer">Headlines</div><div class="stack-tech">Playfair Display</div><div class="stack-detail">700/800/900 weight. Editorial gravitas. Used for all page titles, constituency names, and candidate names. Pairs beautifully with the political theme.</div></div>
+    <div class="stack-item"><div class="stack-layer">Body / UI</div><div class="stack-tech">DM Sans</div><div class="stack-detail">300/400/500/600 weight. Clean, modern, highly legible at small sizes. Used for all body copy, labels, and interface elements.</div></div>
+    <div class="stack-item"><div class="stack-layer">Code / Data</div><div class="stack-tech">JetBrains Mono</div><div class="stack-detail">400/500 weight. For vote counts, percentages, candidate numbers, and all numerical data displays.</div></div>
+    <div class="stack-item"><div class="stack-layer">Malayalam</div><div class="stack-tech">Noto Sans Malayalam</div><div class="stack-detail">All Malayalam text rendering. Handles the full Malayalam script with excellent coverage. Loaded via Google Fonts with subsetting.</div></div>
+  </div>
+
+  <h2>CSS Design Tokens</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">CSS Variables — globals.css</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="cm">/* Kerala 2026 Design System */</span>
+:root {
+  <span class="cm">/* Brand Colors */</span>
+  --color-saffron:       <span class="str">#FF6B35</span>;
+  --color-saffron-light: <span class="str">#FFF0EA</span>;
+  --color-saffron-dark:  <span class="str">#E54E1A</span>;
+  --color-green:         <span class="str">#138808</span>;
+  --color-green-light:   <span class="str">#E8F5E6</span>;
+  --color-blue:          <span class="str">#000080</span>;
+  --color-blue-light:    <span class="str">#E8E8FF</span>;
+  --color-gold:          <span class="str">#F4A500</span>;
+
+  <span class="cm">/* Party Colors */</span>
+  --color-ldf:   <span class="str">#E31E24</span>;    <span class="cm">/* LDF / CPM */</span>
+  --color-udf:   <span class="str">#00BFFF</span>;    <span class="cm">/* UDF / Congress */</span>
+  --color-nda:   <span class="str">#FF6B35</span>;    <span class="cm">/* NDA / BJP */</span>
+  --color-ind:   <span class="str">#888888</span>;    <span class="cm">/* Independent */</span>
+
+  <span class="cm">/* Background Scale */</span>
+  --bg-primary:    <span class="str">#FAFAF8</span>;
+  --bg-secondary:  <span class="str">#F4F3EF</span>;
+  --bg-tertiary:   <span class="str">#ECEAE3</span>;
+  --bg-surface:    <span class="str">#FFFFFF</span>;
+
+  <span class="cm">/* Typography */</span>
+  --text-primary:  <span class="str">#1A1A1A</span>;
+  --text-secondary:<span class="str">#4A4A4A</span>;
+  --text-muted:    <span class="str">#8A8A8A</span>;
+
+  <span class="cm">/* Fonts */</span>
+  --font-display: <span class="str">'Playfair Display'</span>, serif;
+  --font-body:    <span class="str">'DM Sans'</span>, sans-serif;
+  --font-mono:    <span class="str">'JetBrains Mono'</span>, monospace;
+  --font-ml:      <span class="str">'Noto Sans Malayalam'</span>, sans-serif;
+
+  <span class="cm">/* Spacing */</span>
+  --radius-sm:   <span class="num">4px</span>;
+  --radius-md:   <span class="num">8px</span>;
+  --radius-lg:   <span class="num">14px</span>;
+  --radius-xl:   <span class="num">20px</span>;
+
+  <span class="cm">/* Shadows */</span>
+  --shadow-sm:  <span class="str">0 1px 3px rgba(0,0,0,0.08)</span>;
+  --shadow-md:  <span class="str">0 4px 12px rgba(0,0,0,0.1)</span>;
+  --shadow-lg:  <span class="str">0 8px 32px rgba(0,0,0,0.12)</span>;
+}</pre>
+  </div>
+</div>
+
+<!-- ═══ PAGE: CONTRIBUTING ═══ -->
+<div class="page" id="page-contrib">
+  <div class="eyebrow">Open Source</div>
+  <h1>Contributing <em>Guide</em></h1>
+  <p class="lead">Kerala 2026 is an open-source civic technology project. We welcome contributions from developers, designers, data journalists, Malayalam speakers, and anyone who cares about transparent elections. Here's everything you need to know to contribute.</p>
+
+  <div class="success-box"><strong>All skill levels welcome!</strong> Whether you're fixing a typo in a candidate's bio, building a new chart component, or adding historical election data — every contribution matters.</div>
+
+  <h2>Types of Contributions</h2>
+  <div class="card-grid">
+    <div class="card"><div class="card-label">Data</div><div class="card-title">Candidate Data Entry</div><div class="card-desc">Add or verify candidate information: photos, bios, asset details, criminal cases. Uses our admin panel or CSV import.</div></div>
+    <div class="card"><div class="card-label">Development</div><div class="card-title">Frontend Features</div><div class="card-desc">Build new UI components, pages, and visualizations. Next.js + Tailwind + TypeScript. Check GitHub issues for tasks.</div></div>
+    <div class="card"><div class="card-label">Development</div><div class="card-title">Backend API</div><div class="card-desc">Add endpoints, improve query performance, build the Phase 2 scraper. Node.js + Express + Drizzle.</div></div>
+    <div class="card"><div class="card-label">Design</div><div class="card-title">UI/UX Design</div><div class="card-desc">Create Figma mockups for new features. Design constituency maps, candidate cards, comparison tools.</div></div>
+    <div class="card"><div class="card-label">Translation</div><div class="card-title">Malayalam Support</div><div class="card-desc">Translate UI strings, verify candidate name spelling in Malayalam, improve font rendering.</div></div>
+    <div class="card"><div class="card-label">Testing</div><div class="card-title">QA & Testing</div><div class="card-desc">Write unit tests, E2E tests, report bugs, verify data accuracy across constituencies.</div></div>
+  </div>
+
+  <h2>Contribution Workflow</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">Git workflow</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="cm"># 1. Fork the repository on GitHub</span>
+<span class="cm"># 2. Clone your fork</span>
+git clone https://github.com/YOUR_USERNAME/kerala-2026.git
+cd kerala-2026
+
+<span class="cm"># 3. Add upstream remote</span>
+git remote add upstream https://github.com/kerala-2026/kerala-2026.git
+
+<span class="cm"># 4. Create a feature branch</span>
+git checkout -b feat/candidate-comparison-tool
+<span class="cm"># or for data fixes:</span>
+git checkout -b data/fix-thiruvananthapuram-candidates
+
+<span class="cm"># 5. Make your changes and commit</span>
+git add .
+git commit -m "feat: add candidate side-by-side comparison component"
+<span class="cm"># Commit message format: type(scope): description</span>
+<span class="cm"># Types: feat, fix, data, docs, style, refactor, test, chore</span>
+
+<span class="cm"># 6. Keep your branch updated</span>
+git fetch upstream
+git rebase upstream/main
+
+<span class="cm"># 7. Push and create Pull Request</span>
+git push origin feat/candidate-comparison-tool
+<span class="cm"># Then open PR on GitHub</span></pre>
+  </div>
+
+  <h2>Code Standards</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Rule</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td><strong>TypeScript</strong></td><td>Strict mode enabled. No <code>any</code> types. All API responses must be typed.</td></tr>
+        <tr><td><strong>Components</strong></td><td>Functional components only. Props interfaces always defined. Server Components preferred where possible.</td></tr>
+        <tr><td><strong>Naming</strong></td><td>PascalCase for components, camelCase for functions/vars, SCREAMING_SNAKE for constants, kebab-case for files.</td></tr>
+        <tr><td><strong>Testing</strong></td><td>Unit tests for all utility functions. Integration tests for API endpoints. E2E tests for critical user flows.</td></tr>
+        <tr><td><strong>Accessibility</strong></td><td>WCAG AA minimum. All images must have alt text in both English and Malayalam.</td></tr>
+        <tr><td><strong>Data Privacy</strong></td><td>Only use officially declared public data (ECI affidavits, official websites). No scraping of personal private data.</td></tr>
+        <tr><td><strong>Malayalam</strong></td><td>Always provide both <code>name_en</code> and <code>name_ml</code> for all entities. Use proper Unicode Malayalam characters.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Branch Naming Convention</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Branch Type</th><th>Format</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td>New feature</td><td><code>feat/description</code></td><td><code>feat/candidate-photo-gallery</code></td></tr>
+        <tr><td>Bug fix</td><td><code>fix/description</code></td><td><code>fix/vote-percentage-calculation</code></td></tr>
+        <tr><td>Data update</td><td><code>data/district-scope</code></td><td><code>data/thiruvananthapuram-candidates</code></td></tr>
+        <tr><td>Documentation</td><td><code>docs/description</code></td><td><code>docs/api-reference</code></td></tr>
+        <tr><td>Refactor</td><td><code>refactor/description</code></td><td><code>refactor/constituency-card-component</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ PAGE: ENV SETUP ═══ -->
+<div class="page" id="page-env">
+  <div class="eyebrow">Developer Setup</div>
+  <h1>Environment <em>Setup</em></h1>
+  <p class="lead">Complete guide to setting up Kerala 2026 for local development. Takes approximately 20 minutes for a fresh setup.</p>
+
+  <h2>Prerequisites</h2>
+  <div class="info-box"><strong>Required:</strong> Node.js 20 LTS, pnpm 9+, Git, a Neon account (free), Cloudflare account (free tier). Optional: Docker for local PostgreSQL instead of Neon.</div>
+
+  <h2>Quick Start</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">Shell — initial setup</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="cm"># Clone the repository</span>
+git clone https://github.com/kerala-2026/kerala-2026.git
+cd kerala-2026
+
+<span class="cm"># Install pnpm if not already installed</span>
+npm install -g pnpm@9
+
+<span class="cm"># Install all dependencies</span>
+pnpm install
+
+<span class="cm"># Set up environment files</span>
+cp apps/web/.env.example apps/web/.env.local
+cp apps/api/.env.example apps/api/.env
+
+<span class="cm"># Fill in your values in the .env files (see below)</span>
+
+<span class="cm"># Run database migrations</span>
+pnpm --filter @kerala2026/db db:generate
+pnpm --filter @kerala2026/db db:migrate
+
+<span class="cm"># Seed with sample data (14 districts, 140 constituencies)</span>
+pnpm --filter @kerala2026/api db:seed
+
+<span class="cm"># Start all apps in development mode</span>
+pnpm dev
+
+<span class="cm"># Apps will be available at:</span>
+<span class="cm"># Web:   http://localhost:3000</span>
+<span class="cm"># API:   http://localhost:3001</span>
+<span class="cm"># Admin: http://localhost:3002</span></pre>
+  </div>
+
+  <h2>Environment Variables — Web App</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">apps/web/.env.local</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="cm"># API URL</span>
+NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
+
+<span class="cm"># Meilisearch (for search)</span>
+NEXT_PUBLIC_MEILISEARCH_HOST=http://localhost:7700
+NEXT_PUBLIC_MEILISEARCH_API_KEY=your_search_api_key
+
+<span class="cm"># Mapbox (for constituency maps)</span>
+NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ1IjoiamF5YSIsImEi...
+
+<span class="cm"># Phase 2 — WebSocket URL for live results</span>
+NEXT_PUBLIC_WEBSOCKET_URL=ws://localhost:3001
+
+<span class="cm"># Site metadata</span>
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_SITE_NAME=Kerala 2026
+
+<span class="cm"># Plausible Analytics (optional in dev)</span>
+NEXT_PUBLIC_PLAUSIBLE_DOMAIN=kerala2026.in</pre>
+  </div>
+
+  <h2>Environment Variables — API</h2>
+  <div class="cb">
+    <div class="cb-head"><div class="cb-dots"><div class="cd r"></div><div class="cd y"></div><div class="cd g"></div></div><div class="cb-lang">apps/api/.env</div><div class="cb-copy" onclick="copyBlock(this)">copy</div></div>
+    <pre>
+<span class="cm"># Server</span>
+PORT=3001
+NODE_ENV=development
+
+<span class="cm"># Database — Neon PostgreSQL</span>
+DATABASE_URL="postgresql://user:pass@ep-your-endpoint.ap-south-1.aws.neon.tech/kerala2026?sslmode=require"
+
+<span class="cm"># Cloudflare R2 — Candidate photo storage</span>
+CF_ACCOUNT_ID=your_cloudflare_account_id
+CF_R2_ACCESS_KEY=your_r2_access_key
+CF_R2_SECRET_KEY=your_r2_secret_key
+CF_R2_BUCKET=kerala2026-media
+CF_R2_PUBLIC_URL=https://media.kerala2026.in
+
+<span class="cm"># Meilisearch</span>
+MEILISEARCH_HOST=http://localhost:7700
+MEILISEARCH_MASTER_KEY=your_master_key
+
+<span class="cm"># Admin authentication (for admin panel)</span>
+ADMIN_JWT_SECRET=your_super_secret_key_min_32_chars
+ADMIN_PASSWORD_HASH=bcrypt_hashed_admin_password
+
+<span class="cm"># Rate limiting</span>
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX=100
+
+<span class="cm"># CORS</span>
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3002
+
+<span class="cm"># Resend (for contributor notifications)</span>
+RESEND_API_KEY=re_xxxxxx
+
+<span class="cm"># Phase 2: Scraper config (not used in Phase 1)</span>
+SCRAPER_ENABLED=false
+SCRAPER_INTERVAL_MS=60000
+CEO_KERALA_URL=https://ceo.kerala.gov.in</pre>
+  </div>
+
+  <h2>Available npm Scripts</h2>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Command</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>pnpm dev</code></td><td>Start all apps in development mode with hot reload</td></tr>
+        <tr><td><code>pnpm build</code></td><td>Build all apps for production</td></tr>
+        <tr><td><code>pnpm lint</code></td><td>ESLint + TypeScript type checking across all apps</td></tr>
+        <tr><td><code>pnpm test</code></td><td>Run all unit and integration tests</td></tr>
+        <tr><td><code>pnpm --filter @kerala2026/db db:generate</code></td><td>Generate Drizzle migration files from schema</td></tr>
+        <tr><td><code>pnpm --filter @kerala2026/db db:migrate</code></td><td>Apply migrations to database</td></tr>
+        <tr><td><code>pnpm --filter @kerala2026/db db:seed</code></td><td>Seed with districts, constituencies, sample candidates</td></tr>
+        <tr><td><code>pnpm --filter @kerala2026/db db:studio</code></td><td>Open Drizzle Studio (visual DB browser)</td></tr>
+        <tr><td><code>pnpm --filter @kerala2026/api import:csv</code></td><td>Import candidate data from CSV file</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<script>
+const CRUMBS = {
+  overview:'Project Overview',phases:'Project Phases',techstack:'Tech Stack',
+  structure:'Project Structure',database:'Database Schema',design:'Design System',
+  contrib:'Contributing Guide',env:'Environment Setup'
+};
+
+function go(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sb-link').forEach(l => l.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  document.getElementById('crumb').textContent = CRUMBS[id] || id;
+  document.querySelector('.content').scrollTop = 0;
+  window.scrollTo(0,0);
+  closeSB();
+}
+
+function toggleSB(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('visible')}
+function closeSB(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('visible')}
+
+function copyBlock(btn) {
+  const pre = btn.closest('.cb').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent.trim()).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'copied!';
+    setTimeout(() => { btn.textContent = orig; }, 1800);
+  });
+}
+</script>
+</body>
+</html>
