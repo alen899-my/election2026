@@ -13,6 +13,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.450.0",
     "@neondatabase/serverless": "^0.6.0",
+    "cheerio": "^1.2.0",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "drizzle-orm": "^0.29.0",
@@ -21,7 +22,10 @@
     "jose": "^5.1.0",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
+    "pg": "^8.20.0",
+    "puppeteer": "^24.40.0",
     "sharp": "^0.33.0",
+    "socket.io": "^4.8.3",
     "zod": "^3.22.4"
   },
   "devDependencies": {

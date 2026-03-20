@@ -1,26 +1,36 @@
 import { Request, Response } from 'express';
-import { DemographicsScraper } from '../services/scraper.service';
+import { KeralaElectionScraper } from '../services/scraper.service';
 
 export const runScrapingJob = async (req: Request, res: Response) => {
   try {
-    const { targetUrl } = req.body;
+    const {
+      targetUrl  = 'https://en.wikipedia.org/wiki/2026_Kerala_Legislative_Assembly_election',
+      mode       = 'all',
+      enrichWiki = true,
+      wikiLimit  = 30,
+      delayMs    = 1500,
+    } = req.body;
 
-    if (!targetUrl) {
-      return res.status(400).json({ success: false, error: 'A target URL strictly mapped to your parsing logic must be provided.' });
+    let data: any;
+
+    switch (mode) {
+      case 'parties':
+        data = await KeralaElectionScraper.scrapeAndSeedParties(targetUrl);
+        break;
+      case 'constituencies':
+        data = await KeralaElectionScraper.scrapeAndSeedConstituencies(targetUrl);
+        break;
+      case 'wiki_enrich':
+        data = await KeralaElectionScraper.enrichCandidatesFromWiki({ limit: wikiLimit, delayMs });
+        break;
+      case 'all':
+      default:
+        data = await KeralaElectionScraper.syncAll({ url: targetUrl, enrichWiki, wikiLimit, delayMs });
     }
 
-    // Trigger the heavy-lifting logic asynchronously 
-    const records = await DemographicsScraper.syncConstituenciesFromSource(targetUrl);
-
-    return res.json({ 
-      success: true, 
-      message: 'Scraping sequence successfully synced to Database.',
-      totalParsed: records.length,
-      data: records
-    });
-
+    return res.json({ success: true, mode, data });
   } catch (error: any) {
-    console.error(`[Scraping Failed]:`, error.message);
-    res.status(500).json({ success: false, error: error.message || 'Scraper failed to execute rendering.' });
+    console.error('[Scraper]', error.message);
+    res.status(500).json({ success: false, error: error.message });
   }
 };

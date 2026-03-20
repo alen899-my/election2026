@@ -22,6 +22,7 @@ import constituencyRoutes from './routes/constituencies.routes';
 import partyRoutes from './routes/parties.routes';
 import searchRoutes from './routes/search.routes';
 import scraperRoutes from './routes/scraper.routes';
+import districtRoutes from './routes/districts.routes';
 
 // Routing configuration
 app.use('/api/v1/auth', authRoutes);
@@ -31,6 +32,7 @@ app.use('/api/v1/constituencies', constituencyRoutes);
 app.use('/api/v1/parties', partyRoutes);
 app.use('/api/v1/search', searchRoutes);
 app.use('/api/v1/scraper', scraperRoutes);
+app.use('/api/v1/districts', districtRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
